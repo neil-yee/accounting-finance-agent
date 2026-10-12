@@ -4,6 +4,12 @@
 
 **Status:** Work in progress. The end-to-end finance workflow described below is planned.
 
+## Demo
+
+**Video:** Coming soon.
+
+The video will show one synthetic month-end close task from Asana intake through analysis, human review, and the simulated outcome.
+
 ## What this project aims to do
 
 This project explores how to build an AI system that can support different accounting and finance workflows. The system brings together a work request, relevant business data and tools, task-specific guidance, human review, and run evaluation.
@@ -85,12 +91,6 @@ Planned evaluation areas:
 - Correct use of tools.
 - Appropriate handling of missing or conflicting information.
 - Correct behavior at approval checkpoints.
-
-## Demo
-
-**Video:** Coming soon.
-
-The video will show one synthetic month-end close task from Asana intake through analysis, human review, and the simulated outcome.
 
 ## Running the project
 
