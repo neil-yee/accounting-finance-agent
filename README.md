@@ -1,64 +1,37 @@
 # Accounting & Finance Agent
 
-> A human-reviewed AI workflow prototype for accounting and finance tasks.
+> Exploring a reusable, human-supervised AI workflow system for accounting and finance work.
 
-**Status:** In development. This repository contains learning prototypes; the end-to-end finance workflow is planned.
-
-## Demo
-
-[Video coming soon]
-
-**Main scenario:** [Describe the finance task the demo will complete.]
+**Status:** Work in progress. The end-to-end finance workflow described below is planned.
 
 ## What this project aims to do
 
-[In a few sentences: who the workflow helps, what work it handles, and what a human reviews.]
+This project explores how to build an AI system that can support different accounting and finance workflows. The system brings together a work request, relevant business data and tools, task-specific guidance, human review, and run evaluation.
 
-## Target workflow
+The goal is to make workflows adaptable to different tasks while keeping important decisions and financial changes reviewable. A month-end close support task will be the first end-to-end demonstration.
 
-[Planned workflow—not all steps are implemented yet.]
+## First demonstration: month-end close support
 
-Asana task → Agent reviews finance data → Draft workpaper and recommendation
-→ Human reviews and approves → Simulated ERP action → Asana task updated
+The initial scenario will use synthetic accounting data for a fictional company. Given a close task and supporting records, the agent will:
 
-## Current capabilities
+- Review a trial balance and selected supporting data.
+- Identify unusual balances or month-over-month changes.
+- Prepare a reviewable workpaper and summary.
+- Draft proposed adjusting entries when appropriate.
+- Wait for human approval before making a simulated ERP change.
+- Record the outcome on the Asana task.
 
-- Deep Agent running locally
-- Asana MCP connection with read-only tools
-- Excel, PDF, and Word skills
-- Optional sandbox for file work
-- LangSmith tracing and evaluation experiments
+This is a demonstration workflow, not an autonomous accounting system.
 
-## Planned for the finance demo
+## Proposed workflow
 
-- [ ] Synthetic accounting data and simulated ERP tools
-- [ ] Month-end close analysis and reviewable workpapers
-- [ ] Human approval before simulated ERP writes
-- [ ] Asana task updates
-- [ ] Evaluation cases for normal and exception scenarios
-
-## Architecture
-
-[Simple workflow diagram]
-
-[Link to detailed architecture and component explanations.]
-
-## Human review and safeguards
-
-[Explain what the agent may read or draft, what requires approval, and how actions are recorded.]
-
-## Evaluation
-
-[Describe the test cases and results once available.]
-
-## Run locally
-
-[Setup instructions will go here.]
-
-## Limitations
-
-[State what is simulated, what is not implemented, and what should not be used with real company data.]
-
-## Roadmap
-
-[Next steps]
+```mermaid
+flowchart LR
+    A[Finance task in Asana] --> B[Agent gathers task context and data]
+    B --> C[Accounting tools and document analysis]
+    C --> D[Workpaper and proposed action]
+    D --> E{Human review}
+    E -->|Approve| F[Simulated ERP action]
+    E -->|Revise or reject| G[Feedback on the task]
+    F --> H[Outcome recorded in Asana]
+    G --> B
