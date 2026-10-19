@@ -1,0 +1,3 @@
+# Additional sandbox packages only; the base already includes the document libraries.
+# Add pinned versions here when needed, for example: pandas==<chosen-version>
+# These dependencies run remotely and are separate from pyproject.toml.

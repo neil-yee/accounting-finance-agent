@@ -1,0 +1,50 @@
+name: Build sandbox snapshot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finance-snapshot-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.13.1'
+      - name: Install Python and locked dependencies
+        run: |
+          uv python install
+          uv sync --locked
+      - name: Build environment release
+        id: build
+        env:
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_ENDPOINT: ${{ vars.LANGSMITH_ENDPOINT }}
+        run: |
+          if [ -z "$LANGSMITH_ENDPOINT" ]; then unset LANGSMITH_ENDPOINT; fi
+          uv run --locked python scripts/build_sandbox_snapshot.py --tag "ci-${GITHUB_SHA}-${GITHUB_RUN_NUMBER}"
+      - name: Publish release selection
+        env:
+          SNAPSHOT_ID: ${{ steps.build.outputs.snapshot_id }}
+        run: |
+          printf 'Snapshot built: %s\n\nSet SANDBOX_SNAPSHOT_ID=%s in deployment configuration.\n' "$SNAPSHOT_ID" "$SNAPSHOT_ID" >> "$GITHUB_STEP_SUMMARY"
+      - name: Save build manifest
+        if: always() && steps.build.outputs.manifest != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: sandbox-release-${{ github.run_id }}
+          path: ${{ steps.build.outputs.manifest }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

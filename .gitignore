@@ -218,3 +218,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project-local dependency cache and private environment variants
+.uv-cache/
+.env.*
+!.env.example
+
+# Local task data and generated outputs; keep only the empty folder structure.
+/workspace/**
+!/workspace/.gitkeep
+
+# Private local conversation checkpoints and thread directory.
+/.state/
+
+# Local LangSmith exports contain prompts, tool results and business data.
+/traces/

@@ -1,0 +1,21 @@
+[project]
+name = "accounting-finance-agent"
+version = "0.1.0"
+description = "A human-supervised agent for accounting and finance work."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "deepagents==0.7.23",
+    "langchain-openai==1.7.0",
+    "langgraph-checkpoint-sqlite==3.1.2",
+    "langsmith[sandbox]==0.14.9",
+    "python-dotenv==1.2.4",
+    "tzdata==2026.5",
+]
+
+[project.scripts]
+finance-agent = "accounting_finance_agent.__main__:main"
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
