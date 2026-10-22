@@ -1,99 +1,193 @@
 # Finance & Accounting Agent — Architecture
 
-**Status:** Proposed design, October 15, 2026.  
-**Source:** Recreated in editable Mermaid from the architecture image supplied by Neil Yee. This is not a copy of the original image file.  
-**Related document:** [Agent specification](agent-spec.md).
+| Document field | Value |
+|---|---|
+| Version | v0.5 working draft |
+| Owner | Neil Yee |
+| Specification | [Agent specification](agent-spec.md) v0.5 |
+| Status | Current prototype with proposed Asana and external-system integrations. |
 
-GitHub renders the Mermaid block below as a diagram. Edit the block to update the architecture alongside the code.
+This architecture applies the [00 overview](mental-model/00-overview.md) and [01 anatomy](mental-model/01-anatomy.md) to the project. The anatomy view shows what the agent is made of; the run view shows how requests move through it; the deployment view shows where components run and what they can reach. Solid nodes and edges describe the current prototype. Dashed edges are proposed future integrations or release paths.
+
+## 1. Overview
+
+```mermaid
+flowchart LR
+    P["Person<br/>requests, reviews, approves"]
+    T["Local terminal<br/>current work interface"]
+    A["Accounting and finance agent<br/>Deep Agents harness"]
+    M["OpenAI model provider"]
+    S["Temporary sandbox<br/>code and working files"]
+    D["Persistent local data<br/>threads, files, work log"]
+    L["LangSmith<br/>optional tracing and sandbox service"]
+    AS["Asana<br/>planned work interface"]
+
+    P <-->|"prompts and responses"| T
+    T <-->|"invoke and resume thread"| A
+    A <-->|"model input and response"| M
+    A <-->|"tools, code, and files"| S
+    A <-->|"checkpoints, workspace, records"| D
+    A -.->|"traces"| L
+    A -.->|"task intake, review, output links"| AS
+```
+
+## 2. Anatomy view: functions and mechanisms
 
 ```mermaid
 flowchart TB
-    human["Neil / human reviewer<br/>Assign work, provide feedback, approve"]
-    asana["Asana task board"]
-    model["Model provider"]
-    tracing["Tracing and monitoring<br/>LangSmith candidate"]
-    erp["SQL Server or SYSPRO<br/>Phase 2: read-only access"]
-    approval["Explicit owner approval<br/>for reusable assets"]
-
-    subgraph host["Agent host — outside the execution sandbox"]
-        dispatcher["Dispatcher<br/>Detect eligible changes, gather context,<br/>prevent duplicate runs"]
-        agent["General finance and accounting agent"]
-        connector["Controlled connectors or MCP<br/>Read-only external-data access"]
-        transfer["File transfer<br/>Copy inputs in and preserve outputs"]
-
-        dispatcher -->|"Task context and relevant changes"| agent
-        agent -->|"Results, proposals, or failure details"| dispatcher
-        dispatcher -->|"Prepare task workspace"| transfer
-        agent <-->|"External data requests and results"| connector
+    subgraph AGENT["Agent: what it is made of"]
+      direction TB
+      subgraph CORE["CORE — what reasons and drives the work"]
+        LOOP["Harness control loop"]
+        MODEL["OpenAI model invocation"]
+        TODO["TodoListMiddleware<br/>write_todos and graph state"]
+      end
+      subgraph CONTEXT["CONTEXT — what the model sees"]
+        PROMPT["Task prompt and instructions"]
+        HISTORY["Messages and tool results"]
+        SKILLS["Skills<br/>discovery plus read-only file tools"]
+        KNOW["Approved memory and business references"]
+        CTX["Context assembly on each model call"]
+      end
+      subgraph ACTIONS["ACTIONS — what the model can request"]
+        FILES["File tools<br/>read, list, write, edit"]
+        EXEC["execute tool<br/>remote sandbox code"]
+        SUB["General-purpose sub-agent"]
+        FUTURE["External connectors / MCP<br/>not implemented"]
+      end
+      subgraph CONTROLS["CONTROLS — which requests are allowed"]
+        LIMITS["Runtime call, time, and command limits"]
+        ROUTES["Read-only reference routes"]
+        SANDBOX["Sandbox, filesystem, and egress policy"]
+        REVIEW["Human review of output and assets"]
+      end
+      subgraph CONTINUITY["CONTINUITY — what carries over"]
+        STATE["SQLite thread checkpoints"]
+        WORKSPACE["Per-thread local workspace"]
+        LOGS["Work log, validation, optional traces"]
+      end
     end
 
-    subgraph sandbox["Temporary sandbox — restricted code execution"]
-        inputs["Task files<br/>Input copies and reference material"]
-        packages["Python packages<br/>pandas, openpyxl, and others"]
-        execution["General execution and file tools"]
-        outputs["Generated files, supporting code,<br/>and proposals"]
-
-        inputs --> execution
-        packages --> execution
-        execution --> outputs
-    end
-
-    subgraph storage["Persistent storage — survives sandbox cleanup"]
-        artifacts["Task inputs, versioned outputs,<br/>and supporting code"]
-        pending["Pending memory, script,<br/>and model proposals"]
-        checkpoint["Checkpointer<br/>Conversation state per Asana task"]
-        worklog["Work log<br/>File fingerprints, run IDs,<br/>and asset versions"]
-        approved["Business knowledge, skills,<br/>approved memory and scripts"]
-    end
-
-    human -->|"Tasks, feedback, and review"| asana
-    asana -->|"Eligible assignment or actionable feedback"| dispatcher
-    dispatcher -->|"Status, summary, and output links"| asana
-
-    agent <-->|"Model requests and responses"| model
-    agent -.->|"Run traces"| tracing
-    connector -->|"Read-only queries"| erp
-
-    transfer -->|"Copy inputs and approved assets"| inputs
-    agent <-->|"Run code, inspect files, receive results"| execution
-    outputs -->|"Copy out before cleanup"| transfer
-
-    artifacts -->|"Inputs and previous files for revisions"| transfer
-    transfer -->|"Preserve input copies and output versions"| artifacts
-    transfer -->|"Preserve asset proposals"| pending
-    transfer -->|"Record transfers and fingerprints"| worklog
-    agent <-->|"Save and restore task context"| checkpoint
-    worklog -->|"Prior runs and version history"| dispatcher
-    approved -->|"Relevant business context and procedures"| dispatcher
-    approved -->|"Approved assets to copy in"| transfer
-
-    human --> approval
-    pending -->|"Review proposed assets"| approval
-    approval -->|"Promote approved versions"| approved
+    TASK["Prompt, instructions, history, references"] --> CTX --> MODEL
+    LOOP --> CTX
+    MODEL -->|"request or answer"| LOOP
+    LOOP -->|"approved tool request"| FILES
+    LOOP --> EXEC
+    LOOP --> SUB
+    LOOP -.-> FUTURE
+    FILES -->|"tool result"| CTX
+    EXEC -->|"tool result"| CTX
+    SUB -->|"subtask result"| CTX
+    LIMITS -.-> LOOP
+    ROUTES -.-> FILES
+    SANDBOX -.-> EXEC
+    REVIEW -.-> WORKSPACE
+    STATE <--> LOOP
+    WORKSPACE <--> EXEC
+    LOGS -.-> LOOP
+    KNOW --> CTX
+    SKILLS --> CTX
+    TODO <--> LOOP
 ```
 
-## Reading the diagram
+## 3. Run view: how one task flows
 
-Asana is the main work interface. The dispatcher identifies eligible assignments and feedback, gathers context, and starts the agent. The agent uses the model provider and controlled external-data connectors from the host. Code execution and task-file manipulation happen inside the temporary sandbox.
+```mermaid
+flowchart TB
+    INPUT["Person submits prompt<br/>or selects a saved thread"] --> GATHER["Prepare context<br/>instructions, thread state, skills, references"]
+    GATHER --> PREP["Sandbox mode: create temporary sandbox<br/>copy thread workspace into /workspace"]
 
-The file-transfer component prepares the workspace and preserves outputs before sandbox cleanup. Persistent storage holds task artifacts, checkpoints, factual work logs, pending proposals, and approved reusable assets.
+    subgraph LOOP["Agent control loop — repeats until answer or limit"]
+      ASSEMBLE["Assemble model input"] --> INVOKE["Invoke model"] --> ROUTE{"Tool request or final answer?"}
+      ROUTE -->|"tool request"| CHECK["Apply runtime/backend controls"] --> TOOL{"Tool location"}
+      TOOL -->|"file work or execution"| SBX["Remote sandbox"]
+      TOOL -->|"memory or skill read"| HOSTREF["Read-only host route"]
+      TOOL -->|"subtask"| SUB["Sub-agent loop"]
+      SBX --> RESULT["Return tool result"]
+      HOSTREF --> RESULT
+      SUB --> RESULT
+      RESULT --> ASSEMBLE
+    end
 
-Human review of a task output happens through Asana. Approval of memory or reusable scripts and models follows a separate owner decision before promotion to the approved library.
+    PREP --> ASSEMBLE
+    ROUTE -->|"final answer"| PRESERVE["Download new/changed files<br/>record run and checks"]
+    PRESERVE --> CLEAN["Delete sandbox after preservation"]
+    CLEAN --> RETURN["Return summary and local file location"]
+    RETURN --> HUMAN{"Human review"}
+    HUMAN -->|"feedback"| INPUT
+    HUMAN -->|"approve current output"| END["Done"]
+    CHECK -->|"blocked or failed"| PRESERVE
+    FUTURE["Asana intake, status, and review"] -.-> INPUT
+    FUTURE -.-> RETURN
+```
 
-## Boundaries and unresolved choices
+## 4. Deployment view: where it runs and what it can reach
 
-- The diagram expresses logical components. It does not require a separate service or process for every box.
-- The dispatcher and agent initially run on a local host. The sandbox may be hosted or a restricted local container; the provider is undecided.
-- External-system credentials stay outside the execution sandbox. Network and filesystem restrictions require actual environment controls.
-- The diagram's read-only connector applies to external business data. The dispatcher has separately controlled Asana write access for statuses, summaries, and output links.
-- SQL Server or SYSPRO access is a Phase 2 capability. Posting entries, payments, and changes to authoritative ERP records are excluded initially.
-- One Asana task defines the initial thread scope. Revisions restore that task's state and use preserved output versions.
-- Business knowledge is human-maintained. Memory, scripts, models, and skill changes require separate approval; approving a task output does not promote them.
-- Polling versus webhooks, task eligibility, feedback rules, storage location, and operating limits remain open decisions in the [agent specification](agent-spec.md#open-decisions).
-- Monitoring captures runs; the transfer log records copy-in and copy-out activity. Neither is assumed to record every internal sandbox file operation.
+```mermaid
+flowchart LR
+    PERSON["Person"] --> TERMINAL["Local terminal<br/>current"]
+    ASANA["Asana<br/>planned"] -.-> DISPATCH["Future dispatcher"]
 
-## First implementation milestone
+    subgraph HOST["Agent host — local in current prototype"]
+      TERMINAL --> AGENT["Agent loop<br/>context, controls, tool routing"]
+      DISPATCH -.-> AGENT
+      STORE["SQLite checkpoints<br/>thread workspace<br/>work log"]
+      REFS["Local memory and skills<br/>read-only file routes"]
+      CONNECT["Controlled connector / MCP<br/>future; no SharePoint or ERP connection"]
+      AGENT <--> STORE
+      AGENT --> REFS
+    end
 
-An Asana task with an attached CSV triggers one agent run. The agent processes an input copy in a sandbox, produces a reviewable artifact, and preserves it before cleanup. The dispatcher publishes a summary and output link in Asana. Human feedback starts a revision on the same task thread.
+    MODEL["OpenAI model provider"]
+    TRACE["LangSmith tracing<br/>optional"]
+    AGENT <-->|"model input and response"| MODEL
+    AGENT -.->|"trace data"| TRACE
 
-The first finance skill follows after this complete path works. Bank reconciliation is the current candidate.
+    subgraph REMOTE["Temporary LangSmith sandbox"]
+      EXEC["Code and file tools<br/>Python environment"]
+      WS["/workspace<br/>working copies"]
+      EXEC <--> WS
+    end
+    AGENT <-->|"start run, tools, files"| REMOTE
+    STORE -->|"copy files into run"| WS
+    WS -->|"download changed files before cleanup"| STORE
+
+    EXTERNAL["Business systems<br/>future, scoped read-only access"]
+    CONNECT -.->|"controlled access"| EXTERNAL
+    ASANA <--> DISPATCH
+
+    CREDENTIALS["Current model and LangSmith credentials<br/>loaded on host; not copied into sandbox"]
+    CREDENTIALS --> AGENT
+```
+
+**Trust boundary:** the agent loop and model client run on the host. The temporary sandbox executes generated commands and receives eligible workspace files. The application does not copy its local `.env` or API keys into the sandbox. Network egress is owner-configurable, but effective isolation has not been verified. A future external connector would run outside the sandbox and would need a separately defined identity and access scope. Do not infer that an integration or control exists just because it appears as a proposed component.
+
+## 5. Traceability: architecture to specification
+
+| Architecture element | View | Spec section | Current state |
+|---|---|---|---|
+| Core: loop, model, planning, limits | 2, 3, 4 | [2.1 Core](agent-spec.md#21-core-what-reasons-and-drives-the-work) | Implemented; some live limit checks pending |
+| Context: task, instructions, history, skills, knowledge | 2, 3 | [2.2 Context](agent-spec.md#22-context-what-the-model-sees) | Implemented locally; Asana task gathering planned |
+| Actions: file tools, execute, sub-agent | 2, 3, 4 | [2.3 Actions](agent-spec.md#23-actions-what-the-model-can-request) | Implemented |
+| Controls: routes, runtime limits, sandbox, review | 2, 3, 4 | [2.4 Controls](agent-spec.md#24-controls-which-requests-are-allowed) | Partial; see README verification inventory |
+| Continuity: checkpoint, workspace, work log, traces | 2, 3, 4 | [2.5 Continuity](agent-spec.md#25-continuity-what-carries-over) | Implemented locally; recovery and provenance gaps remain |
+| Asana dispatcher and review path | 1, 3, 4 | [1.2 Work interface](agent-spec.md#12-work-interface), [3.1 E-ASANA-1](agent-spec.md#31-evaluation-plan) | Proposed, not implemented |
+| External connector or MCP | 2, 4 | [2.3 Actions](agent-spec.md#23-actions--what-the-model-can-request), [2.4 Controls](agent-spec.md#24-controls--which-requests-are-allowed) | No external business-system integration |
+| Model provider and LangSmith | 1, 4 | [2.1 Core](agent-spec.md#21-core--what-reasons-and-drives-the-work), [3.3 Monitoring](agent-spec.md#33-monitoring-plan) | Model call and optional tracing implemented |
+
+## 6. Completeness and review checklist
+
+- [ ] Every anatomy function has a project decision and named implementation mechanism in Section 2 of the spec.
+- [ ] Every spec function appears in the anatomy view; every box maps to a spec section above.
+- [ ] Each proposed or implemented path is labeled accurately; placeholders are not presented as running services.
+- [ ] Each control is shown at its actual strength: instruction, program hook, human decision, or environment.
+- [ ] Credentials and network routes match the real execution boundary.
+- [ ] Every success criterion maps through a function and mechanism to at least one evaluation in the spec.
+- [ ] Run flow identifies persistence, cleanup, human review, and failure handling.
+
+## 7. Change log
+
+| Version | Date | Change |
+|---|---|---|
+| v0.5 | 2026-10-22 | Adapted the four-view architecture template to the current prototype and the five-function anatomy; added spec traceability and current/future labels. |
+| v0.4 | 2026-10-15 | Prior project-specific architecture diagram. |

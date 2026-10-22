@@ -346,6 +346,11 @@ suite passed 58 tests; finance quality requires separate task evaluations.
 docs/
   agent-spec.md          # Proposed capabilities, boundaries, and success criteria
   architecture.md        # Proposed component diagram and storage boundaries
+  task-list.md           # ADLC checklist with current project statuses and gates
+  mental-model/
+    00-overview.md       # Map of the anatomy and ADLC models
+    01-anatomy.md        # Agent functions and implementation mechanisms
+    02-adlc.md           # Build, test, deploy, and monitor lifecycle
 environments/finance/
   snapshot.json          # Snapshot name/tag and base environment
   requirements.txt       # Optional additional remote Python packages
@@ -387,21 +392,21 @@ This starting point keeps agent construction small so each additional capability
 
 ## Development lifecycle and build order
 
+- [Mental model overview](docs/mental-model/00-overview.md), [agent anatomy](docs/mental-model/01-anatomy.md), and [ADLC](docs/mental-model/02-adlc.md)
 - [Agent specification](docs/agent-spec.md)
 - [Detailed architecture](docs/architecture.md)
+- [ADLC project task list](docs/task-list.md)
 - [Deep Agents quickstart](https://docs.langchain.com/oss/python/deepagents/quickstart)
 
-The project follows a staged lifecycle: plan what to measure, release, and monitor; configure the agent and its evaluations; test against the planned gates; deploy in controlled stages; then use monitoring findings to improve the next version. The project-specific plans and current gaps are in the [evaluation plan](docs/agent-spec.md#9-evaluation-plan), [release plan](docs/agent-spec.md#10-release-plan), and [monitoring plan](docs/agent-spec.md#11-monitoring-plan). The current repository is still a local prototype, not a deployment-ready service.
+The mental models define shared vocabulary: the anatomy describes the agent's five functions and the mechanisms that implement them; the ADLC describes how people plan, configure, test, deploy, and monitor an instance. The agent specification applies both models to this project, and the architecture shows their decisions in component, run, and deployment views. The task list is the status-aware execution checklist. The current repository is still a local prototype, not a deployment-ready service.
 
-The current build sequence is:
+The current build sequence is tracked in the [ADLC task list](docs/task-list.md). At a high level, the remaining order is:
 
-1. Define the staged evaluation, release, and monitoring plans for the foundation and first finance workflow.
-2. Verify the local foundation and run the starter CSV evaluation as an explicitly authorized model/sandbox trial.
-3. Prepare synthetic bank-reconciliation cases with independently calculated expected results; evaluate calculations, exceptions, source preservation, and Excel/Word deliverables.
-4. Confirm deployment readiness, staged rollout, stop/rollback, and monitoring before connecting real work systems.
-5. Add Asana intake, controlled updates, review, and revisions after the agent foundation and first finance workflow are ready.
-6. Verify the end-to-end assignment, execution, review, revision, failure, restart, and duplicate-prevention paths.
-7. Monitor outcomes and turn diagnosed failures into regression cases before releasing later changes.
+1. Complete and verify the platform evaluation plan.
+2. Prepare known-answer bank-reconciliation cases and evaluate the first finance skill.
+3. Confirm release readiness, stop/rollback, and monitoring before real-work deployment.
+4. Add and evaluate the Asana task-to-review workflow after the foundation and first finance workflow are ready.
+5. Monitor outcomes and turn diagnosed failures into regression cases before later releases.
 
 ## Boundaries and evaluation
 
