@@ -385,27 +385,29 @@ uv.lock                  # Locked dependency versions
 
 This starting point keeps agent construction small so each additional capability can be introduced and explained separately.
 
-## Design and build order
+## Development lifecycle and build order
 
 - [Agent specification](docs/agent-spec.md)
 - [Detailed architecture](docs/architecture.md)
 - [Deep Agents quickstart](https://docs.langchain.com/oss/python/deepagents/quickstart)
 
-Build the platform path before adding the first finance skill:
+The project follows a staged lifecycle: plan what to measure, release, and monitor; configure the agent and its evaluations; test against the planned gates; deploy in controlled stages; then use monitoring findings to improve the next version. The project-specific plans and current gaps are in the [evaluation plan](docs/agent-spec.md#9-evaluation-plan), [release plan](docs/agent-spec.md#10-release-plan), and [monitoring plan](docs/agent-spec.md#11-monitoring-plan). The current repository is still a local prototype, not a deployment-ready service.
 
-1. Establish a reproducible repository and runnable local agent.
-2. Connect a restricted sandbox and process a sample file.
-3. Preserve outputs and task state across runs.
-4. Establish the remaining agent capabilities, operating limits, and task workspace boundaries.
-5. Add task-specific skills and reference context, then verify representative local tasks.
-6. Add Asana intake, controlled updates, review, and revisions after the agent foundation is ready.
-7. Add dispatcher duplicate prevention and verify the complete normal, failure, restart, and revision paths.
+The current build sequence is:
+
+1. Define the staged evaluation, release, and monitoring plans for the foundation and first finance workflow.
+2. Verify the local foundation and run the starter CSV evaluation as an explicitly authorized model/sandbox trial.
+3. Prepare synthetic bank-reconciliation cases with independently calculated expected results; evaluate calculations, exceptions, source preservation, and Excel/Word deliverables.
+4. Confirm deployment readiness, staged rollout, stop/rollback, and monitoring before connecting real work systems.
+5. Add Asana intake, controlled updates, review, and revisions after the agent foundation and first finance workflow are ready.
+6. Verify the end-to-end assignment, execution, review, revision, failure, restart, and duplicate-prevention paths.
+7. Monitor outcomes and turn diagnosed failures into regression cases before releasing later changes.
 
 ## Boundaries and evaluation
 
-The planned system excludes journal posting, payments, changes to authoritative ERP records, external communications, and edits to original shared files. Output review and approval of reusable assets are separate decisions. Enforcement controls and evaluation results will be documented as those components are implemented.
+The planned system excludes journal posting, payments, changes to authoritative ERP records, external communications, and edits to original shared files. Output review and approval of reusable assets are separate decisions.
 
-Platform acceptance includes five consecutive tasks through the complete review/revision path, preserved outputs after sandbox cleanup, duplicate prevention, and clear handling of blocked work. Finance skills require expected results and critical financial checks defined before testing. The full criteria are in the agent specification.
+The current CSV dataset is a narrow platform baseline: it checks two arithmetic outputs and source preservation. It does not establish finance quality, repeatability, or release readiness. The agent specification defines the planned evaluation gates, release stages, and monitoring responses. The eventual Asana workflow acceptance criteria include five consecutive tasks through review/revision, preserved outputs after sandbox cleanup, duplicate prevention, and clear handling of blocked work. Finance skills require independently known results and critical financial checks before testing.
 
 ## License
 

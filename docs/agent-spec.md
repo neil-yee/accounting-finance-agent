@@ -1,9 +1,13 @@
 # Finance & Accounting Agent — Agent Specification
 
-**Version:** v0.3 working draft  
-**Owner:** Neil Yee  
-**Document date:** October 15, 2026  
-**Status:** Proposed design; this document does not describe an implemented system.  
+**Version:** v0.4 working draft
+
+**Owner:** Neil Yee
+
+**Document date:** October 21, 2026
+
+**Status:** Project plan and proposed design; implementation status is tracked in the README.
+
 **Initial scope:** Platform foundation plus one initial finance skill.
 
 See the [architecture diagram](architecture.md) for components, execution locations, storage, and approval boundaries.
@@ -24,7 +28,7 @@ Design principles:
 - Produce human-readable artifacts as well as supporting code.
 - Require separate human approval before promoting reusable scripts, models, memory, or skill changes.
 
-Build a walking skeleton first: one small task moves from Asana, through the agent and sandbox, and back to Asana for review and revision. Add the first real finance skill after that path works.
+Evaluate the local agent foundation first, then evaluate the provisional bank-reconciliation skill using synthetic cases with independently known results. Add Asana after the foundation and first finance workflow are ready. Asana remains the intended eventual work interface, not the first implementation milestone.
 
 ## 2. Work intake and statuses
 
@@ -124,9 +128,26 @@ The initial version excludes:
 
 The dispatcher performs the controlled Asana updates needed to publish status, summaries, and output links.
 
-## 9. Success criteria
+## 9. Evaluation plan
 
-### Platform
+The evaluation, release, and monitoring plans below apply to the whole configured agent. A passing engineering check or one successful run is evidence for a specific behavior; it is not by itself a release decision.
+
+### Foundation evaluation
+
+- Run the network-blocked engineering suite on each supported host environment before relying on platform behavior there.
+- Run the two starter CSV cases as an explicitly authorized live baseline. Each case must complete normally, produce the exact expected JSON, and preserve the source bytes.
+- Treat this two-case, one-run-per-case baseline as a smoke evaluation. It does not establish repeatability, financial accuracy, or general file-handling ability.
+- Keep deterministic checks for exact facts and file integrity. Use human review for financial judgment and visual document quality. An LLM judge may assist with subjective criteria only after comparison against human judgments.
+- Record results against the configuration that produced them. At minimum, release evidence should identify the Git commit, dependency lock, model settings, sandbox snapshot, and approved skill/memory versions. The current CSV report does not yet capture this complete configuration record.
+
+### First finance workflow
+
+- Define synthetic bank and ledger fixtures, expected matching/reconciling results, and acceptance criteria before running the skill.
+- Check row coverage, balance tie-outs, matching and exception decisions, proposed entries, source preservation, and all output artifacts.
+- Independently recalculate workbook results and review rendered Excel and Word deliverables. Structural file checks alone are insufficient.
+- Require human review of the representative result before making a finance-quality claim.
+
+### Eventual Asana workflow
 
 - Five consecutive test tasks complete the intake, execution, output, review, and revision path.
 - Duplicate updates do not cause duplicate work.
@@ -135,26 +156,66 @@ The dispatcher performs the controlled Asana updates needed to publish status, s
 - Outputs survive sandbox cleanup.
 - Task context and preserved outputs survive a host restart.
 
-### First finance skill
+Before adopting any release gate, define the cases, grader, pass threshold, and required human checks for that release. A new capability needs capability cases; changes to existing behavior also need regression cases. Repeat runs are needed when making a reliability claim.
 
-- Expected results and acceptance criteria are defined before testing.
-- Critical financial checks and permission boundaries pass.
-- One representative real request is completed with human approval.
+## 10. Release plan
 
-## 10. Deployment and persistence
+No hosted service or production deployment is currently implemented. Until a release plan passes its readiness checks, use the system as a local prototype with synthetic data or specifically approved tasks and human review.
 
-| Component | Proposed location or choice |
+### Rollout stages
+
+| Stage | Use | Gate to advance |
+| --- | --- | --- |
+| **0. Local evaluation** | Engineering checks, synthetic datasets, and reviewed examples; outputs do not drive business actions. | Planned evaluation criteria pass, known limitations are recorded, and configuration provenance is available. |
+| **1. Parallel run** | For approved real tasks, run alongside the normal process; the agent output is not authoritative. | Outputs agree with the normal process on a defined representative sample; failures and discrepancies are understood. |
+| **2. Supervised use** | Outputs may support work, with a person reviewing every deliverable before use. No posting or payment actions. | A defined period and sample meet agreed acceptance thresholds; stop and recovery procedures have been exercised. |
+| **3. Expanded use** | Consider risk-based review only after evidence supports it and controls remain effective. | Owner approval, monitoring thresholds, access review, and rollback readiness are confirmed. |
+
+### Readiness, stop, and rollback
+
+Before any hosted or real-work release, name an owner; confirm permitted data handling and least-privilege identities; identify the exact agent configuration and sandbox release; pass the release gate; set model/tool/time and cost limits; and test output preservation, failure handling, and recovery.
+
+The release record must say how to stop new work, handle in-flight runs, disable external triggers, and return to the last known-good configuration. Outputs created by a faulty release must be identified for re-review. The current local runner has no dispatcher-level stop control or distributed exactly-once guarantee; these must be addressed and verified before an automated Asana rollout.
+
+Deployment and rollback of sandbox snapshots are supported by tooling, but rollback has not been exercised live. A configured egress allowlist is not proof of enforced network isolation. These are release readiness items, not established guarantees.
+
+## 11. Monitoring plan
+
+Monitoring asks whether the deployed configuration continues to work and identifies which anatomy function or lever needs attention. Current tracing and the local work log provide partial evidence; production monitoring, thresholds, review cadence, and assigned operational ownership are not implemented.
+
+### Signals
+
+| Function | Signals to review |
 | --- | --- |
-| Dispatcher and agent loop | Local host initially. |
-| External connectors or MCP clients | Outside the execution sandbox. |
-| Code execution | Hosted sandbox or restricted local container; choice open. |
-| Checkpointer | Persistent storage; SQLite is the initial candidate. |
-| Workspace and output storage | Local folder or SharePoint; choice open. |
-| Model provider and model | Undecided. |
+| **Core** | Completion/error rate, elapsed time, model and tool calls, and usage/cost where available. |
+| **Context** | Whether the right skill and business context were used; unsupported assumptions, missing-input questions, and repeated misunderstandings. |
+| **Actions** | Tool failures, transfer conflicts, artifact checks, calculation tie-outs, and corrections made during review. |
+| **Controls** | Limit hits, refused requests, attempted boundary violations, and any unauthorized external action. |
+| **Continuity** | Resume failures, missing or stale files, revision rounds, and review state becoming stale after file changes. |
+| **Overall** | Approval/rejection rates, unresolved discrepancies, repeated failures, and drift by task type and configuration. |
 
-Use one Asana task as the initial conversation/thread scope. Subsequent revisions restore that task's context.
+### Review tiers and response
 
-The run lifecycle is:
+- **Every run:** retain run/configuration identity, status, limits, tool and transfer events, output checks, and review outcome. Run applicable deterministic tie-outs and integrity checks before presenting outputs.
+- **Human review:** review every output during early supervised use. Reduce the sample only after volume and risk-based thresholds are defined and evidence supports the change.
+- **Trend review:** periodically examine errors, corrections, approvals/rejections, revisions, and operating cost. Set the cadence and thresholds before a hosted pilot.
+
+Stop and investigate a boundary breach, data loss, or material incorrect result. Fix repeated failures by tracing them to a function or lever, updating the configuration, and adding a regression case. Record an accepted one-off issue and its workaround. Monitoring findings feed the next Build/Test cycle; they do not silently change approved memory, skills, or permissions.
+
+## 12. Current implementation and future deployment choices
+
+| Component | Current prototype | Future deployment decision |
+| --- | --- | --- |
+| Agent interface and host | Local terminal application. | Where the long-running dispatcher and agent process will run. |
+| Model and tracing | OpenAI model; optional LangSmith tracing. | Model/version, provider policy, trace retention, and approved data handling for the deployed service. |
+| Code execution | Temporary LangSmith sandbox selected by immutable snapshot ID. | Production sandbox policy, enforceable egress, resource ceilings, and recovery expectations. |
+| Checkpoint and workspace | Local SQLite checkpoints and per-thread local folders. | Durable hosted storage, backup, retention, and restore procedures. |
+| Work interface | Terminal; Asana is intended but not integrated. | Asana intake, status, review, revision, and duplicate/loop prevention. |
+| External business systems | No ERP access. | Phase 2 may add read-only connectors; posting and payments remain excluded. |
+
+The eventual Asana workflow maps one task to one conversation/thread so revisions can restore its context. This mapping is a design goal; it is not implemented in the local prototype.
+
+The planned Asana-enabled run lifecycle is:
 
 1. Gather task context and relevant changes.
 2. Create a sandbox and prepare the task workspace.
@@ -164,11 +225,11 @@ The run lifecycle is:
 6. Clean up the sandbox.
 7. Publish the resulting status, summary, and output links through the dispatcher.
 
-Stopping the dispatcher prevents new dispatches. Cancellation of work already running requires a separate mechanism.
+The local user can exit the terminal to prevent new runs. A future dispatcher must have a tested stop procedure that prevents new dispatches and defines how in-flight runs are handled; that control is not currently implemented.
 
-## 11. Monitoring and shared-file awareness
+## 13. Shared-file awareness and provenance
 
-- Trace runs through the chosen tracing platform; LangSmith is the current candidate.
+- Optional LangSmith tracing is implemented; production retention and access policies remain to be decided.
 - Record input and output fingerprints, run IDs, and approved asset versions.
 - Detect changed inputs before revising or publishing results.
 - Treat a changed file as a reason to reassess, rather than automatically as an authoritative correction.
@@ -179,7 +240,7 @@ The transfer log is not automatically a complete record of every file operation 
 
 Confirm permitted data handling before using company information with external services.
 
-## 12. Knowledge, learning, and reusable assets
+## 14. Knowledge, learning, and reusable assets
 
 | Type | Policy |
 | --- | --- |
@@ -193,18 +254,18 @@ Keep pending proposals separate from approved assets. Output approval and asset 
 
 Shared business knowledge may serve multiple agents later. Learnings may be shared or role-specific according to relevance and access permissions.
 
-## Open decisions
+## 15. Open decisions
 
-Resolve these as the walking skeleton is built:
+Resolve these before the corresponding integration or release stage:
 
 - Asana eligibility rules and how statuses are represented.
 - Which comments count as actionable feedback and how approval identifies an output version.
-- Trigger mechanism, task locking, and duplicate prevention.
-- Sandbox provider and enforceable filesystem/network restrictions.
-- Persistent workspace location and file-transfer approach.
-- Model provider, model, and tracing platform.
-- Execution, model-call, cost, and revision limits.
+- Trigger mechanism, task locking, duplicate prevention, and prevention of agent-generated trigger loops.
+- Deployment host, service identity, durable workspace/checkpoint storage, and recovery procedures.
+- How to enforce and verify filesystem/network restrictions under the selected sandbox and provider policy.
+- Cost ceiling, execution/model-call limits, and revision limits for each release stage.
+- Release-gate thresholds, human-review sample/cadence after the supervised stage, and monitoring owners.
 - Workbook recalculation method when required by the first finance skill.
-- Final selection of the first finance skill and its acceptance criteria.
+- Bank-reconciliation acceptance criteria and independently known evaluation fixtures.
 
-Keep the implementation focused on one agent and the complete task-to-review path before adding more capabilities or elaborate memory infrastructure.
+Keep the implementation focused on one agent. Evaluate the foundation and first finance workflow before adding Asana, then verify the complete task-to-review path before adding more capabilities or elaborate memory infrastructure.
