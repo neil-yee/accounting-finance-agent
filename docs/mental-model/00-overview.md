@@ -1,128 +1,64 @@
 # Agent Mental Model: 00 Overview
 
-> **Purpose:** the entry point to the mental model. It says what each part covers, how the parts connect, and where any concept belongs.
-> Details live in the numbered files. This page only maps them.
+**Purpose:** a practical map for designing, understanding, and improving software agents built around language models.
 
-**Version:** v1.0 · **Owner:** Neil Yee
+**Version:** v1.1 · **Owner:** Neil Yee · **Updated:** October 23, 2026
 
----
+## 1. Two connected views
 
-## Goal
+| View | Question | Read it to… |
+|---|---|---|
+| [Anatomy](01-anatomy.md) | How does the agent work? | Connect capabilities to functions, mechanisms, and implementation. |
+| [ADLC](02-adlc.md) | How do we build, evaluate, release, and improve it? | Turn requirements into evidence and controlled changes. |
 
-Every agent concept has one clear place, so I can **explain** any agent, **design** one, and **run** one, and so any new term fits somewhere obvious.
+This overview connects the two. The categories are thinking aids: a component can serve several functions, and a check can be used in several lifecycle phases. Start with the work the agent should accomplish; choose components to support it.
 
----
+## 2. From purpose to evidence
 
-## The two models
+| Level | Question | Example: continuing work after interruption |
+|---|---|---|
+| **Objective** | What outcome matters to the user? | Complete assigned work without losing progress. |
+| **Capability** | What must the agent be able to do? | Resume an interrupted task. |
+| **Function** | Which responsibilities support that capability? | Continuity keeps state; Context restores relevant information; Controls prevent duplicate effects. |
+| **Mechanism** | How are those responsibilities carried out? | Checkpoints, durable files, context assembly, and retry/deduplication checks. |
+| **Implementation** | Which code or service provides them? | A graph checkpointer, file store, and operation IDs in a database. |
+| **Success criterion** | What observable result counts as acceptable? | After restart, required work remains available and completed external actions are not repeated. |
+| **Evaluation** | How will we check that claim? | Interrupt at defined points, resume, and compare state, files, and external records. |
+| **Monitoring and response** | How will we detect and handle failures in use? | Track resume failures and duplicate actions; investigate and add regression cases. |
 
-| File | Model | Question it answers | Describes |
-|---|---|---|---|
-| `01-anatomy.md` | **Anatomy** | What is an agent made of, and how does one run work? | **The agent** |
-| `02-adlc.md` | **ADLC** | How do people build an instance of the anatomy and improve it over time? | **How people change the agent** |
+A **concept** is a useful name such as “skill,” “memory,” or “thread.” Map it to its functions and mechanisms; it is not another required layer in this chain. Success criteria define the requirement even when the implementation changes.
 
-Both are conceptual. They hold for any agent and any framework.
-
----
-
-## How they connect
+## 3. Two loops at different scales
 
 ```mermaid
 flowchart LR
-    subgraph ANAT["01 Anatomy: the agent"]
-        direction TB
-        F["Five functions<br/>Core, Context, Actions, Controls, Continuity"]
-        MC["Eight mechanisms<br/>how the functions are built"]
-        F --> MC
-    end
-
-    subgraph LIFE["02 ADLC: people change the agent"]
-        direction TB
-        P["Build: Plan<br/>spec with eval, release and monitoring plans"]
-        C["Build: Configure"]
-        T["Test"]
-        D["Deploy"]
-        M["Monitor"]
-        P --> C --> T --> D --> M
-        M --> P
-    end
-
-    C -->|"sets the levers of each function"| F
-    T -->|"measures the whole configuration"| F
-    F -->|"signals, traces, reviews"| M
-    M -->|"diagnosis points to the function to change"| F
+    P["Plan requirements and checks"] --> B["Build / configure"]
+    B --> T["Test"] --> D["Deploy within approved scope"]
+    D --> R["Runtime: context → model → allowed actions → results"]
+    R --> M["Monitor outcomes and behavior"]
+    M -->|"findings and changes"| P
+    T -->|"revise"| B
 ```
 
-The **five functions** are the shared vocabulary of both models:
+The **runtime loop** performs work under the current configuration. The **development lifecycle** changes that configuration and the evidence supporting its use. People remain accountable; software and agents may assist or automate either loop within defined authority.
 
-| In the Anatomy | In the ADLC |
-|---|---|
-| What the agent is made of | **Levers:** what people can change |
-| How each function can fail | **Eval design:** what to check |
-| What each function produces at runtime | **Monitoring signals:** what to watch |
-| Which function caused a problem | **Diagnosis:** which lever to change |
+Runtime state can change too: messages, files, task status, and permitted memory writes. Stored memory can influence future behavior, so it needs ownership and update rules. A change to a reusable skill, tool, model, or permission needs the release process appropriate to its impact.
 
----
+## 4. Applying the models to a project
 
-## Who changes what
+Keep three linked planning artifacts; they can be sections of one document for a small project:
 
-| Who | Changes | Covered in |
-|---|---|---|
-| **The agent, during runs** | Memory only, with approval | Anatomy (Continuity, Controls) |
-| **The agent, as drafts** | Proposed tools, scripts, skill edits. These have no effect until released | ADLC |
-| **People** | Everything else: model, instructions, skills, knowledge, tools, access, controls, plans | ADLC |
+- **Spec:** objective, scope, capabilities, design, success criteria, and evaluation/release/monitoring plans.
+- **Architecture:** components, execution locations, data flows, persistence, and access boundaries.
+- **Task list:** work to implement and verify the spec, with owners, status, and evidence links.
 
----
+Use stable IDs to follow **capability → design → criterion → check → result → monitoring response**. One relationship may have several links. A status such as “implemented” should remain distinct from “evaluated” or “approved for use.”
 
-## Each model in one sentence
-
-- **Anatomy:** *a stateless model that only turns tokens into tokens, placed in a control loop where the program builds its input, interprets its output as requests, and decides which requests to carry out.*
-- **ADLC:** *because behaviour comes from the whole configuration, varies from run to run, and meets a changing world, people plan, configure, test, deploy and monitor the agent in a loop, deciding upfront how it will be measured, released and watched.*
-
----
-
-## Placing a new concept
-
-1. **Which model?** Part of what the agent *is* (Anatomy), or part of how people *change* it (ADLC)?
-2. **Where inside it?**
-   - Anatomy: which **function** does it serve, and which **mechanisms** build it?
-   - ADLC: which **phase** does it belong to, and which **lever** or **plan** does it touch?
-3. **Concept or implementation?** Framework names (middleware, backend, LangGraph, LangSmith) go only in the implementation and tooling sections.
-
-| Example | Model | Where |
-|---|---|---|
-| Skill | Anatomy | Context, built from a hook, a tool and storage |
-| Checkpointer | Anatomy | Continuity, built from storage |
-| Eval case | ADLC | Designed in Plan, created in Configure, run in Test |
-| Parallel run | ADLC | Deploy, rollout stage 1 |
-| Middleware | Implementation | A container for hooks, tools and state fields |
-
----
-
-## Not in this model
-
-Project-specific choices belong to each agent, not here:
-
-| Choice | Lives in |
-|---|---|
-| Task tracker and dispatcher (for example Asana) | That agent's `SPEC.md` and architecture diagram |
-| Sandbox provider, storage, model provider | That agent's `SPEC.md` |
-| Its eval, release and monitoring plans | That agent's `SPEC.md` |
-| Dates, owners, tasks | That agent's project plan |
-
----
-
-## Files
-
-| File | Contains |
-|---|---|
-| `00-overview.md` | This page: the map |
-| `01-anatomy.md` | Three facts, five functions, eight mechanisms, concept mapping, run and anatomy diagrams, implementation layer |
-| `02-adlc.md` | Three premises, phases, levers, evals, deployment and monitoring design, changes after release, diagnosis, playbook |
-
----
+Keep project choices—providers, frameworks, skills, access, thresholds, owners—in those artifacts. The reference models supply questions and distinctions; the project supplies the answers.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
-| v1.0 | 2026-10-15 | First version: goal, two models, how they connect, who changes what, placing new concepts, scope boundaries |
+| v1.1 | 2026-10-23 | Replaced rigid classification with connected views; added the purpose-to-evidence chain and clarified runtime changes versus release changes. |
+| v1.0 | 2026-10-15 | Initial overview. |

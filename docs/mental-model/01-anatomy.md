@@ -1,236 +1,141 @@
 # Agent Mental Model: 01 Anatomy
 
-> **Purpose:** what an agent is made of and how one run works. This holds for any agent framework.
-> Framework-specific names appear only in Section 6 (Implementation layer).
+**Purpose:** explain how a language-model agent performs work, independently of a particular framework.
 
-**Version:** v1.0 · **Owner:** Neil Yee
+**Version:** v1.1 · **Owner:** Neil Yee · **Updated:** October 23, 2026
 
----
+## 1. Start with the system
 
-## 0. Three facts everything rests on
+An agent combines a model with software that supplies context, executes permitted actions, and manages progress toward a task. The model can help choose what happens next; the surrounding system determines what can actually happen.
 
-| # | Fact | What it means |
+Three facts guide the design:
+
+| Fact | Design consequence |
+|---|---|
+| **The model works from the information available to a call.** Inputs may include instructions, messages, tool definitions, and text, image, or audio representations. Roles and input structure matter. | Select and assemble relevant context within the model's limits. Access to a file does not mean its contents were read. |
+| **Ordinary inference does not update model weights or guarantee durable task memory.** Applications and providers may retain conversation state. | Make retention and retrieval explicit. History, cached context, stored memory, and training are different things. |
+| **External effects require executing software.** A model-generated tool call or program has an effect when a tool handler, service, or runtime executes it. | Define execution authority, validate requests, and inspect results. This also applies when execution is hosted by the model provider. |
+
+These facts explain why the model alone is insufficient. They do not require every agent to use the same loop, storage, tools, or approval process.
+
+## 2. Five functions
+
+Functions describe responsibilities. They are not separate services or a fixed execution order.
+
+| Function | Question | Responsibility |
 |---|---|---|
-| **1** | **Tokens in, tokens out.** | Everything the model receives becomes one sequence of tokens: text, and in many models also images, audio or file contents. What it produces is also tokens, usually text. System prompt, messages, tool definitions and skills are labels the program uses while it builds that one input. |
-| **2** | **The model is stateless.** | It remembers nothing between calls. Anything that seems remembered was put back into its input. |
-| **3** | **The model cannot act.** | Its output is only a request. Anything that happens outside the model happens because the **program** reads that output and carries it out. |
+| **Core** | What chooses and coordinates the next step? | Model calls and orchestration: continue, delegate, wait, stop, or fail. |
+| **Context** | What information is available for this decision? | Task, instructions, sources, history, tool definitions/results, retrieved knowledge, and relevant memory. |
+| **Actions** | What operations can the system perform? | Read or change files, calculate, call services, interact with interfaces, or delegate work. |
+| **Controls** | Under what conditions may it proceed? | Permissions, validation, approvals, limits, and checks on inputs, actions, outputs, and state changes. |
+| **Continuity** | What survives, and how is it recovered? | Working state, conversation, files, checkpoints, and reusable memory, with defined scope and lifetime. |
 
-Fact 3 covers every way an agent appears to "do" something:
+A capability usually spans functions. “Create a reliable spreadsheet” needs Context for requirements, Core for coordination, Actions for generation, Controls for checks, and Continuity for preserving the result.
 
-| What it looks like | What the model actually produces | What the program does |
+## 3. Mechanisms
+
+Mechanisms explain how the functions are carried out. These eight are a useful checklist; a small program can combine several, and implementations may use different names.
+
+| Mechanism | What it does | Main functions served |
 |---|---|---|
-| Calling a tool | Structured text naming the tool and its inputs | Parses it and runs the function |
-| Running code | Code written as text | Executes it in the sandbox |
-| Using a screen | Text describing a click or keystroke | Performs the click |
-| Answering | Plain text | Shows or saves it |
+| **Control loop / orchestration** | Chooses and sequences steps, including branches, parallel work, waits, and stopping. | Core; coordinates all functions |
+| **Model invocation** | Calls a model with input, settings, and limits; handles its response or failure. | Core |
+| **Context assembly** | Selects, retrieves, and formats information for a call; may trim or summarize history. | Context, Continuity |
+| **Output handling** | Interprets responses, validates their structure, and routes tool requests, answers, refusals, or incomplete responses. | Core, Actions, Controls |
+| **Tools** | Execute defined operations and return results or errors. Calls may come from the model or orchestration code. | Actions; may also read context or save state |
+| **Hooks / policy checks** | Run at defined points around calls, actions, or state transitions—for example to enforce a budget or record an event. | Controls, Context, Continuity |
+| **State and storage** | Keep current progress and persist selected data for later use or recovery. | Continuity, Context |
+| **Execution environment** | Provides runtime, packages, filesystem, network, and identities; constrains reachable resources. | Actions, Controls, Continuity |
 
-The model only turns tokens into tokens. Everything else is the program deciding **what goes in**, **what to do with what comes out**, and **what to keep**.
+**Tools and hooks:** a tool performs a requested operation; a hook runs because execution reaches its configured point. Hooks are one implementation technique; ordinary application code can perform the same checks.
 
----
-
-## 1. Functions: what the agent needs
-
-| Function | Question it answers | Includes |
-|---|---|---|
-| **Core** | What reasons and drives the work? | A stateless model run inside a loop: produce a request, get the result, repeat until done |
-| **Context** | What does the model see on this call? | Instructions, the task, history, tool definitions and results, skills, knowledge, memory, all kept within the model's limit |
-| **Actions** | What can it request that the program will carry out? | Work with files, run code, reach outside systems, hand work to a sub-agent |
-| **Controls** | Which requests are allowed? | Approvals, permissions, limits, guardrails |
-| **Continuity** | What carries over, given the model remembers nothing? | **Within a run:** history, plans, files. **Across runs:** threads, checkpoints, long-term memory |
-
-How each function connects to the facts:
-
-- **Context** exists because of Fact 1. The input is the only way to influence the model.
-- **Continuity** exists because of Fact 2. Anything that needs to carry over has to be stored and put back into the input.
-- **Actions and Controls** exist because of Fact 3. The model only asks, so the program decides what actually happens.
-
----
-
-## 2. Mechanisms: how functions are built
-
-| Group | Mechanism | What it does |
-|---|---|---|
-| **Backbone** (builds the Core) | **Control loop** | Runs the steps in order, routes requests, and decides whether to repeat or stop |
-| | **Model invocation** | Sends the input to the model with its settings and gets tokens back |
-| **Interface** (the only way in and out) | **Context assembly** | Builds one input from all sources, fresh on every call |
-| | **Output parsing** | Reads the output as either a request or a final answer. **This is the boundary between thinking and acting** |
-| **Extensions** (attach to the loop) | **Tools** | Requests the program is willing to carry out. The definition goes in the input, the request comes in the output, and the result goes into the next input |
-| | **Hooks** | Code the program runs at fixed points: before or after the agent, before or after the model, around tool calls |
-| **Support** (outside the loop) | **State and storage** | What the program keeps so it can rebuild the next input |
-| | **Environment** | What the program can physically reach when it carries out requests: sandbox, network, credentials |
-
-### Key distinctions
-
-- **Tools vs hooks:** the model decides when to request a tool. A hook runs whenever its point in the loop is reached, whether the model asks or not.
-- **Three strengths of control:**
-  1. **Instruction in the input**: weakest. It only *asks* the model, and other text (for example a prompt injection) can override it.
-  2. **Hook**: stronger. The program checks the request and refuses it.
-  3. **Environment**: strongest. Even the program cannot reach the resource.
-- **Content vs keeping:** what history or memory *says* is Context. *Keeping* it so it can be resent is Continuity.
-
----
-
-## 3. How each concept is built
-
-| Concept | Function | Mechanisms |
-|---|---|---|
-| **Conversation history** | Context + Continuity | **State:** kept between calls. **Context assembly:** resent on every call |
-| **Thread** | Continuity | **Storage:** the ID that groups saved history |
-| **Checkpointer** | Continuity | **Storage:** saves state after each step so a run can resume |
-| **Skills** | Context (know-how) | **Hook:** adds the skill list to the input. **Tool:** reads the full `SKILL.md` when needed. **Storage:** holds the files |
-| **Knowledge** | Context | **Context assembly or hook:** loads a summary. **Tool:** reads details on demand. **Storage** |
-| **Memory: reading** | Context | **Hook:** loads approved memory into the input. **Storage** |
-| **Memory: writing** | Context, through Controls | **Tool:** the model proposes a note. **Hook or human approval:** decides whether it is kept. **Storage** |
-| **Summarization** | Context (stay within the limit) | **Hook:** shortens old history before the model call. **State** |
-| **To Do** | Context (its own plan) | **Tool:** `write_todos`. **State:** `todos` |
-| **Tool definitions** | Context | **Context assembly:** text describing what can be requested |
-| **File tools, `execute`** | Actions | **Tools.** **Environment:** where the program carries them out |
-| **MCP** | Actions | **Tools:** each MCP function appears as a requestable tool. **Environment:** the server and its access |
-| **Sub-agent** | Actions (delegation) | **Tool:** starts another control loop with its own separate input |
-| **Human approval** | Controls | **Hook:** pauses a request before it is carried out. **Storage:** a checkpoint so the run can resume |
-| **Call, cost and time limits** | Controls | **Hook:** counts and forces the loop to stop |
-| **Permissions** | Controls | **Hook** (check and refuse) or **Environment** (no access at all) |
-| **Stopping** | Core | **Control loop:** stops when the model answers instead of making a request, or when a limit hook forces it |
-
-Most functions use several mechanisms. Skills are the clearest example: a hook announces them, a tool loads them, and storage holds them (progressive disclosure).
-
----
+**Information and retention:** what a remembered fact says belongs to Context; storing it, scoping it, and retrieving it later involve Continuity. Saving data does not guarantee the model will retrieve or use it correctly.
 
 ## 4. One run
 
-```mermaid
-flowchart TB
-    START["Run starts<br/>reload state for this thread"] --> BA["Hook: before agent<br/>load memory, knowledge, skill list"]
-
-    subgraph LOOP["CONTROL LOOP: repeats until done"]
-        direction TB
-        ASM["Context assembly<br/>build one token input"]
-        BM["Hook: before model<br/>shorten history, check limits"]
-        INV["Model invocation<br/>stateless model returns tokens"]
-        PARSE{"Output parsing<br/>request or answer?"}
-        WT["Hook: around tool<br/>CONTROLS check the request"]
-        T["Program carries out the request<br/>ACTIONS inside the ENVIRONMENT"]
-
-        ASM --> BM --> INV --> PARSE
-        PARSE -->|"request"| WT --> T
-        T -->|"result saved to state"| ASM
-    end
-
-    BA --> ASM
-    PARSE -->|"answer"| AA["Hook: after agent<br/>save outputs, propose memory"]
-    AA --> END["Run ends"]
-
-    CONT["CONTINUITY<br/>state, checkpoints, storage"]
-    T -.-> CONT
-    INV -.-> CONT
-    AA -.-> CONT
-    CONT -.->|"history resent each call"| ASM
-```
-
-- **Above output parsing, the model is only reasoning. Below it, the program is acting.** Every effect on the outside world passes through the program, which is why Controls sit there.
-- **Each pass rebuilds the input from scratch.** That rebuilt input is the only reason the model appears to remember.
-
----
-
-## 5. The anatomy in one diagram
+A **run** is one execution attempt toward a task; it can span several model/tool steps and pauses. A **thread** groups related conversation or work across runs. These terms vary by framework, so define their project meaning.
 
 ```mermaid
-flowchart TB
-    subgraph FUNC["FUNCTIONS: what the agent needs"]
-        direction LR
-        CTX["Context<br/>what it sees this call"]
-        CORE["Core<br/>stateless model in a loop"]
-        ACT["Actions<br/>requests the program carries out"]
-        CTL["Controls<br/>which requests are allowed"]
-        CON["Continuity<br/>what carries over"]
-        CTX --> CORE
-        CORE -->|"requests"| CTL
-        CTL -->|"allowed"| ACT
-        ACT -->|"results"| CTX
-        CORE --> CON
-        CON -->|"history and memory feed the next input"| CTX
-    end
-
-    subgraph MECH["MECHANISMS: how functions are built"]
-        direction LR
-        subgraph BB["Backbone"]
-            LP["Control loop"]
-            MI["Model invocation"]
-        end
-        subgraph IF["Interface"]
-            CA["Context assembly"]
-            OP["Output parsing"]
-        end
-        subgraph EXT["Extensions"]
-            TL["Tools"]
-            HK["Hooks"]
-        end
-        subgraph SUP["Support"]
-            SS["State and storage"]
-            EN["Environment"]
-        end
-    end
-
-    FUNC -->|"built from"| MECH
+flowchart TD
+    S["Receive task; load relevant state"] --> C["Assemble context; check limits"]
+    C --> M["Call model"]
+    M --> O{"Handle response"}
+    O -->|"action request"| G{"Validate and authorize"}
+    G -->|"allowed"| A["Execute operation"]
+    G -->|"approval needed"| W["Save state; wait for decision"]
+    W --> G
+    G -->|"denied"| R["Record result or error"]
+    A --> R
+    R --> C
+    O -->|"candidate answer"| V["Check result; preserve work"]
+    V -->|"needs revision; budget available"| C
+    V -->|"accepted or review required"| E["Return output and status"]
+    C -->|"limit reached"| F["Record failure or partial result; preserve recoverable work"]
+    M -->|"error or timeout"| F
+    O -->|"invalid or incomplete"| F
+    F -->|"retry allowed"| C
+    F -->|"stop"| E
 ```
 
-Requests pass through Controls before they become Actions. That reflects Fact 3: the model only asks, and the program decides.
+This is a common pattern, not a required graph. Persistence and observation can occur throughout; controls also apply before model calls, at storage boundaries, and before delivery. Relevant context may be assembled by the application or retained by a provider; it need not be retransmitted from scratch.
 
----
+Stopping is not proof of success. A run may end with an accepted result, a review request, an unresolved limitation, a refusal, or a failure. Keep these outcomes distinguishable.
 
-## 6. Implementation layer: Deep Agents / LangChain
+## 5. Mapping familiar concepts
 
-Framework names belong here, separate from the concepts.
+These are common implementations, not definitions that every framework must follow.
 
-| Mechanism | Deep Agents / LangChain implementation |
+| Concept | Functions | Typical mechanisms |
+|---|---|---|
+| **Conversation history / thread** | Context, Continuity | Messages stored under an ID; selected history restored into context. |
+| **Checkpoint** | Continuity | Saved execution state used to resume. External systems may need separate reconciliation. |
+| **Skill** | Context; Actions if it bundles executable tools | Procedure/instructions loaded into context, sometimes with scripts or references. It does not grant access by itself. |
+| **Knowledge / retrieval** | Context, Continuity | Search or load sources, select relevant content, retain source identity. Retrieval can be a tool or an automatic step. |
+| **Memory** | Continuity, Context, Controls | Store selected information for future tasks; retrieve it under scope, update, expiry, and deletion rules. |
+| **Summary / todo plan** | Context, Continuity | Compressed history or explicit plan held in state. A plan guides work; marking it complete does not verify the result. |
+| **MCP** | Context, Actions | A connection protocol for tools, resources, and prompts. The host chooses what to expose; permissions depend on the integration. |
+| **Sub-agent** | Actions, Core; often Context | Another agent execution with assigned context and tools. Separate context does not automatically mean isolated credentials or permissions. |
+| **Human approval** | Controls, Continuity | Record a decision about a specific action or output version; pause/resume if needed. Recheck approval if its scope changes. |
+| **Trace** | Supports observation and diagnosis across functions | Recorded calls, inputs/outputs, tool events, timing, and usage. Coverage depends on instrumentation; it is neither a full record of private reasoning nor proof of correctness. |
+
+## 6. Controls and recovery
+
+### Enforcement depends on the actual boundary
+
+| Control | What it provides | Limitation |
+|---|---|---|
+| **Instructions** | Tell the model the intended behavior and rules. | Compliance is not an access guarantee. Untrusted content can influence behavior. |
+| **Program checks** | Validate schemas, permissions, destinations, budgets, and approvals. | Must cover every relevant execution path and handle errors correctly. |
+| **Environment restrictions** | Restrict filesystem, network, process, or identity access. | Only protect what is actually restricted; a sandbox may still have broad network or credential access. |
+| **Human review** | Judges ambiguous outcomes or authorizes consequential actions. | Depends on evidence and timing. Review after an action cannot prevent that action. |
+
+Use controls together. Their effectiveness depends on what they enforce and whether they can be bypassed; there is no universal ranking by label. Treat retrieved content as data, preserve its source, and enforce permissions outside the model to limit prompt-injection consequences.
+
+### Recovery is part of the design
+
+A timeout means the caller did not receive a timely result; an external action might already have completed. Before retrying, determine what happened. Use operation IDs, deduplication, or idempotent actions where possible, and bound attempts and total cost/time.
+
+A checkpoint restores recorded state; it cannot undo a payment, message, or file write. Define how to reconcile partial actions, preserve files before cleanup, and resume or stop safely. Test interruptions at those boundaries.
+
+Memory updates change future context, not model weights. Decide what may be stored, for whom, from which source, and how it is corrected or removed. Human approval is one policy; automatic writes may be appropriate within tested rules. Changes to reusable behavior or access follow the [ADLC](02-adlc.md#6-changes-after-release).
+
+## 7. Implementation examples: Deep Agents / LangChain
+
+Use these as mappings to check against the installed version.
+
+| Mechanism | Example implementation |
 |---|---|
-| Control loop | The compiled LangGraph graph: model step, tool step, and the branch between them. Middleware hooks run inside this graph |
-| Model invocation | The chat model and provider API (`model=`) |
-| Context assembly | `system_prompt`, message history, tool schemas, and middleware that adds to them |
-| Output parsing | Tool calls on the model's response message |
-| Tools | `tools=`, MCP adapters, built-in file tools, `execute`, `task` |
-| Hooks | Middleware hooks: before/after agent, before/after model, wrap model call, wrap tool call |
-| State and storage | LangGraph state, checkpointer, thread ID, Store, backends |
-| Environment | Backend choice: state, filesystem, local shell, sandbox |
+| Orchestration and model invocation | LangGraph execution and chat-model/provider adapters. |
+| Context and output handling | Messages, system instructions, tool schemas, middleware, and structured tool-call responses. |
+| Tools and policy checks | Registered tools, MCP adapters, file/execution/delegation tools, and middleware hooks. |
+| State and storage | Graph state, checkpointers, thread identifiers, stores, and filesystem backends. |
+| Execution environment | Host process or sandbox, packages, OS permissions, network policy, and service identities. |
 
-**Middleware** is a package that bundles hooks, tools and extra state fields (for example, the To Do middleware adds the `write_todos` tool and a `todos` state field). It is a container for mechanisms, not a mechanism itself.
-
----
-
-## 7. Placing any new concept
-
-Ask three questions:
-
-1. **Which function does it serve?** Core, Context, Actions, Controls or Continuity.
-2. **Which mechanisms build it?** Usually more than one.
-3. **What is it called in the framework?** That answer goes in the implementation layer only.
-
-| Concept | Function | Mechanisms | Implementation |
-|---|---|---|---|
-| Plugin | Context + Actions | Bundles skills (hook, tool, storage) and MCP (tools) | Plugin package |
-| Backend | Continuity + Environment | State and storage, environment | `StateBackend`, `FilesystemBackend`, sandbox |
-| `root_dir` / virtual mode | Environment | Environment | Backend setting |
-| Dynamic sub-agents | Actions | A tool that starts another control loop | `task` tool |
-| Computer use | Actions | Requests for clicks and keystrokes, carried out by the program | Computer-use tool |
-| Prompt injection | A risk to Context | Hostile text enters the single input stream (Fact 1) | Defended by hooks and the environment, not by instructions |
-
----
-
-## 8. Inside and outside the anatomy
-
-- **Inside:** agent evolution through memory. During runs, the agent proposes changes to Continuity, and Controls decide what is kept.
-- **Outside:** every other change (model, skills, tools, rules) is made by people through the **ADLC** (`02-adlc.md`).
-
----
-
-## The anatomy in one sentence
-
-*A stateless model that only turns tokens into tokens, placed in a control loop where the program builds its input, interprets its output as requests, and decides which requests to carry out. Context shapes what it sees, Actions set what it can request, Controls decide what is allowed, and Continuity carries forward what matters.*
-
----
+Middleware packages can supply hooks, tools, or state fields. A backend routes storage or execution operations; its name or virtual root alone does not establish an isolation boundary. Skills and plugins bundle capabilities that must still be mapped to these mechanisms and access rules.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
-| v1.0 | 2026-10-15 | First version: three facts, five functions, eight mechanisms, concept mapping, run and anatomy diagrams, implementation layer |
+| v1.1 | 2026-10-23 | Qualified model/state assumptions; clarified overlapping functions, mechanisms, controls, MCP, memory, and recovery; consolidated diagrams and concept mappings. |
+| v1.0 | 2026-10-15 | Initial anatomy model. |
