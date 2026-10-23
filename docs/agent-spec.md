@@ -1,225 +1,260 @@
 # Finance & Accounting Agent — Agent Specification
 
-| Document field | Value |
+| Field | Value |
 |---|---|
-| Version | v0.6 working draft |
+| Version | v0.7 working draft · October 23, 2026 |
 | Owner | Neil Yee |
-| Document date | October 22, 2026 |
-| Status | Project plan and proposed design; implementation and verification status is tracked in the [README](../README.md). |
-| Configuration version | To be assigned for a release. |
-| Initial scope | Platform foundation and one initial finance workflow. |
+| Status | Local prototype. Requirements below are targets; verification is tracked in the [README](../README.md#implementation-status). |
+| Release configuration | Not yet assigned. |
 
-This specification applies the [agent mental models](mental-model/00-overview.md). The [anatomy](mental-model/01-anatomy.md) defines five agent functions and the mechanisms that implement them. The [ADLC](mental-model/02-adlc.md) defines how people plan, configure, test, deploy, and monitor this agent. See the [architecture](architecture.md) for the component, run, and deployment views, and the [task list](task-list.md) for phase-by-phase project work.
+**Reading order:** purpose → shared capabilities → how they work → task applications → success criteria → evaluation, release, monitoring, and improvement.
 
-## 1. Purpose
+The [mental models](mental-model/00-overview.md) define the vocabulary. This spec defines the agent; the [architecture](architecture.md) shows its components; the [task list](task-list.md) tracks implementation work.
 
-### 1.1 General agent objective
+## 1. Purpose and scope
 
-Build a reusable, human-supervised accounting and finance agent that accepts work, gathers relevant context, follows task-specific procedures, and produces outputs people can inspect and approve.
+Build a reusable, human-supervised accounting and finance agent that gathers context, performs work, and produces results people can inspect and approve. Add task-specific skills and tools as needed.
 
-### 1.2 Initial task objectives
+Start with a local foundation: persistent conversations, optional sandbox execution, file preservation, and human review. Real company policies and access are not configured.
 
-| Task scope | Objective | Status |
+**Boundaries:** no journal posting, payments, authoritative ERP changes, external communications, or editing original shared files. Approving a deliverable does not approve changes to reusable scripts, models, memory, skills, or permissions; those require separate approval.
+
+## 2. Shared capabilities
+
+These capabilities support the general objective. The functions in the last column explain which parts of the anatomy make each capability possible.
+
+| ID | The agent should be able to… | Supporting functions |
 |---|---|---|
-| Platform validation task | Summarize a provided CSV into a reviewable output to exercise the reusable foundation. | Starter task; completion alone does not establish finance quality or release readiness. |
-| First finance workflow | Reconcile a bank statement to a ledger, identify matches and exceptions, and produce reviewable supporting work. | Monthly bank reconciliation is provisional; known-answer cases and acceptance thresholds are still being prepared. |
-| Later task-specific skills | Add a specific work objective and procedure while reusing the shared agent capabilities and controls. | Each task type should have its own workflow or skill detail and evaluation cases. |
+| C1 | Understand the request using relevant inputs, instructions, skills, knowledge, and prior feedback. | [Context](#32-context), Core |
+| C2 | Plan and carry out work through tools, code, and optional delegation. | [Core](#31-core), Actions, Context |
+| C3 | Create and check deliverables, explain results, and report assumptions, exceptions, and limitations. | [Actions](#33-actions), Context, Controls |
+| C4 | Preserve inputs, outputs, and conversation state so work can resume or be revised. | [Continuity](#35-continuity), Actions, Controls |
+| C5 | Work within approved access and operating limits, and surface failures. | [Controls](#34-controls), Core |
+| C6 | Make work reviewable: connect outputs to sources, checks, run records, and human decisions. | Continuity, Context, Controls |
 
-The foundation is intended to support additional finance tasks over time. A successful demonstration of one task is not a finance-quality or release claim.
+A capability describes what the agent can do. A function describes the role of a part of the agent. A mechanism explains how that role works; an implementation names the code or service used here. Each capability can depend on several functions.
 
-### 1.3 Scope and boundaries
+## 3. How the capabilities work
 
-| In scope for the initial foundation | Out of scope initially |
-|---|---|
-| Local agent foundation; persistent threads; optional sandbox execution; input-copy and output-preservation workflow; a narrow platform CSV task; preparation for a first finance skill. | Posting journal entries, initiating payments, changing authoritative ERP records, sending external communications, or editing original shared files. |
-| Human-readable artifacts, supporting code where useful, run provenance, and human review. | Automatically promoting scripts, models, skills, memory, or permission changes without separate approval. |
-| Provisional bank-reconciliation procedure and fictional demonstration context. | Claiming verified finance quality before independently known cases and human review pass. |
+The tables connect familiar concepts to mechanisms from the [anatomy model](mental-model/01-anatomy.md). Implementation details here describe the current design; code presence alone does not establish reliability.
 
-The first finance workflow is a candidate, not yet a demonstrated capability. Real company policies and access are not configured.
+### 3.1 Core
 
-### 1.4 Output standard
+**Role:** reason and drive the work — primarily C1, C2, and C5.
 
-Each completed task should provide an artifact appropriate to the request, a concise summary, unresolved issues or missing inputs, and supporting code or provenance when those help review. Financial artifacts should state the reporting period, units/currency, sources, assumptions, calculations, tie-outs, exceptions, and applicable limitations. Review approval applies to the identified output version only; it does not approve reusable assets or permissions.
-
-## 2. Capabilities: anatomy, mechanisms, implementation
-
-This section describes the reusable capabilities through the agent's five functions, then maps each function to the mechanisms that implement it and the current project status. A task-specific skill applies these capabilities to one defined objective. A mechanism is the implementation means; it is not itself the function. The README remains the detailed implementation inventory.
-
-### 2.1 Core: what reasons and drives the work
-
-| Decision | Current mechanism and status |
-|---|---|
-| Model | OpenAI chat model through the Deep Agents harness. Model and reasoning settings are configurable. |
-| Loop | Harness control loop assembles context, invokes the model, routes tool requests, returns tool results to context, and stops on a final answer or enforced limit. |
-| Planning | `TodoListMiddleware` exposes `write_todos`; todo state is checkpointed with the conversation. The model decides when a plan is useful. |
-| Limits and stopping | Runtime controls implement shared model/tool-call budgets, a deadline, timeout caps, retries, and bounded sandbox commands. Some live enforcement remains unverified; cost is not a hard monetary cap. |
-
-### 2.2 Context: what the model sees
-
-| Context source | Function in the agent | Mechanism and current status |
+| Concept | Mechanism | Project implementation |
 |---|---|---|
-| Task request and attachments | Define the work and its inputs. | Current: terminal prompt and files available in the selected thread. Planned: Asana fields, comments, attachments, trigger reason, and relevant changes gathered by a dispatcher. |
-| Instructions | Define purpose, boundaries, and how to work. | Agent instructions assembled for each model call; project guidance is also maintained in `memory/AGENTS.md`. |
-| Conversation and prior tool results | Let the stateless model continue the current run/thread. | Harness builds each model input from current graph state and history; SQLite checkpointer restores thread state. |
-| Skills | Supply task procedures. | `SkillsMiddleware` exposes skill descriptions; file tools load the relevant `SKILL.md` from the read-only `/skills/` route. CSV analysis, file-delivery validation, and bank-reconciliation procedures exist. The finance procedure has not passed task evaluation. |
-| Business knowledge | Supply entity and operating conventions. | `MemoryMiddleware` and read-only `/memories/` route; the current company profile is fictional demonstration context, not a real-company policy. |
-| Prior outputs during a revision | Let a follow-up run see the work it is revising. | Current: prior files remain in the same thread workspace. Planned Asana workflow: dispatcher gathers the prior output version and relevant review feedback. |
+| Model | Model invocation | OpenAI chat model configured in `agent.py`; model, reasoning, and output limits are configurable. |
+| Agent loop | Control loop, context assembly, output parsing | Deep Agents builds model input, interprets tool requests or a final answer, executes allowed requests, and returns results to the loop. |
+| Stopping | Control loop and hooks | Stop on a final answer or an enforced limit. `RunControls` supplies shared model/tool budgets, deadline, timeouts, and bounded commands; model retries are configured. Some live enforcement remains unverified. |
 
-The model input is assembled anew for each call. Memory, skills, and prior messages are not independent model capabilities; their contents reach the model through context assembly and tool results.
+### 3.2 Context
 
-### 2.3 Actions: what the model can request
+**Role:** supply what the model needs on each call — primarily C1, C2, C3, and C6.
 
-| Action | Mechanism | Execution location and access |
+| Concept | Mechanism | Project implementation |
 |---|---|---|
-| Read, list, create, and revise working files | Built-in filesystem tools | In sandbox mode, ordinary working paths route to the temporary remote sandbox's `/workspace`; in default mode they use the thread's virtual filesystem. |
-| Run general code | `execute` tool | Temporary LangSmith sandbox in sandbox mode. The agent/model client runs on the host; generated commands execute remotely. |
-| Read approved skills and memory | File tools over routed backends | Local host routes, read-only to the agent; these are virtual routes, not sandbox mounts. |
-| Delegate a subtask | General-purpose sub-agent capability from the harness | Separate model loop with its own input; remains within the configured agent/runtime boundaries. |
-| Read external business systems | Not implemented for this prototype | A future controlled connector or MCP server may provide narrowly scoped, initially read-only access outside the sandbox. No ERP, SharePoint, or Google Drive integration is currently connected. |
-| Intake or update a work tracker | Not implemented for Asana | Future dispatcher/connector may gather assignments and publish status, summaries, and output links under separate controls. |
+| Request and instructions | Context assembly | Terminal prompt, thread inputs, system instructions, and `memory/AGENTS.md`. Asana gathering is planned in §4.2. |
+| Conversation and tool results | State, context assembly | Harness assembles current history, tool definitions, and prior results; checkpoints restore thread state. |
+| Plan / todos | Tool, state | `TodoListMiddleware` exposes `write_todos`. The model chooses when to use it; todo state persists with the conversation. |
+| Skills | Hooks, tools, storage | `SkillsMiddleware` advertises skills; file tools read their `SKILL.md` through `/skills/`. CSV analysis, file-delivery validation, and provisional bank reconciliation exist. |
+| Business knowledge and approved memory | Hooks, storage | `MemoryMiddleware` and `/memories/` provide owner-maintained guidance. The company profile is fictional. |
+| Revision context | Storage, context assembly, tools | Same-thread history and prior files are available. Planned Asana intake adds review feedback and the relevant output version. |
 
-Task inputs are copied to the sandbox and original working files are not modified. The app downloads new or changed workspace files before cleanup. Workspace transfer is copy-in/copy-out, not a live mount or continuous cloud sync.
+Each model call receives freshly assembled input. Stored history, skills, and memory influence it only when their contents enter that input or a tool result.
 
-### 2.4 Controls: which requests are allowed
+### 3.3 Actions
 
-| Control | Strength/mechanism | Current rule and status |
+**Role:** carry out model requests — primarily C2, C3, and C4.
+
+| Concept | Mechanism | Project implementation |
 |---|---|---|
-| Instruction boundaries | Instruction in model context | State the task scope and prohibitions; instructions alone are not an enforcement boundary. |
-| Read-only approved references | Backend/environment routing | Mutations to `/memories/` and `/skills/` are rejected by the routed backend. Owner maintains these files. |
-| Tool and run limits | Runtime hook/control | Shared call budgets, run deadline, bounded commands, model timeout/retries, and tool timeout caps are implemented; live enforcement is tracked in the README. |
-| Sandbox isolation | Execution environment | Temporary sandbox, restricted execution, and owner-configurable network allowlist. Effective network isolation has not been verified. The local `.env` and API keys are not copied into the sandbox. |
-| Source protection | Workspace transfer mechanism | Inputs are working copies. Local versions and conflicts are preserved; remote deletion is not propagated locally. This is not a guarantee against every application-level edit or data loss. |
-| Deliverable review | Human decision and local review record | A local reviewer can approve/reject a successful run's unchanged file manifest. Automated Asana review and an in-flight interrupt are not implemented. |
-| Reusable asset promotion | Human approval | Scripts, models, memory notes, skills, and permission changes require separate approval from task-output approval. Proposal workflow is not automated. |
-| External-system writes | Not enabled | No ERP posting, payments, shared-file edits, or external communications. Future external access requires owner-controlled authorization and separate tests. |
+| File operations | Tools, environment | Read, list, create, and revise files. Working paths use remote `/workspace` in sandbox mode and a thread virtual filesystem in default mode. |
+| Code execution | Tool, environment | `execute` runs commands in a temporary LangSmith sandbox. The model client and agent loop stay on the host. Packages support file processing and calculations. |
+| Reference access | Tools, routed storage | `/skills/` and `/memories/` are read-only host routes, not sandbox mounts. Read required content through file tools before copying it into sandbox code. |
+| Delegation | Tool, another control loop | Harness sub-agents receive separate inputs and remain within configured runtime boundaries. |
+| External systems / MCP | Tools, environment | Future controlled connectors may provide narrowly scoped, initially read-only access outside the sandbox. No ERP, SharePoint, Google Drive, or Asana connection is implemented. |
 
-Controls must be drawn and evaluated at the strength they actually have: a model instruction, a program check/hook, a human approval, or an environment boundary. A design statement alone does not prove enforcement.
+Task inputs are copied into the sandbox. New or changed eligible files are downloaded before cleanup; this is copy-in/copy-out transfer. Live mounts and continuous cloud sync are not implemented.
 
-### 2.5 Continuity: what carries over
+### 3.4 Controls
 
-| Item | Decision and mechanism |
-|---|---|
-| Within a model run | The harness carries messages, tool results, and todo state in graph state and includes relevant history in subsequent model inputs. |
-| Across prompts in a thread | SQLite graph checkpoints persist conversation state; a thread ID groups the saved conversation. Terminal startup resumes the selected/last thread for the mode. |
-| Working files | `workspace/threads/<thread-id>/` persists locally. Sandbox mode copies eligible files into `/workspace` for a run and merges new/changed files back, preserving versions and conflicts. |
-| Approved knowledge and skills | Owner-maintained local Markdown under `memory/` and `skills/`; read-only agent routes. No automatic learning or silent promotion. |
-| Run provenance and review | Local work log stores run outcomes, fingerprints, call/transfer events, validation findings, and review records. LangSmith tracing is optional. Neither is assumed to capture every internal sandbox operation. |
-| Configuration identity | Release/evaluation evidence should identify the Git commit, lockfile, model settings, sandbox snapshot, and approved skills/memory. The current CSV report does not yet capture this complete record. |
+**Role:** decide what is allowed — primarily C3–C6.
 
-### 2.6 Success criteria
+| Concept | Mechanism / strength | Project rule and status |
+|---|---|---|
+| Task boundaries | Instructions | State scope and prohibitions. Instructions alone do not enforce them. |
+| Approved references | Backend routing | Reject writes to `/skills/` and `/memories/`; the owner maintains them. |
+| Operating limits | Runtime hooks | Enforce call budgets, deadlines, command/model/tool timeouts, and bounded retries. Live coverage remains incomplete; cost is not a hard monetary cap. |
+| Sandbox isolation | Environment | Temporary execution with an owner-configurable network allowlist. Effective network isolation remains unverified. Local `.env` and API keys are not copied in. |
+| Source protection | Transfer and storage | Use input copies; preserve local versions/conflicts and do not propagate remote deletions. These controls do not guarantee against every edit or data loss. |
+| Output review | Human decision, review record | Approve/reject a successful run's unchanged file manifest. Asana review and mid-run approval interrupts are not implemented. |
+| Asset promotion | Separate human approval | Reusable scripts, models, memory, skills, and permissions need separate approval. Proposal handling is not automated. |
+| External writes | Access configuration | Posting, payments, original shared-file edits, and external communications are not enabled. Future access requires owner authorization and boundary tests. |
 
-These criteria describe the outcomes expected from the capabilities above. Their evaluation status is shown in Section 3.1.
+Evaluate controls at their actual strength: instruction, program check, human approval, or environment boundary.
 
-| ID | Success criterion |
-|---|---|
-| SC-1 | For each released task type, the agent produces results that meet independently defined, task-specific acceptance checks on known-answer cases. |
-| SC-2 | Source inputs remain unchanged, and new or changed deliverables and supporting files are preserved after sandbox cleanup and can be associated with the correct run. |
-| SC-3 | The agent stays within its configured permissions and operating limits. Human approval is required for deliverables and separately for changes to reusable assets or access. |
-| SC-4 | A reviewer can inspect the output, its assumptions and exceptions, relevant inputs, checks performed, and the configuration/run provenance needed to understand the result. |
-| SC-5 | The foundation and first finance workflow pass defined release gates, with an owner, data policy, bounded access, tested stop/recovery, and monitoring plan, before hosted or expanded real-work use. |
-| SC-6 | Before Asana automation is enabled, the task-to-review lifecycle works without duplicate runs or trigger loops, and preserves task context and outputs through revisions and restart. |
+### 3.5 Continuity
 
-### 2.7 Work lifecycle and interface
+**Role:** keep what later calls and runs need — primarily C4 and C6.
 
-This describes how people assign work, receive results, and review or revise them. It follows the agent capabilities because the interface is one way to operate the configured agent.
+| Concept | Mechanism | Project implementation |
+|---|---|---|
+| State within a run | State, context assembly | Harness carries messages, tool results, and todos into later calls. |
+| Threads and resume | Checkpoint storage | SQLite saves graph state by thread ID. Terminal startup resumes the selected/last thread for that mode. |
+| Working files | Storage, transfer | Local `workspace/threads/<thread-id>/` survives sandbox cleanup. Transfer preserves previous versions and conflicts. |
+| Approved knowledge | Storage, controlled updates | Owner-maintained `memory/` and `skills/`; no automatic learning or silent promotion. |
+| Provenance and review | Logs, traces, storage | Work log records outcomes, fingerprints, call/transfer events, validation, and review. Optional LangSmith tracing adds execution detail; neither captures every internal sandbox operation. |
+| Configuration identity | Versioned records | Evaluation/release evidence must identify Git commit, lockfile, model settings, sandbox snapshot, and approved skills/memory. The CSV report does not yet capture the complete record. |
 
-| Item | Current decision |
-|---|---|
-| How work arrives | Local terminal prompt. Asana is the intended work interface after the foundation and first finance workflow are ready. |
-| Task scope | One conversation thread per work item is the target for the Asana workflow. Current terminal threads are persistent but are not mapped to Asana tasks. |
-| How results return | Local prototype: final response and files in the selected thread workspace. Planned Asana workflow: status, summary, unresolved issues, and output links. |
-| Review and feedback | Current local review records a decision against a successful run's unchanged file manifest. Planned Asana review happens between runs; actionable feedback starts a revision in the same task thread. |
-| Statuses | Planned: **To do → Agent working → Needs review → Done**, with **Blocked** for work that cannot continue. |
+## 4. Applying the capabilities
 
-Asana eligibility rules, status representation, trigger mechanism, approval semantics, and actionable-feedback rules remain open. Informational comments must not automatically start revisions; agent-generated status updates must not trigger duplicate runs.
+### 4.1 Initial tasks
 
-## 3. Plans
+These tasks exercise the shared capabilities. They provide concrete evaluation cases without defining the permanent limits of the agent.
 
-The ADLC phases are **Build (Plan, then Configure) → Test → Deploy → Monitor → back to Build**. Plan creates the evaluation, release, and monitoring plans before testing; Configure implements them; Monitor findings become diagnosed changes and regression cases. See the [ADLC reference](mental-model/02-adlc.md).
+| Task | Specific objective | Capabilities / evaluation | Current status |
+|---|---|---|---|
+| CSV summary | Summarize supplied data into a reviewable output. | C1–C6; E-PLAT-1 | Starter cases drafted; planned evaluation pending. |
+| Monthly bank reconciliation | Match bank and ledger items, explain exceptions, and produce supporting work. | C1–C6; E-FIN-1 | Provisional first finance workflow; procedure exists, known-answer fixtures and thresholds incomplete. |
 
-### 3.1 Evaluation plan
+For each later task, add its objective, required skill/tools/access, expected outputs, and evaluation cases. Keep detailed procedures in the skill or workflow document. A demonstration alone does not establish finance quality or release readiness.
 
-Each evaluation row connects a project outcome to the anatomy function, its implementation mechanism, a specific check, and reviewable evidence. The criteria below are planned gates, not claims that the system has passed them.
+### 4.2 Work lifecycle and interface
 
-| Eval | Objective / criterion | Function and possible failure | Mechanism under test | Check, grader, and cases | Pass condition / current status |
-|---|---|---|---|---|---|
-| E-PLAT-1 | SC-1: platform foundation handles the starter task correctly. | Core: fails to stop or complete within configured limits. Context: wrong/missing skill or source. Actions: wrong calculation/output. | Control loop and runtime caps; prompt/context assembly; skill retrieval; file tools; sandbox `execute`. | Two starter CSV cases with exact expected JSON, source-byte checks, and recorded call/time behavior; deterministic code grader. Repeat runs are needed for reliability claims. | Each case completes normally within configured limits, exact outputs match, and source bytes are preserved. Starter suite is drafted, not yet run as the planned evaluation; earlier single smoke tasks are not a substitute. |
-| E-FILE-1 | SC-2: preserve working inputs and outputs across sandbox cleanup/restart. | Actions and Continuity: input altered, output lost, conflict overwritten, state fails to resume. | Workspace transfer, hash/version/conflict handling, thread checkpoint. | Synthetic text, XLSX, and binary transfer cases; restart and concurrent-local-edit cases; deterministic checks. | All preservation and conflict rules pass, output survives cleanup, thread resumes. Transfer check passed; broad recovery/restart release evaluation remains incomplete. |
-| E-FIN-1 | SC-1: first finance workflow reconciles to independent known results. | Context: wrong procedure/business assumptions. Actions: missed/false matches, wrong balances or deliverables. | Bank-reconciliation skill, code/calculation, workbook/document generation and validation. | Synthetic bank/ledger cases with expected matches, exceptions, balance bridges, proposed entries, source preservation, and Excel/Word artifacts; code grader plus human finance review. | All defined critical checks pass and a reviewer accepts a representative output. Fixtures and acceptance thresholds are still to be completed; evals have not run. |
-| E-CTRL-1 | SC-3: stay within permissions and limits. | Core and Controls: runaway loop, unauthorized write, prompt injection or exposed credential. | Control loop and runtime hooks, read-only backend routes, sandbox/network policy, external identity. | Offline call/time/boundary cases; sandbox network/secret checks; adversarial inputs. | Limits stop the run and requests outside scope are blocked at the appropriate program or environment layer; effective egress enforcement is verified. Offline engineering checks passed; live enforcement and production identity remain unverified. |
-| E-PROV-1 | SC-4: reviewers can inspect what produced an output. | Continuity and Context: output cannot be tied to inputs, run, or configuration. | LangSmith tracing, work log, transfer manifest, validation report, configuration record. | Follow known runs from prompt/input fingerprints to tool events, artifacts, check results, and human decision. | Required provenance is present and reviewable without assuming traces alone prove correctness. Tracing and local records exist; full release provenance is incomplete. |
-| E-REL-1 | SC-5: establish readiness before hosted or expanded real-work use. | Controls and Continuity: inadequate access, no stop/recovery, or no accountable review. | Release checklist, configuration identity, permissions, operational limits, stop/rollback, and monitoring ownership. | Owner-led readiness review against recorded eval results, access, data policy, stop/recovery rehearsal, and monitoring plan. | Every required item is confirmed and unresolved risks are recorded; no release proceeds on an unverified assumption. Not yet completed. |
-| E-ASANA-1 | SC-6: eventual task-to-review lifecycle works without duplicate or looped runs. | Actions, Controls, Continuity: duplicate dispatch, trigger loop, missing failure state or lost revision context. | Dispatcher, Asana connector, task/thread mapping, locking, persistence and status controls. | End-to-end normal, feedback/revision, duplicate-update, failure/Blocked, restart and recovery cases. | Five consecutive test tasks complete the defined path; no duplicate/loop runs; outputs and context survive restart. Asana is not implemented; evaluation is future work. |
+**Assign → gather context → execute → preserve outputs → review → approve or revise.** Work that cannot continue must surface its failure or missing input.
 
-For every evaluation, record whether it checks a final output, trajectory, or individual step; who grades it (code, calibrated LLM judge, or person); whether cases are normal, edge, or adversarial; and the explicit threshold. Use deterministic grading where answers are known. Use an LLM judge only for subjective criteria after comparison with human judgments; retain human review for consequential finance judgments and document presentation.
+| Step | Current terminal prototype | Planned Asana workflow |
+|---|---|---|
+| Assign / gather | Prompt and files in a persistent thread. | Dispatcher gathers task fields, comments, attachments, trigger reason, changes, and prior feedback; one work item maps to one thread. |
+| Execute / preserve | In sandbox mode: create sandbox, copy inputs, run tools, copy eligible new/changed files back, then clean up. | Same path, retaining outputs, supporting code, proposals, and failure details. |
+| Return / review | Final response and local files; review record applies to the unchanged output manifest. | Publish status, summary, unresolved issues, and file links. Review occurs between runs. |
+| Revise | Continue the same thread with feedback and prior files. | Actionable feedback starts a revision in the same task thread. Informational comments and agent status updates must not start duplicate runs. |
 
-**Coverage rule:** every success criterion and every anatomy function must map to at least one evaluation. Use the anatomy failure analysis and run path in the [ADLC eval-design guide](mental-model/02-adlc.md#3-evals). A capability case that passes reliably becomes a regression case. A successful trace is evidence of a particular run, not a pass on its own.
+Planned Asana statuses: **To do → Agent working → Needs review → Done**, or **Blocked**. Eligibility, triggers, status representation, actionable feedback, and approval semantics remain open. Asana follows the foundation and finance release gates.
 
-### 3.2 Release plan
+### 4.3 Output standard
 
-No hosted service or production deployment is currently implemented. Until release gates pass, use this as a local prototype with synthetic data or specifically approved tasks and human review.
+Deliver the requested artifact, a concise summary, unresolved issues, and supporting code/provenance where useful. Financial work must state period, units/currency, sources, assumptions, calculations, tie-outs, exceptions, checks performed, and limitations. Approval covers the identified output version only.
+
+## 5. Success criteria
+
+These are the outcomes the capabilities must achieve. The evaluation IDs link each promise to its check in §6.1.
+
+| ID | Capabilities / scope | Success means… | Evaluation |
+|---|---|---|---|
+| SC-1 | C1–C3; each released task | Results meet independent, task-specific acceptance checks on known-answer cases. | E-PLAT-1, E-FIN-1 |
+| SC-2 | C4 | Source inputs stay unchanged; outputs survive cleanup and restart and remain associated with the correct run. | E-FILE-1 |
+| SC-3 | C5, C6 | Permissions and limits hold; deliverables and reusable-asset/access changes receive their separate required approvals. | E-CTRL-1, E-PROV-1 |
+| SC-4 | C3, C6 | Reviewers can inspect inputs, assumptions, exceptions, checks, and output/run/configuration provenance. | E-PROV-1 |
+| SC-5 | All; release readiness | Required evaluations pass; owner, data policy, bounded access, stop/recovery, and monitoring are ready before hosted or expanded real-work use. | E-REL-1 |
+| SC-6 | C1, C2, C4–C6; Asana | Intake, review, and revision preserve context/outputs through restart, without duplicate runs or trigger loops. | E-ASANA-1 |
+
+Example: **C4 preserve work → Continuity + Actions + Controls → checkpoint/transfer mechanisms → SC-2 → E-FILE-1 → monitor missing files and resume failures.**
+
+## 6. Evaluation, release, and improvement
+
+The [ADLC](mental-model/02-adlc.md) is **Build (Plan, Configure) → Test → Deploy → Monitor → back to Build**. Define all three plans during Plan, implement checks during Configure, then collect evidence in Test and Monitor.
+
+### 6.1 Evaluation plan
+
+For every check, record the four dimensions below. Cases (normal, edge, adversarial) and pass thresholds are additional fields.
+
+| Evaluation | What is checked | Who grades | When | Why |
+|---|---|---|---|---|
+| E-PLAT-1 | Output, trajectory, steps | Code | Offline | Capability; regression after acceptance |
+| E-FILE-1 | Files, transfer steps, resume trajectory | Code | Offline; preservation checks also online | Capability and regression |
+| E-FIN-1 | Financial outputs and procedure | Code + human finance reviewer | Offline; applicable tie-outs/review also online | Capability; regression after acceptance |
+| E-CTRL-1 | Requests, boundary steps, run limits | Code + human access review | Offline; limit/boundary signals also online | Capability and regression |
+| E-PROV-1 | Output evidence and run trajectory | Code + human reviewer | Offline and online | Capability and regression |
+| E-REL-1 | Configuration and readiness evidence | Owner | Offline, before each release/stage | Capability and regression readiness |
+| E-ASANA-1 | Full task trajectory and integration steps | Code + human reviewer | Offline; lifecycle signals later online | Capability; regression after acceptance |
+
+Offline means controlled evaluation; online means checking live work. Online checks are planned unless their implementation is recorded. Use code when answers are known; an LLM judge may assess subjective criteria only after calibration against human judgments. Retain human review for consequential finance judgments and presentation.
+
+| Evaluation | Mechanisms and cases | Pass condition | Status |
+|---|---|---|---|
+| E-PLAT-1 | Loop/limits, context/skills, file tools, execution. Two CSV cases: exact expected JSON, source bytes, calls/time. | Both cases complete normally within limits, match expected outputs, and preserve sources. Repeat to assess reliability. | Drafted; planned suite not run. Earlier smoke tasks are separate evidence. |
+| E-FILE-1 | Transfer, hashes/versions/conflicts, checkpoints. Text, XLSX, binary, restart, and concurrent local edits. | Preservation/conflict rules pass; files survive cleanup and thread resumes. | Transfer check passed; broad restart/recovery evaluation incomplete. |
+| E-FIN-1 | Skill, calculations, artifact generation/validation. Synthetic bank/ledger cases: matches, exceptions, balance bridges, proposed entries, source preservation, Excel/Word outputs. | Every defined critical check passes; human accepts representative output. | Fixtures/thresholds incomplete; evaluation not run. |
+| E-CTRL-1 | Runtime hooks, reference routes, sandbox/network, external identity. Call/time limits, unauthorized writes, adversarial inputs, network/secret checks. | Limits stop runs; forbidden requests are blocked at the required layer; effective egress enforcement is verified. | Offline engineering checks passed; live enforcement/production identity unverified. |
+| E-PROV-1 | Trace, work log, manifest, validation and configuration records. Follow input fingerprints through tool actions, artifacts, checks, and review. | Required evidence is present; approval identifies the unchanged output version and scope. | Local records/tracing exist; complete release provenance pending. |
+| E-REL-1 | Release checklist, access, limits, configuration, stop/rollback, monitoring. Owner reviews evidence and recovery rehearsal. | All required readiness items confirmed; unresolved risks recorded. | Pending. |
+| E-ASANA-1 | Dispatcher, connector, task/thread map, locking, persistence. Normal tasks, feedback, duplicates, failure/Blocked, restart/recovery. | Five consecutive tasks complete the path; no duplicate/loop runs; context and outputs survive restart. | Future integration. |
+
+**Coverage:** every capability, success criterion, anatomy function, and run stage needs a check. Expand these evaluation groups into individual cases with expected results, grader, threshold, and configuration ID. A trace records behavior; correctness requires independent checks. Reliably passing capability cases join the regression set.
+
+### 6.2 Release plan
+
+Current stage: local prototype. Hosted deployment is not implemented. Use synthetic data or specifically approved tasks with human review until release gates pass.
 
 | Stage | Use | Gate to advance |
 |---|---|---|
-| 0. Local evaluation | Engineering checks, synthetic datasets, and reviewed examples; outputs do not drive business actions. | Planned evaluation criteria pass, limitations are recorded, and configuration provenance is available. |
-| 1. Parallel run | For approved real tasks, run alongside the normal process; agent output is not authoritative. | Outputs agree with the normal process on a defined representative sample; failures and discrepancies are understood. |
-| 2. Supervised use | Outputs may support work, with a person reviewing every deliverable before use. No posting or payment actions. | A defined period and sample meet agreed thresholds; stop and recovery procedures have been exercised. |
-| 3. Expanded use | Consider risk-based review only after evidence supports it and controls remain effective. | Owner approval, monitoring thresholds, access review, and rollback readiness are confirmed. |
+| 0. Local evaluation | Engineering checks and synthetic examples; no business actions. | Planned checks pass, limitations recorded, configuration identified. |
+| 1. Parallel run | Approved real tasks alongside the normal process; outputs are not authoritative. | Agreement on a defined representative sample; discrepancies understood. |
+| 2. Supervised use | Human reviews every deliverable before use; no posting/payments. | Agreed thresholds met over a defined sample/period; stop and recovery exercised. |
+| 3. Expanded use | Consider review frequency based on risk and evidence. | Owner approval, monitoring thresholds, access review, rollback readiness. |
 
-Before release, name an owner; confirm data handling and least-privilege identities; identify the exact agent configuration and sandbox release; pass the release gate; set model/tool/time and cost limits; and test output preservation, failure handling, and recovery. Record how to stop new work, handle in-flight runs, disable external triggers, and return to the last known-good configuration. Identify outputs from a faulty release for re-review.
+Deployment decisions required before release:
 
-The local runner has no dispatcher-level stop control or distributed exactly-once guarantee. Snapshot rollback exists but has not been exercised live. A configured egress allowlist is not proof of enforced network isolation. Resolve these before an automated Asana rollout.
-
-### 3.3 Monitoring plan
-
-| Anatomy function | Signals to review | Current source / gap |
+| Area | Current arrangement | Required decision / evidence |
 |---|---|---|
-| Core | Completion/error rate, elapsed time, model/tool calls, usage/cost where available. | LangSmith and local run records; production thresholds and ownership are not set. |
-| Context | Right skill/business context, unsupported assumptions, missing-input questions, repeated misunderstandings. | Trace and human review; systematic labels are not yet defined. |
-| Actions | Tool failures, transfer conflicts, artifact checks, calculation tie-outs, reviewer corrections. | Tool/transfer records and validation; finance checks incomplete. |
-| Controls | Limit hits, refusals, boundary attempts, unauthorized external actions. | Runtime and sandbox records; egress enforcement is unverified. |
-| Continuity | Resume failures, missing/stale files, revision rounds, stale review after file changes. | Checkpointer, workspace manifest, work log; service-level recovery not implemented. |
-| Overall | Approval/rejection rates, unresolved discrepancies, repeated failures, drift by task/configuration. | Local review/work log; thresholds and operational owner remain open. |
+| Runtime | Host terminal/model client/agent loop; optional LangSmith tracing. | Hosted runtime/dispatcher; model/provider policy; trace access and retention. |
+| Execution | Temporary LangSmith sandbox selected by immutable snapshot ID. | Verified network restrictions, resource ceilings, recovery; workbook recalculation where required. |
+| Storage | Local SQLite and thread folders. | Durable hosted storage, backup, retention, restore. |
+| Access and ownership | No real business-system integration. | Operational owner, data policy, named identities, least privilege; tests for any new connector. |
+| Limits and readiness | Runtime controls and local review. | Recorded evaluation gate, exact configuration, model/tool/time limits, cost policy and revision limits; preservation/failure/recovery rehearsal. |
 
-- **Every run:** retain configuration/run identity, status, limits, tool and transfer events, output checks, and review outcome. Run applicable deterministic tie-outs and integrity checks before presenting outputs.
-- **Human review:** review every output during early supervised use. Reduce the sample only after workload and risk-based thresholds are defined and evidence supports the change.
-- **Trend review:** periodically examine errors, corrections, approvals/rejections, revisions, and operating cost. Set cadence and thresholds before a hosted pilot.
+Document how to stop new work, handle active runs, disable triggers, and restore the last known-good configuration. Flag affected outputs for re-review; review any memory changes associated with the faulty release.
 
-Stop and investigate a boundary breach, data loss, or material incorrect result. Diagnose repeated failures to a function or lever, update the configuration, and add a regression case. Record accepted one-off issues and workarounds. Monitoring does not silently change approved memory, skills, or permissions.
+Gaps: no dispatcher stop control or distributed exactly-once guarantee; snapshot rollback has not been exercised live; egress enforcement remains unverified. Resolve these before automated Asana rollout.
 
-## 4. Current implementation and future deployment choices
+### 6.3 Monitoring plan
 
-| Area | Current prototype | Future decision / gap |
+Monitor the same promises evaluated before release. Define owners, cadence, and thresholds before a hosted pilot.
+
+| Function / criteria | Signals | Source / gap |
 |---|---|---|
-| Host and work interface | Local terminal application; model client and agent loop run on the host. | Choose hosted dispatcher/runtime and implement Asana intake, status, review, revision, and duplicate/loop prevention. |
-| Model and tracing | OpenAI model; optional LangSmith tracing. | Confirm model/provider policy, trace retention, access, and approved data handling. |
-| Code execution | Temporary LangSmith sandbox, selected by immutable snapshot ID. | Verify production sandbox policy, enforceable egress, resource ceilings, and recovery behavior. |
-| Checkpoints and workspace | Local SQLite checkpoints and per-thread local folders. | Choose durable hosted storage, backup, retention, and restore procedures. |
-| Finance workflow | Bank-reconciliation skill and fictional profile are drafts; end-to-end known-answer evaluation remains pending. | Define fixtures, critical acceptance checks, review, and operating policy before any finance-quality claim. |
-| External business systems | No ERP, SharePoint, or Google Drive connection. | Any future connector/MCP needs named identity, least privilege, access boundary, and its own evals. No posting/payments. |
+| Core — SC-1, SC-3 | Completion/errors, time, model/tool calls, usage/cost. | LangSmith and local records; production thresholds unset. |
+| Context — SC-1, SC-4 | Wrong skill/context, unsupported assumptions, missing-input questions, repeated misunderstandings. | Trace and review; systematic labels pending. |
+| Actions — SC-1, SC-2 | Tool failures, transfer conflicts, artifact/tie-out failures, corrections. | Tool/transfer records and validation; finance checks incomplete. |
+| Controls — SC-3, SC-5 | Limit hits, refusals, boundary attempts, unauthorized actions. | Runtime/sandbox records; effective egress unverified. |
+| Continuity — SC-2, SC-4, SC-6 | Resume failures, missing/stale files, lost feedback, stale approvals. | Checkpoints, manifests, work log; service recovery pending. |
+| Overall — SC-1, SC-5, SC-6 | Approval/rejection, revision rounds, discrepancies, repeat failures, drift by task/configuration. | Local review/work log; operational ownership/thresholds pending. |
 
-Planned Asana-enabled run: gather task context and changes; create a sandbox and task workspace; copy in inputs and approved assets; execute; preserve outputs, code, proposals, and failure details; clean up; publish status, summary, and links. One task maps to one thread for revisions. This is a design goal, not current integration behavior.
+- **Every run:** retain configuration/run ID, status, limits, tool/transfer events, check results, and review outcome. Perform applicable deterministic tie-outs and integrity checks before delivery.
+- **Human review:** review every output during early supervised use. Reduce sampling only with defined risk thresholds and supporting evidence.
+- **Trend review:** examine errors, corrections, approvals, revisions, and cost at the agreed cadence.
 
-## 5. Open decisions
+### 6.4 Respond and improve
 
-Resolve these before the corresponding integration or release stage:
+| Finding | Response |
+|---|---|
+| Boundary breach, data loss, material incorrect result | Stop, investigate, and apply the rollback/re-review plan. |
+| Repeated failure | Trace it to a capability, function, and mechanism; add a regression case; fix through Build and Test before release. |
+| Accepted one-off issue | Record the decision and workaround; continue monitoring. |
 
-- Asana eligibility rules, trigger mechanism, status representation, actionable feedback, and output-version approval semantics.
-- Dispatcher locking, duplicate prevention, and prevention of agent-generated trigger loops.
-- Deployment host, service identity, durable workspace/checkpoint storage, retention, and recovery procedure.
-- How filesystem/network restrictions are enforced and verified under the selected sandbox provider.
-- Per-stage cost ceiling, execution/model-call limits, and revision limits.
-- Release-gate thresholds, human-review sample/cadence after supervised use, and monitoring owner.
-- Workbook recalculation method where required by the first finance skill.
-- Bank-reconciliation acceptance criteria and independently known evaluation fixtures.
-- Data policy and least-privilege design before any real-company information or external connector is used.
+For a new skill, add its task objective, procedure, and capability cases, then run existing regressions. Changes to tools/access also need boundary checks; changes to knowledge/instructions need affected regressions; model changes require the full evaluation set. A changed role/objective requires revisiting all three plans and rollout gates.
 
-Keep the implementation focused on one agent. Evaluate the foundation and first finance workflow before adding Asana; verify the complete task-to-review path before expanding capabilities or memory infrastructure.
+Memory remains owner-maintained. Monitoring cannot silently change approved memory, skills, or permissions. Before adding automatic learning, define memory ownership, scope, approval, retention/deletion, and compatibility checks when configurations change.
 
-## 6. Change log
+## 7. Open decisions
+
+| Decision | Resolve before |
+|---|---|
+| Bank-reconciliation scope, known-answer fixtures, critical thresholds, workbook recalculation | Finance evaluation/release |
+| Stage thresholds, cost ceilings, call/time/revision limits, review cadence and operational owner | Hosted pilot |
+| Host, service identity, durable storage, retention/restore, data policy | Real-company data or hosted use |
+| Effective filesystem/network restrictions and connector access boundaries | Expanded access |
+| Asana eligibility/triggers/statuses, actionable feedback, output-version approval, locking and duplicate/loop prevention | Asana implementation/release |
+
+Keep one agent as the foundation. Evaluate the foundation and first finance workflow, then implement and verify Asana before expanding automation or memory infrastructure. Detailed work and evidence belong in the [task list](task-list.md) and [README](../README.md).
+
+## 8. Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.7 | 2026-10-23 | Added shared capability IDs and explicit links to functions, mechanisms, criteria, evaluations, and monitoring. Moved initial tasks after the design; shortened repeated text; made all four evaluation dimensions explicit. |
 | v0.6 | 2026-10-22 | Separated the general agent objective from initial task objectives; placed capabilities before success criteria and moved the work interface after them. |
 | v0.5 | 2026-10-22 | Reorganized around anatomy functions and mechanisms; connected success criteria to evals and added links to the mental models, architecture, and project task list. Preserved current prototype scope and release gaps. |
 | v0.4 | 2026-10-21 | Previous structure retained in Git history; v0.5 reorganizes its project decisions around the anatomy and ADLC. |
