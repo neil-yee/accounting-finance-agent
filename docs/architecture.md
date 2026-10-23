@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.8 design draft · October 23, 2026 |
+| Version | v0.9 design draft · October 23, 2026 |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.8 |
+| Specification | [Agent specification](agent-spec.md) v0.9 |
 | Implementation assessment | Not assessed. Every component and path below describes intended behavior. |
 
 The four views explain system boundaries, responsibilities, execution, and deployment. They apply the [anatomy](mental-model/01-anatomy.md) and link to the spec and evaluations. Solid arrows show calls/data flow; dotted arrows show oversight or policy influence. Line style does not indicate implementation status.
@@ -146,6 +146,8 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 
 ## 5. Traceability and evidence to seek
 
+The spec classifies capabilities as shared foundation (C1–C7), reusable work capabilities (C8–C11), and task-specific capability (C12). These share the same components; the classification does not require separate services.
+
 | Architecture responsibility | Spec | Evaluation | Evidence required during repository review |
 |---|---|---|---|
 | Model, loop, context and planning | [3.1 Core](agent-spec.md#31-core), [3.2 Context](agent-spec.md#32-context) | E-PLAT-1, E-REC-1 | Configuration, routing and state handling; representative runs and incomplete-response cases. |
@@ -171,5 +173,6 @@ These checks describe acceptance of the design; no completion is asserted.
 
 | Version | Date | Change |
 |---|---|---|
+| v0.9 | 2026-10-23 | Aligned the spec reference and capability-scope mapping. |
 | v0.8 | 2026-10-23 | Recast all views as target design; removed implementation labels; expanded outcome, recovery, control and evidence mappings. |
 | v0.7 and earlier | 2026-10-23 | Earlier architecture versions retained in Git history. |

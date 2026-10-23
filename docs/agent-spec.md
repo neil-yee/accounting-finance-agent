@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.8 design draft · October 23, 2026 |
+| Version | v0.9 design draft · October 23, 2026 |
 | Owner | Neil Yee |
 | Purpose | Define the intended agent and the evidence required for its use. |
 | Implementation assessment | Not assessed in this revision. Record repository findings later in the [task list](task-list.md). |
@@ -21,18 +21,36 @@ The first stage should support terminal requests, persistent task conversations,
 
 Approval of an output does not authorize changes to reusable scripts, models, memory, skills, or permissions. Those require separate owner approval.
 
-## 2. Shared capabilities
+## 2. Capabilities by scope
 
-| ID | The agent should be able to… | Supporting functions |
-|---|---|---|
-| C1 | Understand the request using relevant inputs, instructions, skills, knowledge, and feedback; clarify material gaps. | Context, Core |
-| C2 | Plan and execute work through tools, code, and optional delegation. | Core, Actions, Context |
-| C3 | Create and check deliverables; explain results, assumptions, exceptions, and limitations. | Actions, Context, Controls |
-| C4 | Preserve inputs, outputs, and task state so work can resume or be revised. | Continuity, Actions, Controls |
-| C5 | Stay within approved access and operating limits; report failures and partial work accurately. | Controls, Core |
-| C6 | Connect outputs to sources, checks, run records, and human decisions. | Continuity, Context, Controls |
+Classify capabilities by how broadly they can be reused:
 
-Capabilities describe what the agent must do. Functions describe the responsibilities that support them. Mechanisms explain how those responsibilities work; implementation choices name the software or services to provide them. One capability may depend on several functions.
+- **Shared foundation:** supports work across many kinds of agents.
+- **Reusable work capability:** handles a general kind of work, such as spreadsheets or documents.
+- **Task-specific capability:** applies the foundation and work capabilities to a defined business outcome.
+
+Scope describes reuse, not implementation status, deployment stage, or permission. All capabilities remain unassessed.
+
+| ID | Scope | Capability | Required behavior | Supporting functions |
+|---|---|---|---|---|
+| C1 | Shared foundation | Understand work | Use relevant inputs, instructions, knowledge and feedback; clarify material gaps. | Context, Core |
+| C2 | Shared foundation | Plan and execute | Coordinate tools, code and optional delegation to carry out the task. | Core, Actions, Context |
+| C3 | Shared foundation | Deliver reviewable results | Check outputs and explain results, assumptions, exceptions and limitations. | Actions, Context, Controls |
+| C4 | Shared foundation | Preserve and resume work | Retain inputs, outputs and task state across interruption or revision. | Continuity, Actions, Controls |
+| C5 | Shared foundation | Respect limits and report failures | Stay within approved access and operating budgets; report partial work accurately. | Controls, Core |
+| C6 | Shared foundation | Provide evidence for review | Connect outputs to sources, checks, run records and human decisions. | Continuity, Context, Controls |
+| C7 | Shared foundation | Manage a task workspace | Organize and locate inputs, working files and outputs; isolate unrelated tasks and associate files with their task/run. | Actions, Controls, Continuity |
+| C8 | Reusable work capability | Work with tabular data | Read, validate, transform and summarize CSV/tabular inputs while preserving source meaning and declared data types. | Context, Actions, Controls |
+| C9 | Reusable work capability | Work with Excel files | Read, create and revise workbooks; preserve required structure/features; check formulas, calculations and presentation. | Context, Actions, Controls |
+| C10 | Reusable work capability | Work with Word documents | Read relevant content and create/revise structured documents with consistent headings, tables and formatting. | Context, Actions, Controls |
+| C11 | Reusable work capability | Produce PDF deliverables | Export document content to PDF; check content fidelity, pagination and readability. | Actions, Controls |
+| C12 | Task-specific capability | Reconcile bank transactions | Match bank and ledger items, explain exceptions/balance bridges, and produce supporting work. Provisional first finance workflow; confirm through D2. | Core, Context, Actions, Controls, Continuity |
+
+C7 manages the working area and its files; C4 preserves and restores progress. Together they describe the behavior needed from a workspace. A folder, storage service or sandbox backend is an implementation choice in §3.
+
+Functions describe responsibilities supporting a capability. Mechanisms explain how those responsibilities work; implementation choices name the software or services. Several functions can support the same capability regardless of its scope.
+
+**Reuse:** carry forward the relevant foundation and work capabilities, their criteria and evaluation definitions; adapt task-specific capabilities, boundaries, access and implementation choices for the new agent. Re-evaluate the new configuration rather than inheriting a passing result. Each project selects the work capabilities it needs.
 
 ## 3. How the capabilities should work
 
@@ -40,7 +58,7 @@ Use Deep Agents / LangChain as the proposed orchestration framework, with an Ope
 
 ### 3.1 Core
 
-**Role:** choose and coordinate the next step — C1, C2, C5.
+**Role:** choose and coordinate the next step — primarily C1, C2, C5; orchestrates the other capabilities.
 
 | Concept | Mechanism | Intended behavior / design choice |
 |---|---|---|
@@ -51,7 +69,7 @@ Use Deep Agents / LangChain as the proposed orchestration framework, with an Ope
 
 ### 3.2 Context
 
-**Role:** supply relevant information for each decision — C1, C2, C3, C6.
+**Role:** supply relevant information for each decision — C1–C3, C6, C8–C12.
 
 | Concept | Mechanism | Intended behavior / design choice |
 |---|---|---|
@@ -66,11 +84,16 @@ Stored information affects the model only when made available through its input 
 
 ### 3.3 Actions
 
-**Role:** perform authorized operations — C2, C3, C4.
+**Role:** perform authorized operations — C2–C4, C7–C12.
 
 | Concept | Mechanism | Intended behavior / design choice |
 |---|---|---|
-| Files and calculations | File tools, execution environment | Read, list, create, and revise working copies. Support declared file types and validate calculations and cross-file consistency. |
+| Task workspace — C7 | File tools, scoped storage | Read, list, organize and revise working copies within a task boundary; locate outputs and retain their run identity. |
+| Tabular data — C8 | Parsing and calculation tools | Declare schemas, encoding, types and missing-value handling; validate transformations against independent expected results. |
+| Excel — C9 | Workbook library, recalculation and inspection tools | Use a suitable library, such as openpyxl, for supported workbook features. Choose recalculation/rendering methods separately; writing formulas does not establish their calculated values or layout. |
+| Word — C10 | Document parsing/generation tools | Use a suitable document library, such as python-docx, for supported content and formatting; inspect required document features. |
+| PDF — C11 | Document conversion and inspection tools | Select a compatible export engine; compare exported content with its source and inspect pagination/readability. |
+| Business procedure — C12 | Skill, context assembly, shared tools | Apply approved reconciliation rules through C8–C11 as required by the deliverables. File-handling capability alone does not establish financial correctness. |
 | Code execution | Execution tool, sandbox | Run generated code in an isolated environment. Proposed provider: LangSmith sandbox. Keep orchestration and model credentials on the host. |
 | Reference access | Routed storage, file tools | Expose approved skills/memory read-only. Copy required execution assets deliberately; a virtual reference route is not necessarily mounted in the sandbox. |
 | Delegation | Another agent execution | Optional. Give each subtask explicit context, tools, scope, and shared budgets; do not assume separate context means security isolation. |
@@ -80,7 +103,7 @@ Use copy-in/copy-out for sandbox files. Preserve eligible outputs and supporting
 
 ### 3.4 Controls
 
-**Role:** govern inputs, actions, state changes, and delivery — C3–C6.
+**Role:** govern inputs, actions, state changes, and delivery across all capability scopes.
 
 | Control | Mechanism | Required behavior |
 |---|---|---|
@@ -96,7 +119,7 @@ Assess each control at its actual boundary. Instructions, program checks, human 
 
 ### 3.5 Continuity
 
-**Role:** retain and recover what later steps need — C4, C6.
+**Role:** retain and recover what later steps need — C4, C6, C7; supports revisions and recovery for C8–C12.
 
 | Concept | Mechanism | Required behavior / design choice |
 |---|---|---|
@@ -111,13 +134,15 @@ Assess each control at its actual boundary. Instructions, program checks, human 
 
 ### 4.1 Initial evaluation tasks
 
-These are proposed applications of C1–C6, not limits on the reusable foundation.
+These tasks exercise the capability catalog. A task-specific capability describes a repeatable kind of work; each assigned task is an instance. Evaluation tasks can also test reusable capabilities without adding a business workflow.
 
-| Task | Objective | Evaluation |
-|---|---|---|
-| CSV summary | Produce a correct summary from supplied data; clarify missing or ambiguous inputs. | E-PLAT-1 |
-| Office-file package | Produce an Excel working paper, a Word analysis, and its PDF export from synthetic data. Check formulas, calculations, presentation, and agreement between files. | E-ART-1 |
-| Monthly bank reconciliation | Match bank and ledger items, explain exceptions and balance bridges, and produce reviewable supporting work. Confirm this as the first finance workflow during planning. | E-FIN-1 |
+| Evaluation task | Capability composition | Objective | Evaluation |
+|---|---|---|---|
+| CSV summary | C1–C7 foundation + C8 tabular data | Produce a correct summary; clarify missing or ambiguous inputs. | E-PLAT-1 |
+| Office-file package | C1–C7 foundation + C9 Excel + C10 Word + C11 PDF | Produce a working paper, analysis and PDF export from synthetic data; check calculations, presentation and cross-file agreement. | E-ART-1 |
+| Monthly bank reconciliation | C1–C7 foundation + required C8–C11 work capabilities → C12 reconciliation | Match bank/ledger items and explain exceptions/balance bridges with reviewable supporting work. | E-FIN-1 |
+
+Example composition: **C7 manage workspace + C4 preserve work → C9 work with Excel → C12 reconcile bank transactions.** This shows dependencies, not an execution sequence; context, controls and review support the whole task.
 
 For each task, define its inputs, procedure, supported formats, access, expected outputs, independent answers/rubric, and acceptance thresholds. Keep detailed procedures in linked skill/workflow documents. Add later tasks using the same structure.
 
@@ -145,15 +170,15 @@ Distinguish file integrity, formula correctness, recalculation, and visual revie
 
 | ID | Capabilities / scope | Success means… | Evaluation |
 |---|---|---|---|
-| SC-1 | C1–C3; each task | Outputs meet independent expected results and presentation rubrics; material gaps are clarified or reported. | E-PLAT-1, E-ART-1, E-FIN-1 |
-| SC-2 | C4 | Sources stay unchanged; required state/files survive cleanup and restart, with versions and conflicts traceable. | E-FILE-1 |
-| SC-3 | C5, C6 | Permissions and limits hold; approvals apply only to their defined scope and version. | E-CTRL-1, E-PROV-1 |
+| SC-1 | C1–C3, C8–C12; each declared work/task capability | Outputs meet independent expected results and presentation rubrics; material gaps are clarified or reported. | E-PLAT-1, E-ART-1, E-FIN-1 |
+| SC-2 | C4, C7 | Task files are organized and isolated; sources stay unchanged; required state/files survive cleanup and restart, with versions and conflicts traceable. | E-FILE-1 |
+| SC-3 | C5–C7; all capability scopes | Permissions and limits hold; approvals apply only to their defined scope and version. | E-CTRL-1, E-PROV-1 |
 | SC-4 | C3, C6 | Reviewers can follow sources, assumptions, actions, checks, configuration, and approvals to the delivered version. | E-PROV-1 |
 | SC-5 | All; release | The proposed scope meets evaluation, ownership, access, data, recovery, and monitoring requirements before use. | E-REL-1 |
-| SC-6 | C1, C2, C4–C6; Asana | Intake, review, revision, and restart preserve work without duplicate dispatch or trigger loops. | E-ASANA-1 |
-| SC-7 | C2, C4, C5 | Interrupted or incomplete runs report accurate outcomes, preserve recoverable work, and retry without repeating completed external effects. | E-REC-1 |
+| SC-6 | C1, C2, C4–C7; Asana | Intake, review, revision, and restart preserve work without duplicate dispatch or trigger loops. | E-ASANA-1 |
+| SC-7 | C2, C4, C5, C7 | Interrupted or incomplete runs report accurate outcomes, preserve recoverable work, and retry without repeating completed external effects. | E-REC-1 |
 
-Traceability example: **C4 → Continuity + Actions + Controls → checkpoint/transfer mechanisms → SC-2 → E-FILE-1 → missing-file/resume monitoring.**
+Traceability example: **C4 + C7 → Continuity + Actions + Controls → scoped workspace/checkpoint/transfer mechanisms → SC-2 → E-FILE-1 → missing-file/resume monitoring.**
 
 ## 6. Evaluation, release, and improvement
 
@@ -180,8 +205,8 @@ Use deterministic checks for exact answers/invariants and rubrics for judgment. 
 | Evaluation | Required cases / mechanisms | Acceptance condition |
 |---|---|---|
 | E-PLAT-1 | Model loop, context selection, skills, tools: representative CSV tasks, missing/conflicting inputs, repeat trials. | Expected results match within declared tolerances; unsupported assumptions are surfaced; budgets hold. |
-| E-ART-1 | File generation, recalculation, validation: valid and deliberately defective Excel/Word/PDF packages. | Critical formulas/figures and cross-file values agree; required recalculation and presentation checks pass; graders detect seeded defects. |
-| E-FILE-1 | Checkpoints, transfer, versions: text/XLSX/binary files, concurrent edits, exclusions, cleanup/restart and transfer failure. | Sources preserved; required files/state recoverable; conflicts retained; incomplete preservation reported. |
+| E-ART-1 | C9–C11 file tools, recalculation, conversion and inspection: reading/revision cases, valid and deliberately defective Excel/Word/PDF packages, and declared supported/unsupported features. | Required content/features are preserved on read/revision/export; critical formulas/figures and cross-file values agree; required recalculation/presentation checks pass; unsupported features are reported; graders detect seeded defects. |
+| E-FILE-1 | Checkpoints, transfer, versions: text/XLSX/binary files, task isolation/file lookup, concurrent edits, exclusions, cleanup/restart and transfer failure. | Required files are locatable and scoped to the right task/run; sources preserved; state/files recoverable; conflicts retained; incomplete preservation reported. |
 | E-FIN-1 | Skill and calculations: bank/ledger matches, duplicates, exceptions, balance bridges, proposed entries and artifacts. | Independent expected results and all critical finance checks pass; reviewer accepts representative work. Proposed entries remain drafts. |
 | E-CTRL-1 | Policy/runtime/environment checks: authorized/denied requests, injected instructions, secrets, filesystem/network, budgets and delegation. | Forbidden effects are blocked; configured limits enforced; effective access matches the approved policy. |
 | E-PROV-1 | Manifest, work log, trace, review: follow input to output; modify an approved artifact; test separate approval scopes. | Evidence identifies the run/configuration/source/output versions; changed artifacts cannot inherit stale approval. |
@@ -189,7 +214,7 @@ Use deterministic checks for exact answers/invariants and rubrics for judgment. 
 | E-REL-1 | Release record, identities, monitoring, recovery rehearsal and representative memory/state compatibility. | All mandatory readiness conditions pass for the proposed stage; limitations and accountable owner recorded. |
 | E-ASANA-1 | Dispatcher, task/thread mapping, approvals: normal work, actionable/informational feedback, duplicate/out-of-order events, concurrent workers, failure/restart. | Eligible work follows the defined path; duplicates/loops prevented; context, files, and approval identity retained. |
 
-Define sample sizes, tolerances, budgets, and thresholds in D3 before judging a release candidate. Critical boundary or financial errors cannot be averaged away. Retain case/grader versions, results, variation, and limitations; include task, component, and integration evidence. Coverage alone does not establish reliability.
+Define sample sizes, tolerances, budgets, and thresholds in D3 before judging a release candidate. Critical boundary or financial errors cannot be averaged away. Retain case/grader versions, results, variation, and limitations; include task, component, and integration evidence. Assess C8–C11 separately within their groups as well as in composed tasks; passing one workflow does not establish general file-format support. Coverage alone does not establish reliability.
 
 ### 6.2 Release plan
 
@@ -234,7 +259,7 @@ These are design decisions, not findings about repository implementation. Owner:
 | ID | Decision | Resolve before |
 |---|---|---|
 | D1 | Exact model/framework versions, settings, dependencies, execution provider/image, and runtime budget enforcement. | Configuration baseline |
-| D2 | Supported file formats, required recalculation/rendering checks, first finance workflow and independent reference answers. | Task evaluation design |
+| D2 | Selected work capabilities, supported format features and limits, recalculation/conversion/rendering methods, first finance workflow and independent reference answers. | Task evaluation design |
 | D3 | Cases, graders, tolerances, repetitions/sample sizes, critical failures, cost/time/call/retry/revision thresholds. | Evaluation and release decisions |
 | D4 | Operational owner, signal sources, alert/review cadence, thresholds, trace data/access/retention. | Real-work pilot |
 | D5 | Host/storage, identity/access policy, concurrency model, backups, transfer limits, stop/recovery/rollback and state compatibility. | Deployment readiness |
@@ -245,6 +270,7 @@ These are design decisions, not findings about repository implementation. Owner:
 
 | Version | Date | Change |
 |---|---|---|
+| v0.9 | 2026-10-23 | Classified capabilities by reuse scope; made workspace and CSV/Excel/Word/PDF capabilities explicit; connected task composition, design, criteria and evaluation coverage. |
 | v0.8 | 2026-10-23 | Recast as intended requirements/design; removed implementation and pass/fail claims. Added explicit artifact and recovery evaluations, decision IDs, and revised lifecycle guidance. |
 | v0.7 | 2026-10-23 | Connected capabilities, design, success criteria, evaluations, and monitoring. |
 | v0.6 and earlier | 2026-10-22 | Earlier document structures retained in Git history. |

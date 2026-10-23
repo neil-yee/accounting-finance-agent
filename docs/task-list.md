@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.4 design draft · October 23, 2026 |
+| Version | v0.5 design draft · October 23, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification | [Agent specification](agent-spec.md) v0.8 |
-| Architecture | [Target architecture](architecture.md) v0.8 |
+| Specification | [Agent specification](agent-spec.md) v0.9 |
+| Architecture | [Target architecture](architecture.md) v0.9 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
@@ -16,7 +16,7 @@ This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and accep
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–5 | Reviewed scope and C1–C6 → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
+| PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–5 | Reviewed scope and C1–C12 by scope → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
 | PLAN-02 | Define task outputs and evaluation plan — §§4, 6.1; D2, D3 | Formats, independent answers/rubrics, cases, four dimensions, thresholds, sample sizes, budgets and grader checks. | Not assessed | — |
 | PLAN-03 | Select configuration and release design — §§3, 6.2; D1, D5 | Version/provider choices, host/storage, identities, concurrency, data policy, transfer limits and stop/recovery/rollback plan. | Not assessed | — |
 | PLAN-04 | Define monitoring and response — §6.3; D4 | Signals, data sources, thresholds, owners, cadence, trace access/retention and incident responses. | Not assessed | — |
@@ -34,7 +34,7 @@ Work may reuse or adapt existing implementation after assessment.
 | BUILD-01 | Configure reproducible runtime and model — §3.1; D1 | Dependency/configuration manifest, provider settings and invocation path; a runnable minimal task. | Not assessed | — |
 | BUILD-02 | Configure context, skills and planning — §3.2 | Request/history/reference selection, source IDs, approved skills, todo state and context-limit behavior. | Not assessed | — |
 | BUILD-03 | Configure sandbox and file/code tools — §§3.3–3.4 | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Not assessed | — |
-| BUILD-04 | Implement artifact creation and validation — §§3.3, 4.3 | CSV/Excel/Word/PDF paths for approved scope; independent calculations, formula/recalculation, presentation and cross-file checks. | Not assessed | — |
+| BUILD-04 | Implement artifact creation and validation — §§3.3, 4.3 | Selected C8–C11 paths with declared supported features; read/revision/export, independent calculations, formula/recalculation, presentation and cross-file checks. | Not assessed | — |
 | BUILD-05 | Implement persistent threads and file transfer — §3.5 | State/file stores, task ownership, checkpoints, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
 | BUILD-06 | Implement permissions and budgets — §§3.1, 3.4 | Checks across model/actions/storage/delivery; bounded calls/time/retries and delegation; enforced reference/source restrictions. | Not assessed | — |
 | BUILD-07 | Implement outcomes and recovery — §§3.1, 3.5, 4.2 | Explicit partial/failure/review states, operation records, retry eligibility, reconciliation and cleanup-failure handling. | Not assessed | — |
@@ -48,9 +48,9 @@ Work may reuse or adapt existing implementation after assessment.
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| TEST-01 | E-PLAT-1 — C1–C3 / SC-1 | Representative CSV, missing/conflicting-input and repeat cases; independent outputs/rubric and budget results. | Not assessed | — |
-| TEST-02 | E-ART-1 — C3 / SC-1 | Generated and deliberately defective packages; correct formulas/figures, cross-file agreement, required recalculation and presentation review. | Not assessed | — |
-| TEST-03 | E-FILE-1 — C4 / SC-2 | Source preservation, state/file restart, concurrent edits, exclusions, conflicts and transfer-failure cases. | Not assessed | — |
+| TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Representative CSV, missing/conflicting-input and repeat cases; independent outputs/rubric and budget results. | Not assessed | — |
+| TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Separate C9–C11 checks and composed packages: reading/revision, supported features, conversion fidelity, seeded defects, correct formulas/figures and presentation. | Not assessed | — |
+| TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, state/file restart, concurrent edits, exclusions, conflicts and transfer-failure cases. | Not assessed | — |
 | TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, actual filesystem/network/identity checks and enforced shared budgets. | Not assessed | — |
 | TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, stale-approval cases, separate approval scopes and complete configuration references. | Not assessed | — |
 | TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup failure and safe resume/retry. | Not assessed | — |
@@ -63,7 +63,7 @@ Work may reuse or adapt existing implementation after assessment.
 |---|---|---|---|---|
 | FIN-01 | Confirm workflow, scope and independent answers — §4.1; D2, D3 | Bank reconciliation or an explicitly selected alternative; representative inputs, expected matches/exceptions/balances, critical thresholds and review rubric. | Not assessed | — |
 | FIN-02 | Configure skill and evaluation materials — §§3.2–3.4, 6.1 | Procedure, approved references, access/packages, supporting calculations and versioned normal/edge/adversarial cases. | Not assessed | — |
-| FIN-03 | E-FIN-1 and affected regressions — SC-1 | Critical finance checks and representative human review pass; source preservation, artifact consistency and foundation regressions included. | Not assessed | — |
+| FIN-03 | E-FIN-1 and affected regressions — C12 / SC-1 | Critical finance checks and representative human review pass; source preservation, artifact consistency and foundation regressions included. | Not assessed | — |
 
 **Finance gate:** accept only the evaluated task scope. Draft proposed entries do not authorize posting. A demonstration does not replace independent financial and presentation checks.
 
@@ -120,5 +120,6 @@ Scope this work after the foundation and finance gates. These are planned depend
 
 | Version | Date | Change |
 |---|---|---|
+| v0.5 | 2026-10-23 | Mapped work and evaluation items to the classified capability catalog; retained unassessed evidence fields. |
 | v0.4 | 2026-10-23 | Replaced implementation-based statuses with an unassessed delivery plan; added capability/evaluation mappings, evidence fields and a later repository review procedure. |
 | v0.3 and earlier | 2026-10-23 | Earlier task lists retained in Git history. |
