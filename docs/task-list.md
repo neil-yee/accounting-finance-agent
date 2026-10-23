@@ -4,7 +4,7 @@
 |---|---|
 | Version | v0.2 working project checklist |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.5 |
+| Specification | [Agent specification](agent-spec.md) v0.6 |
 | Status vocabulary | Done · In progress · Not started · Deferred (intentionally waiting on a prerequisite) · Blocked |
 
 This checklist follows the [ADLC](mental-model/02-adlc.md). Each task points to the specification decision or evaluation it builds or carries out. The [README implementation inventory](../README.md#implementation-status) is the detail source for code status and verification evidence; “Done” here does not imply production readiness.
@@ -88,4 +88,4 @@ Repeat the Skill 1 planning, configuration, and testing tasks for the new skill.
 
 | Version | Date | Change |
 |---|---|---|
-| v0.2 | 2026-10-22 | Adapted the attached ADLC checklist to current implementation and verification status; linked tasks to the v0.5 spec and evaluation IDs. |
+| v0.2 | 2026-10-22 | Adapted the attached ADLC checklist to current implementation and verification status; linked tasks to the v0.6 spec and evaluation IDs. |

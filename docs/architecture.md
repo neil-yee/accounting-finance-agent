@@ -4,7 +4,7 @@
 |---|---|
 | Version | v0.5 working draft |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.5 |
+| Specification | [Agent specification](agent-spec.md) v0.6 |
 | Status | Current prototype with proposed Asana and external-system integrations. |
 
 This architecture applies the [00 overview](mental-model/00-overview.md) and [01 anatomy](mental-model/01-anatomy.md) to the project. The anatomy view shows what the agent is made of; the run view shows how requests move through it; the deployment view shows where components run and what they can reach. Solid nodes and edges describe the current prototype. Dashed edges are proposed future integrations or release paths.
@@ -171,7 +171,7 @@ flowchart LR
 | Actions: file tools, execute, sub-agent | 2, 3, 4 | [2.3 Actions](agent-spec.md#23-actions-what-the-model-can-request) | Implemented |
 | Controls: routes, runtime limits, sandbox, review | 2, 3, 4 | [2.4 Controls](agent-spec.md#24-controls-which-requests-are-allowed) | Partial; see README verification inventory |
 | Continuity: checkpoint, workspace, work log, traces | 2, 3, 4 | [2.5 Continuity](agent-spec.md#25-continuity-what-carries-over) | Implemented locally; recovery and provenance gaps remain |
-| Asana dispatcher and review path | 1, 3, 4 | [1.2 Work interface](agent-spec.md#12-work-interface), [3.1 E-ASANA-1](agent-spec.md#31-evaluation-plan) | Proposed, not implemented |
+| Asana dispatcher and review path | 2.7, 3, 4 | [2.7 Work lifecycle and interface](agent-spec.md#27-work-lifecycle-and-interface), [3.1 E-ASANA-1](agent-spec.md#31-evaluation-plan) | Proposed, not implemented |
 | External connector or MCP | 2, 4 | [2.3 Actions](agent-spec.md#23-actions--what-the-model-can-request), [2.4 Controls](agent-spec.md#24-controls--which-requests-are-allowed) | No external business-system integration |
 | Model provider and LangSmith | 1, 4 | [2.1 Core](agent-spec.md#21-core--what-reasons-and-drives-the-work), [3.3 Monitoring](agent-spec.md#33-monitoring-plan) | Model call and optional tracing implemented |
 
@@ -189,5 +189,6 @@ flowchart LR
 
 | Version | Date | Change |
 |---|---|---|
+| v0.6 | 2026-10-22 | Updated the spec cross-reference for its revised section order. |
 | v0.5 | 2026-10-22 | Adapted the four-view architecture template to the current prototype and the five-function anatomy; added spec traceability and current/future labels. |
 | v0.4 | 2026-10-15 | Prior project-specific architecture diagram. |

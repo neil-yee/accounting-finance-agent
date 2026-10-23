@@ -2,7 +2,7 @@
 
 | Document field | Value |
 |---|---|
-| Version | v0.5 working draft |
+| Version | v0.6 working draft |
 | Owner | Neil Yee |
 | Document date | October 22, 2026 |
 | Status | Project plan and proposed design; implementation and verification status is tracked in the [README](../README.md). |
@@ -13,23 +13,19 @@ This specification applies the [agent mental models](mental-model/00-overview.md
 
 ## 1. Purpose
 
-### 1.1 Goal
+### 1.1 General agent objective
 
 Build a reusable, human-supervised accounting and finance agent that accepts work, gathers relevant context, follows task-specific procedures, and produces outputs people can inspect and approve.
 
-The first platform task is a CSV summary. Monthly bank reconciliation is the provisional first finance workflow. The foundation is intended to support additional finance tasks over time; a successful demonstration is not a finance-quality or release claim.
+### 1.2 Initial task objectives
 
-### 1.2 Work interface
+| Task scope | Objective | Status |
+|---|---|---|
+| Platform validation task | Summarize a provided CSV into a reviewable output to exercise the reusable foundation. | Starter task; completion alone does not establish finance quality or release readiness. |
+| First finance workflow | Reconcile a bank statement to a ledger, identify matches and exceptions, and produce reviewable supporting work. | Monthly bank reconciliation is provisional; known-answer cases and acceptance thresholds are still being prepared. |
+| Later task-specific skills | Add a specific work objective and procedure while reusing the shared agent capabilities and controls. | Each task type should have its own workflow or skill detail and evaluation cases. |
 
-| Item | Current decision |
-|---|---|
-| How work arrives | Local terminal prompt. Asana is the intended work interface after the foundation and first finance workflow are ready. |
-| Task scope | One conversation thread per work item is the target for the Asana workflow. Current terminal threads are persistent but are not mapped to Asana tasks. |
-| How results return | Local prototype: final response and files in the selected thread workspace. Planned Asana workflow: status, summary, unresolved issues, and output links. |
-| Review and feedback | Current local review records a decision against a successful run's unchanged file manifest. Planned Asana review happens between runs; actionable feedback starts a revision in the same task thread. |
-| Statuses | Planned: **To do → Agent working → Needs review → Done**, with **Blocked** for work that cannot continue. |
-
-Asana eligibility rules, status representation, trigger mechanism, approval semantics, and actionable-feedback rules remain open. Informational comments must not automatically start revisions; agent-generated status updates must not trigger duplicate runs.
+The foundation is intended to support additional finance tasks over time. A successful demonstration of one task is not a finance-quality or release claim.
 
 ### 1.3 Scope and boundaries
 
@@ -41,26 +37,13 @@ Asana eligibility rules, status representation, trigger mechanism, approval sema
 
 The first finance workflow is a candidate, not yet a demonstrated capability. Real company policies and access are not configured.
 
-### 1.4 Success criteria
-
-These criteria define intended outcomes. Their evaluation status is shown in Section 3.1.
-
-| ID | Success criterion |
-|---|---|
-| SC-1 | For each released task type, the agent produces results that meet independently defined, task-specific acceptance checks on known-answer cases. |
-| SC-2 | Source inputs remain unchanged, and new or changed deliverables and supporting files are preserved after sandbox cleanup and can be associated with the correct run. |
-| SC-3 | The agent stays within its configured permissions and operating limits. Human approval is required for deliverables and separately for changes to reusable assets or access. |
-| SC-4 | A reviewer can inspect the output, its assumptions and exceptions, relevant inputs, checks performed, and the configuration/run provenance needed to understand the result. |
-| SC-5 | The foundation and first finance workflow pass defined release gates, with an owner, data policy, bounded access, tested stop/recovery, and monitoring plan, before hosted or expanded real-work use. |
-| SC-6 | Before Asana automation is enabled, the task-to-review lifecycle works without duplicate runs or trigger loops, and preserves task context and outputs through revisions and restart. |
-
-### 1.5 Output standard
+### 1.4 Output standard
 
 Each completed task should provide an artifact appropriate to the request, a concise summary, unresolved issues or missing inputs, and supporting code or provenance when those help review. Financial artifacts should state the reporting period, units/currency, sources, assumptions, calculations, tie-outs, exceptions, and applicable limitations. Review approval applies to the identified output version only; it does not approve reusable assets or permissions.
 
-## 2. Anatomy: configuration and implementation
+## 2. Capabilities: anatomy, mechanisms, implementation
 
-This section records **what function the agent needs** and **which mechanisms implement it**. The mechanism is the implementation means; it is not itself the function. The current-status column distinguishes code presence from verified behavior. The README remains the detailed implementation inventory.
+This section describes the reusable capabilities through the agent's five functions, then maps each function to the mechanisms that implement it and the current project status. A task-specific skill applies these capabilities to one defined objective. A mechanism is the implementation means; it is not itself the function. The README remains the detailed implementation inventory.
 
 ### 2.1 Core: what reasons and drives the work
 
@@ -122,6 +105,33 @@ Controls must be drawn and evaluated at the strength they actually have: a model
 | Approved knowledge and skills | Owner-maintained local Markdown under `memory/` and `skills/`; read-only agent routes. No automatic learning or silent promotion. |
 | Run provenance and review | Local work log stores run outcomes, fingerprints, call/transfer events, validation findings, and review records. LangSmith tracing is optional. Neither is assumed to capture every internal sandbox operation. |
 | Configuration identity | Release/evaluation evidence should identify the Git commit, lockfile, model settings, sandbox snapshot, and approved skills/memory. The current CSV report does not yet capture this complete record. |
+
+### 2.6 Success criteria
+
+These criteria describe the outcomes expected from the capabilities above. Their evaluation status is shown in Section 3.1.
+
+| ID | Success criterion |
+|---|---|
+| SC-1 | For each released task type, the agent produces results that meet independently defined, task-specific acceptance checks on known-answer cases. |
+| SC-2 | Source inputs remain unchanged, and new or changed deliverables and supporting files are preserved after sandbox cleanup and can be associated with the correct run. |
+| SC-3 | The agent stays within its configured permissions and operating limits. Human approval is required for deliverables and separately for changes to reusable assets or access. |
+| SC-4 | A reviewer can inspect the output, its assumptions and exceptions, relevant inputs, checks performed, and the configuration/run provenance needed to understand the result. |
+| SC-5 | The foundation and first finance workflow pass defined release gates, with an owner, data policy, bounded access, tested stop/recovery, and monitoring plan, before hosted or expanded real-work use. |
+| SC-6 | Before Asana automation is enabled, the task-to-review lifecycle works without duplicate runs or trigger loops, and preserves task context and outputs through revisions and restart. |
+
+### 2.7 Work lifecycle and interface
+
+This describes how people assign work, receive results, and review or revise them. It follows the agent capabilities because the interface is one way to operate the configured agent.
+
+| Item | Current decision |
+|---|---|
+| How work arrives | Local terminal prompt. Asana is the intended work interface after the foundation and first finance workflow are ready. |
+| Task scope | One conversation thread per work item is the target for the Asana workflow. Current terminal threads are persistent but are not mapped to Asana tasks. |
+| How results return | Local prototype: final response and files in the selected thread workspace. Planned Asana workflow: status, summary, unresolved issues, and output links. |
+| Review and feedback | Current local review records a decision against a successful run's unchanged file manifest. Planned Asana review happens between runs; actionable feedback starts a revision in the same task thread. |
+| Statuses | Planned: **To do → Agent working → Needs review → Done**, with **Blocked** for work that cannot continue. |
+
+Asana eligibility rules, status representation, trigger mechanism, approval semantics, and actionable-feedback rules remain open. Informational comments must not automatically start revisions; agent-generated status updates must not trigger duplicate runs.
 
 ## 3. Plans
 
@@ -210,5 +220,6 @@ Keep the implementation focused on one agent. Evaluate the foundation and first 
 
 | Version | Date | Change |
 |---|---|---|
+| v0.6 | 2026-10-22 | Separated the general agent objective from initial task objectives; placed capabilities before success criteria and moved the work interface after them. |
 | v0.5 | 2026-10-22 | Reorganized around anatomy functions and mechanisms; connected success criteria to evals and added links to the mental models, architecture, and project task list. Preserved current prototype scope and release gaps. |
 | v0.4 | 2026-10-21 | Previous structure retained in Git history; v0.5 reorganizes its project decisions around the anatomy and ADLC. |
