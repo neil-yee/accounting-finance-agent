@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.9 design draft · October 23, 2026 |
+| Version | v0.10 design draft · October 23, 2026 |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.9 |
+| Specification | [Agent specification](agent-spec.md) v0.10 |
 | Implementation assessment | Not assessed. Every component and path below describes intended behavior. |
 
 The four views explain system boundaries, responsibilities, execution, and deployment. They apply the [anatomy](mental-model/01-anatomy.md) and link to the spec and evaluations. Solid arrows show calls/data flow; dotted arrows show oversight or policy influence. Line style does not indicate implementation status.
@@ -150,12 +150,12 @@ The spec classifies capabilities as shared foundation (C1–C7), reusable work c
 
 | Architecture responsibility | Spec | Evaluation | Evidence required during repository review |
 |---|---|---|---|
-| Model, loop, context and planning | [3.1 Core](agent-spec.md#31-core), [3.2 Context](agent-spec.md#32-context) | E-PLAT-1, E-REC-1 | Configuration, routing and state handling; representative runs and incomplete-response cases. |
-| File/code work and validation | [3.3 Actions](agent-spec.md#33-actions), [4.3 Output standard](agent-spec.md#43-output-standard) | E-ART-1, E-FIN-1 | Execution/validation paths and independent artifact/cross-file checks. |
-| Permissions, budgets, identity and approval | [3.4 Controls](agent-spec.md#34-controls) | E-CTRL-1, E-PROV-1 | Enforcement points, access policy, boundary cases and version-specific decisions. |
-| Persistence, transfer and recovery | [3.5 Continuity](agent-spec.md#35-continuity) | E-FILE-1, E-REC-1 | Checkpoint/file/action records and interruption/conflict/retry evidence. |
+| Model, loop, context and planning | [C1–C2 design](agent-spec.md#2-capabilities-and-design), [3.1 Context](agent-spec.md#31-context-and-references), [3.2 Execution](agent-spec.md#32-execution-outcomes-and-budgets) | E-PLAT-1, E-REC-1 | Configuration, routing and state handling; representative runs and incomplete-response cases. |
+| File/code work and validation | [C2, C7–C12 design](agent-spec.md#2-capabilities-and-design), [4.3 Output standard](agent-spec.md#43-output-standard) | E-ART-1, E-FIN-1 | Execution/validation paths and independent artifact/cross-file checks. |
+| Permissions, budgets, identity and approval | [3.2 Budgets](agent-spec.md#32-execution-outcomes-and-budgets), [3.4 Permissions and approvals](agent-spec.md#34-permissions-and-approvals) | E-CTRL-1, E-PROV-1 | Enforcement points, access policy, boundary cases and version-specific decisions. |
+| Persistence, transfer and recovery | [3.3 Workspace, transfer and recovery](agent-spec.md#33-workspace-transfer-and-recovery) | E-FILE-1, E-REC-1 | Checkpoint/file/action records and interruption/conflict/retry evidence. |
 | Task intake, publication and revision | [4.2 Work lifecycle](agent-spec.md#42-work-lifecycle-and-interface) | E-ASANA-1 | Scope, mapping, trigger/locking rules and integration cases. |
-| Release, observation and response | [6.2 Release](agent-spec.md#62-release-plan), [6.3 Monitoring](agent-spec.md#63-monitoring-plan) | E-REL-1, E-PROV-1 | Configuration/release record, monitoring owners/thresholds, recovery rehearsal. |
+| Release, observation and response | [6.2 Release](agent-spec.md#62-release-plan), [6.3 Monitoring](agent-spec.md#63-monitoring-plan), [3.5 Evidence](agent-spec.md#35-evidence-configuration-and-memory) | E-REL-1, E-PROV-1 | Configuration/release record, monitoring owners/thresholds, recovery rehearsal. |
 
 ## 6. Design review checklist
 
@@ -173,6 +173,7 @@ These checks describe acceptance of the design; no completion is asserted.
 
 | Version | Date | Change |
 |---|---|---|
+| v0.10 | 2026-10-23 | Linked architecture responsibilities to the combined capability/design table and shared operating rules. |
 | v0.9 | 2026-10-23 | Aligned the spec reference and capability-scope mapping. |
 | v0.8 | 2026-10-23 | Recast all views as target design; removed implementation labels; expanded outcome, recovery, control and evidence mappings. |
 | v0.7 and earlier | 2026-10-23 | Earlier architecture versions retained in Git history. |
