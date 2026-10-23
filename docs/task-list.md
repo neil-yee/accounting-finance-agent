@@ -1,92 +1,124 @@
-# Project Task List — Accounting & Finance Agent
+# Accounting & Finance Agent — Delivery and Assessment Plan
 
-| Document field | Value |
+| Field | Value |
 |---|---|
-| Version | v0.3 working project checklist |
-| Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.7 |
-| Status vocabulary | Done · In progress · Not started · Deferred (intentionally waiting on a prerequisite) · Blocked |
+| Version | v0.4 design draft · October 23, 2026 |
+| Owner | Neil Yee; assign additional owners during planning. |
+| Specification | [Agent specification](agent-spec.md) v0.8 |
+| Architecture | [Target architecture](architecture.md) v0.8 |
+| Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
-This checklist follows the [ADLC](mental-model/02-adlc.md). Each task points to the specification decision or evaluation it builds or carries out. The [README implementation inventory](../README.md#implementation-status) is the detail source for code status and verification evidence; “Done” here does not imply production readiness.
+This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
 
-## Build: Plan
+**Assessment values:** Not assessed · Missing · Partial · Meets completion criterion. Keep evidence links beside each finding. Code presence can satisfy a build item; evaluation items require results, and release items require the corresponding approval. An unchecked gate is unassessed, not a declaration that it failed.
 
-| # | Task | Spec | Done when | Status |
+## 1. Plan
+
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 1 | Complete and review the project spec first pass | 1–7 | Purpose and scope are clear; all five anatomy functions have a project decision and mechanism; every success criterion maps to an evaluation; release, monitoring, and open decisions are recorded. | In progress |
-| 2 | Draw and cross-check the architecture | 2–4, 6.2 | Overview, anatomy, run, and deployment views match spec rows; current and future components are distinguished; trust boundaries and links are correct. | Done |
-| 3 | Maintain this ADLC task list and reconcile it with project status | All | Tasks link to the current spec version and reflect README implementation and verification evidence. | Done |
+| PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–5 | Reviewed scope and C1–C6 → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
+| PLAN-02 | Define task outputs and evaluation plan — §§4, 6.1; D2, D3 | Formats, independent answers/rubrics, cases, four dimensions, thresholds, sample sizes, budgets and grader checks. | Not assessed | — |
+| PLAN-03 | Select configuration and release design — §§3, 6.2; D1, D5 | Version/provider choices, host/storage, identities, concurrency, data policy, transfer limits and stop/recovery/rollback plan. | Not assessed | — |
+| PLAN-04 | Define monitoring and response — §6.3; D4 | Signals, data sources, thresholds, owners, cadence, trace access/retention and incident responses. | Not assessed | — |
+| PLAN-05 | Define references and memory policy — §§3.2, 3.5, 6.4; D7 | Ownership, scope, versions, read/write rules, retention/deletion, compatibility and promotion rules. | Not assessed | — |
+| PLAN-06 | Cross-check architecture and task coverage — §§2–7 | Four views cover responsibilities, flows, failures and trust boundaries; each requirement has work and evidence links. | Not assessed | — |
 
-**Plan gate:** not yet met. Some evaluation thresholds, access decisions, and release/monitoring ownership remain open in the spec.
+**Plan gate:** approve the design and evaluation/release/monitoring plans for the selected scope. Resolve decisions needed for that scope; record later decisions and their prerequisites.
 
-## Build: Configure — platform foundation
+## 2. Configure the shared foundation
 
-| # | Task | Spec | Done when | Status |
+Work may reuse or adapt existing implementation after assessment.
+
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 4 | Set up the repo, dependencies, and local environment | 3.1, 6.2 | The app starts reproducibly from the locked environment. | Done |
-| 5 | Create the agent and sandbox execution path | 3.1, 3.3 | The agent can write and run code on a sample file in an isolated sandbox. | Done |
-| 6 | Add persistent threads, checkpoints, and per-thread workspace | 3.5 | Conversation state and files survive restart and remain separated by thread. | Done |
-| 7 | Implement file copy-in, preservation, and copy-out | 3.3, 3.5 | Inputs remain unchanged; new/changed outputs survive sandbox cleanup; version and conflict behavior is recorded. | Done |
-| 8 | Add runtime limits, local locking, and failure handling | 3.1, 3.4, 3.5 | Limits are enforced; concurrent local runs are prevented; failures and recovery are visible. | In progress |
-| 9 | Add tracing, provenance, and artifact review records | 3.4, 3.5, 6.1 | A reviewer can follow a run from inputs/configuration to tools, outputs, checks, and review decision. | In progress |
-| 10 | Define platform eval cases and graders | 5, 6.1 | Cases cover exact outputs, source preservation, boundaries, restart/revision, and failure behavior with explicit pass conditions. | In progress |
+| BUILD-01 | Configure reproducible runtime and model — §3.1; D1 | Dependency/configuration manifest, provider settings and invocation path; a runnable minimal task. | Not assessed | — |
+| BUILD-02 | Configure context, skills and planning — §3.2 | Request/history/reference selection, source IDs, approved skills, todo state and context-limit behavior. | Not assessed | — |
+| BUILD-03 | Configure sandbox and file/code tools — §§3.3–3.4 | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Not assessed | — |
+| BUILD-04 | Implement artifact creation and validation — §§3.3, 4.3 | CSV/Excel/Word/PDF paths for approved scope; independent calculations, formula/recalculation, presentation and cross-file checks. | Not assessed | — |
+| BUILD-05 | Implement persistent threads and file transfer — §3.5 | State/file stores, task ownership, checkpoints, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
+| BUILD-06 | Implement permissions and budgets — §§3.1, 3.4 | Checks across model/actions/storage/delivery; bounded calls/time/retries and delegation; enforced reference/source restrictions. | Not assessed | — |
+| BUILD-07 | Implement outcomes and recovery — §§3.1, 3.5, 4.2 | Explicit partial/failure/review states, operation records, retry eligibility, reconciliation and cleanup-failure handling. | Not assessed | — |
+| BUILD-08 | Implement provenance and review — §§3.4–3.5 | Traces, work log, configuration/source/output identities, actual-check reports and version-specific approval records. | Not assessed | — |
+| BUILD-09 | Create cases and graders — §6.1 | Versioned fixtures/rubrics, thresholds, repetitions, setup/reset, expected results and seeded defects to check graders. | Not assessed | — |
+| BUILD-10 | Configure operational monitoring — §§6.2–6.3 | Automatic checks, signal collection, alerts/review routing, access/retention and stop/recovery controls. | Not assessed | — |
 
-**Configure gate:** the walking skeleton and file transfer exist. Full platform evaluation cases and some live control/recovery checks are outstanding.
+**Configure gate:** a representative task completes the intended path; fixtures, graders, instrumentation, and recovery procedures are ready for evaluation. Completion of this gate does not establish task quality across the planned scope.
 
-## Test — platform foundation
+## 3. Evaluate the foundation
 
-| # | Task | Spec | Done when | Status |
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 11 | Run the platform evaluation plan | 6.1, E-PLAT-1, E-FILE-1, E-CTRL-1, E-PROV-1 | Each planned case passes on the recorded configuration; restart and failure cases are included; findings become tasks or regression cases. | In progress |
+| TEST-01 | E-PLAT-1 — C1–C3 / SC-1 | Representative CSV, missing/conflicting-input and repeat cases; independent outputs/rubric and budget results. | Not assessed | — |
+| TEST-02 | E-ART-1 — C3 / SC-1 | Generated and deliberately defective packages; correct formulas/figures, cross-file agreement, required recalculation and presentation review. | Not assessed | — |
+| TEST-03 | E-FILE-1 — C4 / SC-2 | Source preservation, state/file restart, concurrent edits, exclusions, conflicts and transfer-failure cases. | Not assessed | — |
+| TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, actual filesystem/network/identity checks and enforced shared budgets. | Not assessed | — |
+| TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, stale-approval cases, separate approval scopes and complete configuration references. | Not assessed | — |
+| TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup failure and safe resume/retry. | Not assessed | — |
 
-**Platform release gate:** not yet passed. The 58-test offline engineering suite and individual smoke runs are useful evidence, but they do not replace the planned eval set or prove finance quality.
+**Foundation gate:** mandatory criteria pass for the defined cases and repetitions, with case/grader/configuration versions, limitations, and a recorded decision. Preserve passing capability cases as regressions.
 
-## Skill 1 — Plan, Configure, Test
+## 4. Define and evaluate the first finance workflow
 
-| # | Task | Spec | Done when | Status |
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 12 | Confirm bank reconciliation as Skill 1; collect representative examples and known answers | 4.1, 4.3, 5, E-FIN-1 | Synthetic bank and ledger cases have independent expected matches, exceptions, balances, and outputs. | In progress |
-| 13 | Define the skill evaluation plan and acceptance thresholds | 5, 6.1, E-FIN-1 | Every finance success criterion maps to a fixture, check, grader, pass threshold, and required human review. | In progress |
-| 14 | Confirm only the access and packages the skill needs | 3.3, 3.4 | Required access is narrowly scoped and tested; no unnecessary external connection or package is enabled. | In progress |
-| 15 | Complete the skill procedure and evaluation cases | 3.2, 3.3, 6.1 | `SKILL.md`, known-answer cases, graders, and output review criteria are ready. | In progress |
-| 16 | Run Skill 1 evals and platform regression | 6.1, E-FIN-1 | Critical finance checks pass; human review accepts a representative output; platform regressions still pass. | Not started |
+| FIN-01 | Confirm workflow, scope and independent answers — §4.1; D2, D3 | Bank reconciliation or an explicitly selected alternative; representative inputs, expected matches/exceptions/balances, critical thresholds and review rubric. | Not assessed | — |
+| FIN-02 | Configure skill and evaluation materials — §§3.2–3.4, 6.1 | Procedure, approved references, access/packages, supporting calculations and versioned normal/edge/adversarial cases. | Not assessed | — |
+| FIN-03 | E-FIN-1 and affected regressions — SC-1 | Critical finance checks and representative human review pass; source preservation, artifact consistency and foundation regressions included. | Not assessed | — |
 
-**Skill 1 release gate:** not yet passed. The procedure exists, but known-answer fixtures and task evaluations remain outstanding.
+**Finance gate:** accept only the evaluated task scope. Draft proposed entries do not authorize posting. A demonstration does not replace independent financial and presentation checks.
 
-## Deploy
+## 5. Release within the approved scope
 
-| # | Task | Spec | Done when | Status |
+Prerequisite: the required foundation and finance evidence for that release.
+
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 17 | Complete readiness review and run an approved parallel trial | 6.2 | Owner, data policy, identity/access, limits, stop/rollback, and recovery are confirmed; results match the normal process on a defined sample. | Deferred |
-| 18 | Advance only through the supervised-use gate | 6.2 | A defined period/sample meets agreed thresholds with every deliverable human-reviewed; no posting or payment actions are enabled. | Deferred |
+| REL-01 | E-REL-1 readiness review — §6.2 / SC-5 | Release record: configuration/scope, owner, identities, storage, data/trace policy, budgets, monitoring, compatible state/memory and rehearsed stop/recovery/rollback. | Not assessed | — |
+| REL-02 | Conduct approved parallel operation — §6.2 | Representative comparison with the normal process; consequential writes suppressed; discrepancies reviewed against agreed thresholds. | Not assessed | — |
+| REL-03 | Authorize supervised use — §6.2 | Explicit decision for a defined scope; every output reviewed; operational results, limits and recovery meet the stage criteria. | Not assessed | — |
 
-**Deployment gate:** no hosted deployment is implemented. Do not advance until the foundation and first finance workflow pass their evaluation gates.
+**Release gate:** authorize only the recorded stage and scope. Local deployment is a valid choice; supervised use may remain the endpoint. Broader access or autonomy needs separate evidence and approval.
 
-## Monitor
+## 6. Monitor and improve
 
-| # | Task | Spec | Done when | Status |
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 19 | Start the monitoring routine for an approved release | 6.3 | Every-run checks and provenance are active; an owner and review cadence are named; first trend review is complete. | Not started |
-| 20 | Turn diagnosed findings into controlled changes and regression cases | 6.1, 6.3, 6.4 | Findings are stopped, fixed through Build/Test, or explicitly accepted; fixes add regression cases before release. | Not started |
+| MON-01 | Operate per-run checks and response paths — §6.3 | Versioned run/outcome records, applicable automatic checks, alert ownership and demonstrated response routing. | Not assessed | — |
+| MON-02 | Review outputs and trends — §6.3 | Reviews at agreed cadence; quality, corrections, costs and workload comparisons by task/configuration; decisions recorded. | Not assessed | — |
+| MON-03 | Diagnose findings and release fixes — §6.4 | Evidence, impact, owner and response; useful regression cases, verified fixes or accepted limitations; memory/state compatibility considered. | Not assessed | — |
 
-## Later integration: Asana task-to-review path
+**Monitoring requirement:** every material finding has an accountable response. Trace completion alone does not establish correctness or approval.
 
-These tasks follow the foundation and first finance workflow release gates. Asana integration is intentionally deferred.
+## 7. Add the Asana task workflow
 
-| # | Task | Spec | Done when | Status |
+Scope this work after the foundation and finance gates. These are planned dependencies, not assertions about whether code exists.
+
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| 21 | Define Asana eligibility, identity, and trigger rules | 3.4, 4.2, 7 | Assignment and actionable-feedback rules, narrow permissions, status mapping, and loop prevention are specified. | Deferred |
-| 22 | Implement task intake and context gathering | 3.2, 3.3, 4.2 | An eligible task starts the correct thread with task fields, attachments, changes, skills, and relevant prior outputs. | Deferred |
-| 23 | Publish status, output links, and handle review/revision | 3.3, 3.4, 3.5, 4.2 | Results appear for review; approval identifies an output version; actionable feedback revises the same task/thread. | Deferred |
-| 24 | Evaluate the end-to-end task lifecycle | 6.1, E-ASANA-1 | Five consecutive tasks complete intake, execution, preservation, review/revision; duplicate updates do not start duplicate runs; failure and restart paths pass. | Deferred |
+| ASANA-01 | Define eligibility, identity, triggers and approvals — §4.2; D6 | Task/thread mapping, permitted publication, status transitions, actionable feedback, deduplication, locking and version-specific review semantics. | Not assessed | — |
+| ASANA-02 | Configure intake and execution ownership — §§3.2, 3.4–3.5, 4.2 | Authorized task/context collection, eligible trigger handling, thread restoration, concurrency control and operation records. | Not assessed | — |
+| ASANA-03 | Configure publication and revision — §4.2 | Scoped status/summary/link updates, review of identified versions, same-thread revisions, and suppression of agent-generated trigger loops. | Not assessed | — |
+| ASANA-04 | E-ASANA-1 plus affected regressions — §6.1 / SC-6 | Normal/revision/informational/duplicate/out-of-order/concurrent/failure/restart cases; approved sample/repetition plan and no duplicate effects. | Not assessed | — |
+| ASANA-05 | Review readiness and staged rollout — §§6.2–6.3 | Updated E-REL-1 evidence for new identity/access, trigger stop/recovery, monitoring and approved rollout scope. | Not assessed | — |
 
-## Adding a later skill
+## 8. Later changes
 
-Repeat the Skill 1 planning, configuration, and testing tasks for the new skill. Run the full regression set before release. Changes to model, instructions, knowledge, access, controls, or core execution also require the affected regression cases described in the [ADLC change guidance](mental-model/02-adlc.md#6-changes-after-release).
+| ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
+|---|---|---|---|---|
+| CHANGE-01 | Add a skill, tool, connector or workload — §§4.1, 6.4 | New objective/scope, design/access impact, capability cases, relevant regressions and release/monitoring decision. | Not assessed | — |
+| CHANGE-02 | Change model, shared guidance or memory policy — §§3.5, 6.4; D7 | Impact-based evaluation; representative existing/stale/conflicting state; migration/invalidation, rollback and separate asset approval where required. | Not assessed | — |
+
+## 9. Repository review procedure
+
+1. Select a requirement/task and identify its intended behavior and completion evidence.
+2. Locate relevant code/configuration and existing evaluation records. Record exact paths, versions and results.
+3. Distinguish implementation evidence from behavioral verification and release approval. Check whether old evidence applies to the current configuration and criterion.
+4. Set the assessment and link evidence. Record concrete gaps or necessary changes; reuse suitable work instead of rebuilding it.
+5. Reconcile stage gates only after reviewing their required evidence. Keep original records available for comparison.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
-| v0.3 | 2026-10-23 | Updated section references for spec v0.7; implementation statuses unchanged. |
-| v0.2 | 2026-10-22 | Adapted the attached ADLC checklist to current implementation and verification status; linked tasks to the v0.6 spec and evaluation IDs. |
+| v0.4 | 2026-10-23 | Replaced implementation-based statuses with an unassessed delivery plan; added capability/evaluation mappings, evidence fields and a later repository review procedure. |
+| v0.3 and earlier | 2026-10-23 | Earlier task lists retained in Git history. |
