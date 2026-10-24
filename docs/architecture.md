@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.10 design draft · October 23, 2026 |
+| Version | v0.11 design draft · October 24, 2026 |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.10 |
+| Specification | [Agent specification](agent-spec.md) v0.11 |
 | Implementation assessment | Not assessed. Every component and path below describes intended behavior. |
 
 The four views explain system boundaries, responsibilities, execution, and deployment. They apply the [anatomy](mental-model/01-anatomy.md) and link to the spec and evaluations. Solid arrows show calls/data flow; dotted arrows show oversight or policy influence. Line style does not indicate implementation status.
@@ -144,18 +144,52 @@ flowchart LR
 
 Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tracing, SQLite for local checkpoints, and per-task durable files. Hosted storage, exact versions, retention, identities, and concurrency behavior are decisions D1, D4, D5, and D7 in the spec. A virtual path or provider name alone does not prove isolation.
 
+### 4.1 Context assembly — C1, C2
+
+- Select the task, constraints, expected outputs, relevant history/tool results and revision feedback. Context compaction must preserve material requirements, decisions and source/version identity.
+- Discover approved skills and load details when needed; `SkillsMiddleware` and read-only routes are candidates. Retrieve knowledge/memory with source, scope and version; label fictional trial references. Provider-retained context needs an understood scope and lifecycle. Stored information influences the model through supplied input or tool results.
+- Copy required execution assets deliberately: virtual skill/memory paths are not necessarily mounted inside the sandbox. Skills provide procedures; host authorization controls access.
+
+### 4.2 Runtime and tool contracts — C2, C5
+
+- Validate Deep Agents / LangChain behavior and extension points. Configure and record model/version, reasoning, context/output limits, timeouts and bounded retries. Supply todo state, such as `TodoListMiddleware`, when useful.
+- Route answers, tool requests, refusals, invalid/incomplete responses and failures to explicit outcomes. Support waiting, revision, stopping and recovery. Empty responses and exhausted budgets cannot count as success.
+- Keep orchestration and model credentials on the host; execute generated code in the sandbox. Delegated tasks need explicit context, tools, scope and budgets shared with the parent. Separate context does not establish security isolation.
+- Enforce call, output, time, retry and delegation limits across the whole run. Define cost policy and measurement limits. Retry only eligible failures after establishing possible effects.
+- Add host-side connectors/MCP tools for approved needs. Define each operation's identity, permissions, returned data, errors and side effects. Prefer read-only business access initially.
+
+### 4.3 State, files and recovery — C4, C7
+
+- Define task/thread/run identity and ownership locks. Checkpoint required messages, results, plans and execution state; SQLite is an option for local trials. Keep files in durable storage beyond sandbox lifetime.
+- Transfer working copies in and eligible outputs/supporting work out before cleanup. Define exclusions, size limits, version/conflict handling and transfer-failure behavior. Preserve recoverable work and report incomplete transfer or cleanup errors.
+- Retain original inputs, prior output versions and concurrent edits. Remote deletion must not silently erase retained work. Cloud sync and live co-editing require separate design and evaluation.
+- Use checkpoints and operation records to reconcile completed, missing or uncertain effects before retry. Checkpoints cannot undo external actions.
+- Keep reusable guidance owner-maintained. Configure memory ownership, scope, source/version, retention, correction and deletion. Automatic writes require a later policy, compatibility review and evaluation decision; see [spec improvement plan](agent-spec.md#54-respond-and-improve).
+
+### 4.4 Access and approval enforcement — C3, C5, C7
+
+- Enforce source/reference read-only access and task boundaries outside the model, including against instructions embedded in inputs. Restrict and verify filesystem, process, network, resource and identity access; keep host secrets out of generated-code environments unless separately authorized.
+- Deny out-of-scope actions. For approved writes, record intent/result and prevent duplicate effects across retries or concurrent workers.
+- Bind output approval to a versioned manifest; modifications invalidate approval for the changed version. Initial human review occurs between runs. Separately approve and evaluate changes to shared scripts, models, skills, memory policy or access.
+- Assess controls at their actual enforcement boundaries. Instructions, program checks, human review and environment restrictions provide different protections; verify effective behavior.
+
+### 4.5 Evidence and configuration — C6
+
+- Record outcomes, input/output fingerprints, relevant actions, actual checks, usage and approvals; link them to the task/run and delivered version. Use LangSmith tracing for evaluations and pilots under the approved data, access and retention policy.
+- Identify code/dependencies, model/settings, instructions, skills/tools, access, environment and storage schema in the configuration manifest. Link input and memory versions separately.
+
 ## 5. Traceability and evidence to seek
 
 The spec classifies capabilities as shared foundation (C1–C7), reusable work capabilities (C8–C11), and task-specific capability (C12). These share the same components; the classification does not require separate services.
 
 | Architecture responsibility | Spec | Evaluation | Evidence required during repository review |
 |---|---|---|---|
-| Model, loop, context and planning | [C1–C2 design](agent-spec.md#2-capabilities-and-design), [3.1 Context](agent-spec.md#31-context-and-references), [3.2 Execution](agent-spec.md#32-execution-outcomes-and-budgets) | E-PLAT-1, E-REC-1 | Configuration, routing and state handling; representative runs and incomplete-response cases. |
-| File/code work and validation | [C2, C7–C12 design](agent-spec.md#2-capabilities-and-design), [4.3 Output standard](agent-spec.md#43-output-standard) | E-ART-1, E-FIN-1 | Execution/validation paths and independent artifact/cross-file checks. |
-| Permissions, budgets, identity and approval | [3.2 Budgets](agent-spec.md#32-execution-outcomes-and-budgets), [3.4 Permissions and approvals](agent-spec.md#34-permissions-and-approvals) | E-CTRL-1, E-PROV-1 | Enforcement points, access policy, boundary cases and version-specific decisions. |
-| Persistence, transfer and recovery | [3.3 Workspace, transfer and recovery](agent-spec.md#33-workspace-transfer-and-recovery) | E-FILE-1, E-REC-1 | Checkpoint/file/action records and interruption/conflict/retry evidence. |
-| Task intake, publication and revision | [4.2 Work lifecycle](agent-spec.md#42-work-lifecycle-and-interface) | E-ASANA-1 | Scope, mapping, trigger/locking rules and integration cases. |
-| Release, observation and response | [6.2 Release](agent-spec.md#62-release-plan), [6.3 Monitoring](agent-spec.md#63-monitoring-plan), [3.5 Evidence](agent-spec.md#35-evidence-configuration-and-memory) | E-REL-1, E-PROV-1 | Configuration/release record, monitoring owners/thresholds, recovery rehearsal. |
+| Model, loop, context and planning | [C1–C2](agent-spec.md#2-capabilities-and-design) | E-PLAT-1, E-REC-1 | Configuration, routing and state handling; representative runs and incomplete-response cases. |
+| File/code work and validation | [C2, C7–C12 design](agent-spec.md#2-capabilities-and-design), [3.3 Output standard](agent-spec.md#33-output-standard) | E-ART-1, E-FIN-1 | Execution/validation paths and independent artifact/cross-file checks. |
+| Permissions, budgets, identity and approval | [C3, C5–C7](agent-spec.md#2-capabilities-and-design) | E-CTRL-1, E-PROV-1 | Enforcement points, access policy, boundary cases and version-specific decisions. |
+| Persistence, transfer and recovery | [C4, C7](agent-spec.md#2-capabilities-and-design) | E-FILE-1, E-REC-1 | Checkpoint/file/action records and interruption/conflict/retry evidence. |
+| Task intake, publication and revision | [3.2 Work lifecycle](agent-spec.md#32-work-lifecycle-and-interface) | E-ASANA-1 | Scope, mapping, trigger/locking rules and integration cases. |
+| Release, observation and response | [5.2 Release](agent-spec.md#52-release-plan), [5.3 Monitoring](agent-spec.md#53-monitoring-plan), [C6](agent-spec.md#2-capabilities-and-design) | E-REL-1, E-PROV-1 | Configuration/release record, monitoring owners/thresholds, recovery rehearsal. |
 
 ## 6. Design review checklist
 
@@ -173,6 +207,7 @@ These checks describe acceptance of the design; no completion is asserted.
 
 | Version | Date | Change |
 |---|---|---|
+| v0.11 | 2026-10-24 | Retained technical detail from the spec under capability-linked implementation sections; aligned spec references. |
 | v0.10 | 2026-10-23 | Linked architecture responsibilities to the combined capability/design table and shared operating rules. |
 | v0.9 | 2026-10-23 | Aligned the spec reference and capability-scope mapping. |
 | v0.8 | 2026-10-23 | Recast all views as target design; removed implementation labels; expanded outcome, recovery, control and evidence mappings. |
