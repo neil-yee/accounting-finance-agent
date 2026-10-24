@@ -4,7 +4,7 @@
 |---|---|
 | Version | v0.11 design draft · October 24, 2026 |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.12 |
+| Specification | [Agent specification](agent-spec.md) v0.13 |
 | Implementation assessment | Not assessed. Every component and path below describes intended behavior. |
 
 The four views explain system boundaries, responsibilities, execution, and deployment. They apply the [anatomy](mental-model/01-anatomy.md) and link to the spec and evaluations. Solid arrows show calls/data flow; dotted arrows show oversight or policy influence. Line style does not indicate implementation status.
@@ -164,7 +164,7 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 - Transfer working copies in and eligible outputs/supporting work out before cleanup. Define exclusions, size limits, version/conflict handling and transfer-failure behavior. Preserve recoverable work and report incomplete transfer or cleanup errors.
 - Retain original inputs, prior output versions and concurrent edits. Remote deletion must not silently erase retained work. Cloud sync and live co-editing require separate design and evaluation.
 - Use checkpoints and operation records to reconcile completed, missing or uncertain effects before retry. Checkpoints cannot undo external actions.
-- Keep reusable guidance owner-maintained. Configure memory ownership, scope, source/version, retention, correction and deletion. Automatic writes require a later policy, compatibility review and evaluation decision; see [spec improvement plan](agent-spec.md#54-respond-and-improve).
+- Keep reusable guidance owner-maintained. Configure memory ownership, scope, source/version, retention, correction and deletion. Automatic writes require a later policy, compatibility review and evaluation decision; see [spec improvement plan](agent-spec.md#55-respond-and-improve).
 
 ### 4.4 Access and approval enforcement — C3, C5, C7
 
@@ -185,11 +185,11 @@ The spec classifies capabilities as shared foundation (C1–C7), reusable work c
 | Architecture responsibility | Spec | Evaluation | Evidence required during repository review |
 |---|---|---|---|
 | Model, loop, context and planning | [C1–C2](agent-spec.md#2-capabilities-and-design) | E-PLAT-1, E-REC-1 | Configuration, routing and state handling; representative runs and incomplete-response cases. |
-| File/code work and validation | [C2, C7–C12 design](agent-spec.md#2-capabilities-and-design), [3.3 Output standard](agent-spec.md#33-output-standard) | E-ART-1, E-FIN-1 | Execution/validation paths and independent artifact/cross-file checks. |
+| File/code work and validation | [C2, C7–C12 design](agent-spec.md#2-capabilities-and-design), [3.3 Output standard](agent-spec.md#32-delivery-standard) | E-ART-1, E-FIN-1 | Execution/validation paths and independent artifact/cross-file checks. |
 | Permissions, budgets, identity and approval | [C3, C5–C7](agent-spec.md#2-capabilities-and-design) | E-CTRL-1, E-PROV-1 | Enforcement points, access policy, boundary cases and version-specific decisions. |
 | Persistence, transfer and recovery | [C4, C7](agent-spec.md#2-capabilities-and-design) | E-FILE-1, E-REC-1 | Checkpoint/file/action records and interruption/conflict/retry evidence. |
-| Task intake, publication and revision | [3.2 Work lifecycle](agent-spec.md#32-work-lifecycle-and-interface) | E-ASANA-1 | Scope, mapping, trigger/locking rules and integration cases. |
-| Release, observation and response | [5.2 Release](agent-spec.md#52-release-plan), [5.3 Monitoring](agent-spec.md#53-monitoring-plan), [C6](agent-spec.md#2-capabilities-and-design) | E-REL-1, E-PROV-1 | Configuration/release record, monitoring owners/thresholds, recovery rehearsal. |
+| Task intake, publication and revision | [3.1 Assignment lifecycle](agent-spec.md#31-assignment-lifecycle) | E-ASANA-1 | Scope, mapping, trigger/locking rules and integration cases. |
+| Release, observation and response | [5.2 Release](agent-spec.md#53-release-plan), [5.3 Monitoring](agent-spec.md#54-monitoring-plan), [C6](agent-spec.md#2-capabilities-and-design) | E-REL-1, E-PROV-1 | Configuration/release record, monitoring owners/thresholds, recovery rehearsal. |
 
 ## 6. Design review checklist
 
@@ -207,6 +207,7 @@ These checks describe acceptance of the design; no completion is asserted.
 
 | Version | Date | Change |
 |---|---|---|
+| v0.12 | 2026-10-24 | Updated traceability links for the assignment flow and moved evaluation tasks. |
 | v0.11 | 2026-10-24 | Retained technical detail from the spec under capability-linked implementation sections; aligned spec references. |
 | v0.10 | 2026-10-23 | Linked architecture responsibilities to the combined capability/design table and shared operating rules. |
 | v0.9 | 2026-10-23 | Aligned the spec reference and capability-scope mapping. |
