@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.11 design draft · October 24, 2026 |
+| Version | v0.12 design draft · October 24, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification | [Agent specification](agent-spec.md) v0.16 |
+| Specification | [Agent specification](agent-spec.md) v0.17 |
 | Architecture | [Target architecture](architecture.md) v0.15 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
@@ -110,16 +110,20 @@ Scope this work after the foundation and finance gates. These are planned depend
 
 ## 9. Repository review procedure
 
+Use the spec’s [consolidated implementation review](agent-spec.md#consolidated-implementation-review) to select shared building blocks. Keep detailed paths, findings and evidence here; update the spec summary from these records.
+
 1. Select a requirement/task and record the capability IDs and evaluation cases it covers, its intended behavior and completion evidence.
 2. Locate relevant code/configuration and existing evaluation records. Record exact paths, versions and results.
 3. Distinguish implementation evidence from behavioral verification and release approval. Check whether old evidence applies to the current configuration and criterion.
 4. Set the assessment and link evidence. Record concrete gaps or necessary changes; reuse suitable work instead of rebuilding it.
-5. Reconcile stage gates only after reviewing their required evidence. Keep original records available for comparison.
+5. Update the implementation summary for the selected scope; grouped components remain Partial while a required component is incomplete.
+6. Reconcile stage gates only after reviewing their required evidence. Keep original records available for comparison.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.12 | 2026-10-24 | Connected repository review to the spec implementation checklist and defined how detailed findings update its summary. |
 | v0.11 | 2026-10-24 | Replaced granular behavior references with capability/case mapping; prioritized shared framework features and evaluation-driven specialization. |
 | v0.10 | 2026-10-24 | Added behavior-ID mapping to planning, evaluation cases and repository assessment. |
 | v0.9 | 2026-10-24 | Aligned criterion-based monitoring and corrected section/version references. |

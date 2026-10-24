@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.16 design draft · October 24, 2026 |
+| Version | v0.17 design draft · October 24, 2026 |
 | Owner | Neil Yee |
 | Purpose | Define the intended agent and the evidence required for its use. |
 | Implementation assessment | Not assessed in this revision. Record repository findings later in the [task list](task-list.md). |
@@ -213,6 +213,38 @@ Several capabilities may share functions, mechanisms or components. Exact implem
 1. Carry forward the selected foundation and work capabilities, criteria and evaluation definitions.
 2. Adapt task capabilities, boundaries, access and implementation choices.
 3. Evaluate the new configuration. A prior passing result does not transfer automatically.
+
+### Consolidated implementation review
+
+The capability tables describe what the agent should do. This checklist groups the shared building blocks we can look for in the repository. One component may support several capabilities, and a framework may provide several components.
+
+For each item, locate the code/configuration, confirm it is connected to the relevant execution path, and record its scope and limitations. An installed package alone does not establish that the capability is available.
+
+| Building block | Capabilities supported | What to confirm in the repository | Assessment |
+|---|---|---|---|
+| Model and agent runtime | C1, C2 | Model configuration, agent creation, terminal entry point and model/tool loop. [BUILD-01](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Instructions, context and skill loading | C1, C2; supports all work | Prompt/instruction sources, conversation input and approved file/reference/skill access. [BUILD-02](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Thread state and checkpoints | C1, C4 | Thread identity, persistent conversation state and restore/resume path. [BUILD-05](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Reusable memory, when enabled | C1, C4 | Approved guidance store, retrieval path, owner update process and retention/access settings. [PLAN-05](task-list.md#1-plan), [CHANGE-02](task-list.md#8-later-changes) | Not assessed |
+| Workspace and file transfer | C4, C7 | Scoped file tools, working copies, durable task folders and sandbox copy-in/copy-out. [BUILD-03, BUILD-05](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Sandbox and code execution | C2, C5, C8–C11 | Execution tool, sandbox setup, package environment and enforced access boundaries. [BUILD-03](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Tabular, Excel and Word libraries | C8–C10 | Libraries available through tools or sandbox code; declared supported features and read/write paths. [BUILD-04](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Recalculation, conversion and rendering | C9–C11 | Available engines and invocation paths for required Excel calculations, PDF export and visual inspection. [BUILD-04](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Permissions, budgets and approval gates | C3, C5, C7 | Program/environment enforcement, runtime limits and required human/owner approval handling. [BUILD-06, BUILD-08](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Failure handling and recovery | C2, C4, C5 | Accurate outcomes, bounded retries, partial-work preservation and reconciliation of uncertain effects. [BUILD-07](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Tracing and review records | C3, C6 | Trace capture plus source/configuration/output identities, actual-check reports and review decisions. [BUILD-08](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Artifact checks and evaluation cases | C3, C8–C12; foundation criteria | Callable output checks, independent answers/rubrics, fixtures and cases linked to capabilities and criteria. [BUILD-04, BUILD-09](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Finance skill and references | C12 | Selected reconciliation guidance, approved references and access to the shared file/code tools. [FIN-02](task-list.md#4-define-and-evaluate-the-first-finance-workflow) | Not assessed |
+| Operational monitoring | C5, C6; all selected capabilities | Outcome/usage signals, alerts or review routing, thresholds and operator response paths. [BUILD-10](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+
+**How to use this checklist**
+
+1. Record implementation paths, evidence and gaps in the linked task-list items.
+2. Update this summary to **Missing**, **Partial**, or **Meets completion criterion** for the selected scope. Keep **Not assessed** until reviewed; it does not mean absent.
+3. Where a row groups several components, record each finding in the task list and use **Partial** if any required component is incomplete.
+4. Check behavioral reliability through the evaluations in §5. Implementation presence and evaluation results have separate evidence.
+
+The task list holds the detailed assessment; this table is its implementation summary. Optional planning tools, delegation, memory and later connectors are assessed only when selected for the scope. Asana work is tracked in the [later integration tasks](task-list.md#7-add-the-asana-task-workflow).
 
 ## 3. How the agent handles an assignment
 
@@ -476,6 +508,7 @@ These are design decisions, not findings about repository implementation. Owner:
 
 | Version | Date | Change |
 |---|---|---|
+| v0.17 | 2026-10-24 | Added a consolidated implementation review checklist linking shared building blocks, capabilities and task-list evidence; all findings remain unassessed. |
 | v0.16 | 2026-10-24 | Generalized all capability tables, used familiar agent mechanisms and moved scenario detail to evaluations. Retired Cx.y specification IDs in favor of stable C1–C12 references and evaluation case IDs. |
 | v0.15 | 2026-10-24 | Split the capability catalog into focused behavior tables with stable IDs and explicit function/mechanism/implementation mappings; linked evaluation cases to behavior IDs. |
 | v0.14 | 2026-10-24 | Connected assignment steps to capability IDs and evaluations/monitoring to success criteria; clarified section purposes and reduced repeated explanations. |
