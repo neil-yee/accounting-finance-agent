@@ -2,7 +2,7 @@
 
 **Purpose:** a practical map for designing, understanding, and improving software agents built around language models.
 
-**Version:** v1.2 · **Owner:** Neil Yee · **Updated:** October 24, 2026
+**Version:** v1.3 · **Owner:** Neil Yee · **Updated:** October 24, 2026
 
 ## 1. Two connected views
 
@@ -53,7 +53,7 @@ Start with two linked planning artifacts:
 
 Architecture belongs within the design: show agent components and execution under Build, evaluation-to-operation connections alongside Test, and hosting/data/access boundaries under Deploy. Split material into separate documents when ownership or detail warrants it.
 
-A consolidated implementation checklist can summarize shared building blocks and link to task-list findings. Actual implementation lives in code and configuration; evaluation and release records provide evidence for its use. The [ADLC artifact guide](02-adlc.md#21-minimum-working-artifacts) explains how these pieces connect.
+An implementation inventory in the specification and design document can summarize intended shared building blocks and link to task-list items. Keep implementation status and findings in the task list. Actual implementation lives in code and configuration; evaluation and release records provide evidence for its use. The [ADLC artifact guide](02-adlc.md#21-minimum-working-artifacts) explains how these pieces connect.
 
 Use stable IDs to follow **capability → design → criterion → check → result → monitoring response**. One relationship may have several links. A status such as “implemented” should remain distinct from “evaluated” or “approved for use.”
 
@@ -63,6 +63,7 @@ Keep project choices—providers, frameworks, skills, access, thresholds, owners
 
 | Version | Date | Change |
 |---|---|---|
+| v1.3 | 2026-10-24 | Distinguished the implementation inventory from the task list that owns status and findings. |
 | v1.2 | 2026-10-24 | Aligned project artifacts with a combined specification/design document, embedded architecture views and a linked task list. |
 | v1.1 | 2026-10-23 | Replaced rigid classification with connected views; added the purpose-to-evidence chain and clarified runtime changes versus release changes. |
 | v1.0 | 2026-10-15 | Initial overview. |

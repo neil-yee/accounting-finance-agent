@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.13 design draft · October 24, 2026 |
+| Version | v0.14 design draft · October 24, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.18 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.19 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
@@ -109,19 +109,20 @@ Scope this work after the foundation and finance gates. These are planned depend
 
 ## 9. Repository review procedure
 
-Use the spec’s [consolidated implementation review](agent-spec.md#26-consolidated-implementation-review) to select shared building blocks. Keep detailed paths, findings and evidence here; update the spec summary from these records.
+Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inventory) to select shared building blocks. This task list is the single place for implementation status, paths, gaps and evidence. Update the spec when the intended requirements or design change.
 
 1. Select a requirement/task and record the capability IDs and evaluation cases it covers, its intended behavior and completion evidence.
 2. Locate relevant code/configuration and existing evaluation records. Record exact paths, versions and results.
 3. Distinguish implementation evidence from behavioral verification and release approval. Check whether old evidence applies to the current configuration and criterion.
 4. Set the assessment and link evidence. Record concrete gaps or necessary changes; reuse suitable work instead of rebuilding it.
-5. Update the implementation summary for the selected scope; grouped components remain Partial while a required component is incomplete.
+5. For a task covering multiple components, record each finding. Use **Partial** if some required components meet the criterion and others remain incomplete; keep unreviewed components explicitly **Not assessed**.
 6. Reconcile stage gates only after reviewing their required evidence. Keep original records available for comparison.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.14 | 2026-10-24 | Made this task list the single place for implementation status and evidence; linked the spec inventory without duplicating assessments. |
 | v0.13 | 2026-10-24 | Retargeted design and lifecycle references to the combined specification and design document. |
 | v0.12 | 2026-10-24 | Connected repository review to the spec implementation checklist and defined how detailed findings update its summary. |
 | v0.11 | 2026-10-24 | Replaced granular behavior references with capability/case mapping; prioritized shared framework features and evaluation-driven specialization. |

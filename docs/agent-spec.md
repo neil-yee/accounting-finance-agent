@@ -2,16 +2,16 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.18 design draft · October 24, 2026 |
+| Version | v0.19 design draft · October 24, 2026 |
 | Owner | Neil Yee |
 | Purpose | Define requirements, proposed design and acceptance evidence across the agent lifecycle. |
-| Implementation assessment | Not assessed in this revision. Record repository findings later in the [task list](task-list.md). |
+| Implementation evidence | Record status, repository findings and evidence in the [task list](task-list.md). |
 
 **Reading order:** purpose → Build → Test → Deploy → Monitor and improve.
 
 This document combines requirements and proposed design. **Requirements** state what must be true; **design** explains the components and methods intended to satisfy them. Plan all four lifecycle phases before relying on the agent. The [task list](task-list.md) tracks implementation work and assessment evidence.
 
-- [Build: capabilities, architecture and implementation review](#2-build-requirements-and-design)
+- [Build: capabilities, architecture and implementation inventory](#2-build-requirements-and-design)
 - [Test: success criteria and evaluations](#3-test-requirements-and-evaluation-design)
 - [Deploy: release conditions and deployment design](#4-deploy-requirements-and-design)
 - [Monitor: operating expectations and improvement](#5-monitor-and-improve-requirements-and-design)
@@ -423,37 +423,34 @@ Review binds to a specific output version. Revised files require a new decision.
 - Record outcomes, input/output fingerprints, relevant actions, actual checks, usage and approvals; link them to the task/run and delivered version. Use LangSmith tracing for evaluations and pilots under the approved data, access and retention policy.
 - Identify code/dependencies, model/settings, instructions, skills/tools, access, environment and storage schema in the configuration manifest. Link input and memory versions separately.
 
-### 2.6 Consolidated implementation review
+### 2.6 Implementation inventory
 
-The capability tables describe what the agent should do. This checklist groups the shared building blocks we can look for in the repository. One component may support several capabilities, and a framework may provide several components.
+The capability tables explain what the agent should do and how. This inventory groups their shared building blocks for implementation planning and repository review. One building block may support several capabilities; one framework may supply several building blocks.
 
-For each item, locate the code/configuration, confirm it is connected to the relevant execution path, and record its scope and limitations. An installed package alone does not establish that the capability is available.
-
-| Building block | Capabilities supported | What to confirm in the repository | Assessment |
+| Building block | Capabilities supported | What to confirm in the repository | Work and evidence |
 |---|---|---|---|
-| Model and agent runtime | C1, C2 | Model configuration, agent creation, terminal entry point and model/tool loop. [BUILD-01](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Instructions, context and skill loading | C1, C2; supports all work | Prompt/instruction sources, conversation input and approved file/reference/skill access. [BUILD-02](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Thread state and checkpoints | C1, C4 | Thread identity, persistent conversation state and restore/resume path. [BUILD-05](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Reusable memory, when enabled | C1, C4 | Approved guidance store, retrieval path, owner update process and retention/access settings. [PLAN-05](task-list.md#1-plan), [CHANGE-02](task-list.md#8-later-changes) | Not assessed |
-| Workspace and file transfer | C4, C7 | Scoped file tools, working copies, durable task folders and sandbox copy-in/copy-out. [BUILD-03, BUILD-05](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Sandbox and code execution | C2, C5, C8–C11 | Execution tool, sandbox setup, package environment and enforced access boundaries. [BUILD-03](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Tabular, Excel and Word libraries | C8–C10 | Libraries available through tools or sandbox code; declared supported features and read/write paths. [BUILD-04](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Recalculation, conversion and rendering | C9–C11 | Available engines and invocation paths for required Excel calculations, PDF export and visual inspection. [BUILD-04](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Permissions, budgets and approval gates | C3, C5, C7 | Program/environment enforcement, runtime limits and required human/owner approval handling. [BUILD-06, BUILD-08](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Failure handling and recovery | C2, C4, C5 | Accurate outcomes, bounded retries, partial-work preservation and reconciliation of uncertain effects. [BUILD-07](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Tracing and review records | C3, C6 | Trace capture plus source/configuration/output identities, actual-check reports and review decisions. [BUILD-08](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Artifact checks and evaluation cases | C3, C8–C12; foundation criteria | Callable output checks, independent answers/rubrics, fixtures and cases linked to capabilities and criteria. [BUILD-04, BUILD-09](task-list.md#2-configure-the-shared-foundation) | Not assessed |
-| Finance skill and references | C12 | Selected reconciliation guidance, approved references and access to the shared file/code tools. [FIN-02](task-list.md#4-define-and-evaluate-the-first-finance-workflow) | Not assessed |
-| Operational monitoring | C5, C6; all selected capabilities | Outcome/usage signals, alerts or review routing, thresholds and operator response paths. [BUILD-10](task-list.md#2-configure-the-shared-foundation) | Not assessed |
+| Model and agent runtime | C1, C2 | Model configuration, agent creation, terminal entry point and model/tool loop. | [BUILD-01](task-list.md#2-configure-the-shared-foundation) |
+| Instructions, context and skill loading | C1, C2; supports all work | Prompt/instruction sources, conversation input and approved file/reference/skill access. | [BUILD-02](task-list.md#2-configure-the-shared-foundation) |
+| Thread state and checkpoints | C1, C4 | Thread identity, persistent conversation state and restore/resume path. | [BUILD-05](task-list.md#2-configure-the-shared-foundation) |
+| Reusable memory, when enabled | C1, C4 | Approved guidance store, retrieval path, owner update process and retention/access settings. | [PLAN-05](task-list.md#1-plan), [CHANGE-02](task-list.md#8-later-changes) |
+| Workspace and file transfer | C4, C7 | Scoped file tools, working copies, durable task folders and sandbox copy-in/copy-out. | [BUILD-03, BUILD-05](task-list.md#2-configure-the-shared-foundation) |
+| Sandbox and code execution | C2, C5, C8–C11 | Execution tool, sandbox setup, package environment and enforced access boundaries. | [BUILD-03](task-list.md#2-configure-the-shared-foundation) |
+| Tabular, Excel and Word libraries | C8–C10 | Libraries available through tools or sandbox code; declared supported features and read/write paths. | [BUILD-04](task-list.md#2-configure-the-shared-foundation) |
+| Recalculation, conversion and rendering | C9–C11 | Available engines and invocation paths for required Excel calculations, PDF export and visual inspection. | [BUILD-04](task-list.md#2-configure-the-shared-foundation) |
+| Permissions, budgets and approval gates | C3, C5, C7 | Program/environment enforcement, runtime limits and required human/owner approval handling. | [BUILD-06, BUILD-08](task-list.md#2-configure-the-shared-foundation) |
+| Failure handling and recovery | C2, C4, C5 | Accurate outcomes, bounded retries, partial-work preservation and reconciliation of uncertain effects. | [BUILD-07](task-list.md#2-configure-the-shared-foundation) |
+| Tracing and review records | C3, C6 | Trace capture plus source/configuration/output identities, actual-check reports and review decisions. | [BUILD-08](task-list.md#2-configure-the-shared-foundation) |
+| Artifact checks and evaluation cases | C3, C8–C12; foundation criteria | Callable output checks, independent answers/rubrics, fixtures and cases linked to capabilities and criteria. | [BUILD-04, BUILD-09](task-list.md#2-configure-the-shared-foundation) |
+| Finance skill and references | C12 | Selected reconciliation guidance, approved references and access to the shared file/code tools. | [FIN-02](task-list.md#4-define-and-evaluate-the-first-finance-workflow) |
+| Operational monitoring | C5, C6; all selected capabilities | Outcome/usage signals, alerts or review routing, thresholds and operator response paths. | [BUILD-10](task-list.md#2-configure-the-shared-foundation) |
 
-**How to use this checklist**
+**How to use this inventory**
 
-1. Record implementation paths, evidence and gaps in the linked task-list items.
-2. Update this summary to **Missing**, **Partial**, or **Meets completion criterion** for the selected scope. Keep **Not assessed** until reviewed; it does not mean absent.
-3. Where a row groups several components, record each finding in the task list and use **Partial** if any required component is incomplete.
-4. Check behavioral reliability through the evaluations in §3. Implementation presence and evaluation results have separate evidence.
+1. Follow the work links to record implementation paths, scope, limitations and gaps in the task list.
+2. Keep implementation status and evidence in those task-list items. This inventory defines the intended components and their connections.
+3. Use the evaluations in §3 to check behavioral reliability. An installed package alone does not show that a capability is connected to the agent or works reliably.
 
-The task list holds the detailed assessment; this table is its implementation summary. Optional planning tools, delegation, memory and later connectors are assessed only when selected for the scope. Asana work is tracked in the [later integration tasks](task-list.md#7-add-the-asana-task-workflow).
+Assess optional planning tools, delegation, memory and later connectors only when selected for the scope. Asana work is tracked in the [later integration tasks](task-list.md#7-add-the-asana-task-workflow).
 
 ### 2.7 Design review checklist
 
@@ -759,6 +756,7 @@ These are design decisions, not findings about repository implementation. Owner:
 
 | Version | Date | Change |
 |---|---|---|
+| v0.19 | 2026-10-24 | Recast the building blocks checklist as an implementation inventory; made the task list the single place for implementation status and evidence. |
 | v0.18 | 2026-10-24 | Combined specification and architecture under Build, Test, Deploy and Monitor; distinguished requirements from design, added the evaluation/operation view, and consolidated repository links. Architecture history remains in Git. |
 | v0.17 | 2026-10-24 | Added a consolidated implementation review checklist linking shared building blocks, capabilities and task-list evidence; all findings remain unassessed. |
 | v0.16 | 2026-10-24 | Generalized all capability tables, used familiar agent mechanisms and moved scenario detail to evaluations. Retired Cx.y specification IDs in favor of stable C1–C12 references and evaluation case IDs. |

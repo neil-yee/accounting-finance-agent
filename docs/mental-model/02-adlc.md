@@ -2,7 +2,7 @@
 
 **Purpose:** turn an agent's intended capabilities into a system with evidence for its use, then improve it as requirements and conditions change.
 
-**Version:** v0.5 working reference · **Owner:** Neil Yee · **Updated:** October 24, 2026
+**Version:** v0.6 working reference · **Owner:** Neil Yee · **Updated:** October 24, 2026
 
 ## 1. Why a lifecycle is needed
 
@@ -64,7 +64,7 @@ Plan all four phases before relying on the agent. Organizing the document by pha
 
 Keep these as complementary views. A lifecycle arrow explains the process; an architecture view identifies the components, evidence and connections that support it.
 
-Place a **consolidated implementation review** after the Build architecture when useful. Group shared components, map them to capabilities, and link to task-list findings about what exists or is missing. The task list holds detailed status and evidence. Code/configuration is the actual implementation; proposed technology names and checklist entries do not establish that it exists or works.
+Place an **implementation inventory** after the Build architecture when useful. Group the intended shared components, map them to capabilities, and link to the corresponding task-list items. Keep implementation status, findings and evidence in the task list so each assessment has one maintained source. Code/configuration is the actual implementation; inventory entries do not establish that it exists or works.
 
 The three plans inside the document answer distinct questions:
 
@@ -205,6 +205,7 @@ Agent-generated scripts or skill changes can be used or promoted only within gra
 
 | Version | Date | Change |
 |---|---|---|
+| v0.6 | 2026-10-24 | Clarified that the implementation inventory maps intended components while the task list owns implementation status and evidence. |
 | v0.5 | 2026-10-24 | Combined specification and design as the default planning artifact; placed architecture views and the implementation inventory within the lifecycle structure while keeping requirements, design, code and task tracking distinct. |
 | v0.4 | 2026-10-23 | Connected planning artifacts and traceability; clarified evaluation dimensions, rollout/recovery, diagnosis, and memory compatibility; removed universal gates, cadences, and duplicate playbooks. |
 | v0.3 | 2026-10-15 | Added release and monitoring plans, staged rollout, rollback, and response rules. |
