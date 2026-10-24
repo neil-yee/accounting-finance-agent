@@ -344,8 +344,7 @@ suite passed 58 tests; finance quality requires separate task evaluations.
 
 ```text
 docs/
-  agent-spec.md          # Proposed capabilities, boundaries, and success criteria
-  architecture.md        # Proposed component diagram and storage boundaries
+  agent-spec.md          # Specification and design: Build, Test, Deploy, Monitor
   task-list.md           # ADLC checklist with current project statuses and gates
   mental-model/
     00-overview.md       # Map of the anatomy and ADLC models
@@ -393,12 +392,12 @@ This starting point keeps agent construction small so each additional capability
 ## Development lifecycle and build order
 
 - [Mental model overview](docs/mental-model/00-overview.md), [agent anatomy](docs/mental-model/01-anatomy.md), and [ADLC](docs/mental-model/02-adlc.md)
-- [Agent specification](docs/agent-spec.md)
-- [Detailed architecture](docs/architecture.md)
+- [Agent specification and design](docs/agent-spec.md)
+- [Agent architecture](docs/agent-spec.md#24-agent-architecture) and [deployment boundaries](docs/agent-spec.md#42-deployment-architecture-and-trust-boundaries)
 - [ADLC project task list](docs/task-list.md)
 - [Deep Agents quickstart](https://docs.langchain.com/oss/python/deepagents/quickstart)
 
-The mental models define shared vocabulary: the anatomy describes the agent's five functions and the mechanisms that implement them; the ADLC describes how people plan, configure, test, deploy, and monitor an instance. The agent specification applies both models to this project, and the architecture shows their decisions in component, run, and deployment views. The task list is the status-aware execution checklist. The current repository is still a local prototype, not a deployment-ready service.
+The mental models define shared vocabulary: the anatomy describes the agent's five functions and the mechanisms that implement them; the ADLC describes how people plan, configure, test, deploy, and monitor an instance. The combined specification and design applies both models through capabilities, architecture views, evaluations, release requirements and monitoring plans. The task list is the status-aware execution checklist. The current repository is still a local prototype, not a deployment-ready service.
 
 The current build sequence is tracked in the [ADLC task list](docs/task-list.md). At a high level, the remaining order is:
 
