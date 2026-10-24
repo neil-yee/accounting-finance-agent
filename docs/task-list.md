@@ -4,7 +4,7 @@
 |---|---|
 | Version | v0.7 design draft · October 24, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification | [Agent specification](agent-spec.md) v0.11 |
+| Specification | [Agent specification](agent-spec.md) v0.12 |
 | Architecture | [Target architecture](architecture.md) v0.11 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
