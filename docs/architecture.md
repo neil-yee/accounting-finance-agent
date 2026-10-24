@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.14 design draft · October 24, 2026 |
+| Version | v0.15 design draft · October 24, 2026 |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.15 |
+| Specification | [Agent specification](agent-spec.md) v0.16 |
 | Implementation assessment | Not assessed. Every component and path below describes intended behavior. |
 
 The four views explain system boundaries, responsibilities, execution, and deployment. They apply the [anatomy](mental-model/01-anatomy.md) and link to the spec and evaluations. Solid arrows show calls/data flow; dotted arrows show oversight or policy influence. Line style does not indicate implementation status.
@@ -146,7 +146,8 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 
 ### 4.1 Context assembly — C1, C2
 
-- Select the task, constraints, expected outputs, relevant history/tool results and revision feedback. Context compaction must preserve material requirements, decisions and source/version identity.
+- Start with model instructions, conversation state and available tools. Let the model interpret requests and ordinary revision feedback from that context. Clarification can be a normal reply; use a framework interrupt when the workflow needs a durable pause. Add specialized context or revision middleware only when an operating requirement or evaluation evidence calls for it.
+- Select the task, constraints, expected outputs, relevant history/tool results and revision feedback. Use the framework context-management facilities and evaluate whether material requirements, decisions and source identity survive compaction. Resolve ambiguous revision targets conversationally; explicit output identities remain necessary for formal approval records.
 - Discover approved skills and load details when needed; `SkillsMiddleware` and read-only routes are candidates. Retrieve knowledge/memory with source, scope and version; label fictional trial references. Provider-retained context needs an understood scope and lifecycle. Stored information influences the model through supplied input or tool results.
 - Copy required execution assets deliberately: virtual skill/memory paths are not necessarily mounted inside the sandbox. Skills provide procedures; host authorization controls access.
 
@@ -160,7 +161,7 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 
 ### 4.3 State, files and recovery — C4, C7
 
-- Define task/thread/run identity and ownership locks. Checkpoint required messages, results, plans and execution state; SQLite is an option for local trials. Keep files in durable storage beyond sandbox lifetime.
+- Define task/thread/run identity; use ownership locks when concurrent execution is enabled. Checkpoint required messages, results, plans and execution state; SQLite is an option for local trials. Keep files in durable storage beyond sandbox lifetime.
 - Transfer working copies in and eligible outputs/supporting work out before cleanup. Define exclusions, size limits, version/conflict handling and transfer-failure behavior. Preserve recoverable work and report incomplete transfer or cleanup errors.
 - Retain original inputs, prior output versions and concurrent edits. Remote deletion must not silently erase retained work. Cloud sync and live co-editing require separate design and evaluation.
 - Use checkpoints and operation records to reconcile completed, missing or uncertain effects before retry. Checkpoints cannot undo external actions.
@@ -170,7 +171,7 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 
 - Enforce source/reference read-only access and task boundaries outside the model, including against instructions embedded in inputs. Restrict and verify filesystem, process, network, resource and identity access; keep host secrets out of generated-code environments unless separately authorized.
 - Deny out-of-scope actions. For approved writes, record intent/result and prevent duplicate effects across retries or concurrent workers.
-- Bind output approval to a versioned manifest; modifications invalidate approval for the changed version. Initial human review occurs between runs. Separately approve and evaluate changes to shared scripts, models, skills, memory policy or access.
+- For formal review, bind output approval to a versioned manifest; modifications invalidate approval for the changed version. Initial human review occurs between runs. Separately approve and evaluate changes to shared scripts, models, skills, memory policy or access.
 - Assess controls at their actual enforcement boundaries. Instructions, program checks, human review and environment restrictions provide different protections; verify effective behavior.
 
 ### 4.5 Evidence and configuration — C6
@@ -180,7 +181,7 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 
 ## 5. Traceability and evidence to seek
 
-The spec classifies capabilities as shared foundation (C1–C7), reusable work capabilities (C8–C11), and task-specific capability (C12). Each capability now contains behavior IDs (for example, C9.4 for recalculation). Use those IDs to connect component responsibilities and repository evidence to specific requirements. Capabilities can share components; the classification does not require separate services.
+The spec classifies capabilities as shared foundation (C1–C7), reusable work capabilities (C8–C11), and task-specific capability (C12). Use C1–C12 to connect components to general capabilities, and evaluation case IDs to identify the situations checked. A capability does not require its own tool, middleware or service. Capabilities can share components; the classification does not require separate services.
 
 | Architecture responsibility | Spec | Evaluation | Evidence required during repository review |
 |---|---|---|---|
@@ -207,6 +208,7 @@ These checks describe acceptance of the design; no completion is asserted.
 
 | Version | Date | Change |
 |---|---|---|
+| v0.15 | 2026-10-24 | Aligned general capabilities with model/context/tool execution; made specialized context handling conditional and retained application controls. |
 | v0.14 | 2026-10-24 | Aligned the spec reference and documented behavior IDs for component/evidence mapping. |
 | v0.13 | 2026-10-24 | Aligned specification version and corrected traceability link labels. |
 | v0.12 | 2026-10-24 | Updated traceability links for the assignment flow and moved evaluation tasks. |
