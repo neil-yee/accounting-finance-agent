@@ -2,7 +2,7 @@
 
 **Purpose:** turn an agent's intended capabilities into a system with evidence for its use, then improve it as requirements and conditions change.
 
-**Version:** v0.4 working reference · **Owner:** Neil Yee · **Updated:** October 23, 2026
+**Version:** v0.5 working reference · **Owner:** Neil Yee · **Updated:** October 24, 2026
 
 ## 1. Why a lifecycle is needed
 
@@ -14,7 +14,7 @@ The lifecycle manages that uncertainty:
 
 | Activity | Main question | Output / condition to proceed |
 |---|---|---|
-| **Plan** | What should it do, how will it work, and what evidence will justify use? | Spec, architecture, work list, and evaluation/release/monitoring plans. Unknowns are explicit. |
+| **Plan** | What should it do, how will it work, and what evidence will justify use? | Specification and design document covering all four phases, plus a linked task list. Unknowns are explicit. |
 | **Configure** | Can we implement the intended behavior and checks? | Code/configuration, skills/tools, cases/graders, instrumentation, and a working path through a representative task. |
 | **Test** | Does this version meet the criteria for its intended scope? | Results, failure analysis, and a release decision tied to the evaluated configuration and cases. |
 | **Deploy** | Where and under what authority may it operate? | Readiness record, approved scope, rollout stage, and stop/recovery procedures. |
@@ -30,27 +30,51 @@ Separate shared capabilities from task applications. “Handle spreadsheets” i
 
 ### 2.1 Minimum working artifacts
 
-These can be sections, tables, or small files. Split them only when ownership or detail warrants it.
+Use a combined **specification and design document** as the default planning artifact. It contains architecture views and evaluation, release and monitoring plans. Requirements state what must be true; design explains the proposed mechanisms, components and methods for achieving it.
+
+The document can contain sections, tables and diagrams. Separate files are useful when ownership or detail warrants them; the distinctions below do not require separate documents.
 
 | Artifact | Minimum contents | Used for |
 |---|---|---|
-| **Spec** | Objective, scope, capabilities, design mapping, success criteria, and the three plans below. | Agreement on intended behavior. |
-| **Architecture** | Components, run/data flows, execution locations, persistence, identities, and trust boundaries. | Checking whether the design can fulfill the spec. |
-| **Task list** | Linked requirement/check, work item, owner, status, and completion evidence. | Executing the plan. |
+| **Specification and design** | Purpose/scope; capabilities and required behavior; functions, mechanisms and proposed implementation; architecture views; success criteria; evaluation, deployment and monitoring requirements/plans; open decisions. | Agreeing what to build, how it should work and what evidence will justify use. |
+| **Task list** | Work items linked to capabilities, design and checks; dependencies, owner, status and completion evidence. | Building, verifying and tracking the implementation. |
 | **Cases and graders** | Inputs/setup, expected results or rubric, grader, thresholds, and reset/cleanup needs. | Repeatable evaluation. |
 | **Evaluation record** | Configuration and case/grader versions, results, repetitions/sample size, failures, and limitations. | Accepting or rejecting a release candidate. |
 | **Release record** | Approved version/scope/stage, readiness evidence, owner, and stop/recovery instructions. | Operating and recovering the system. |
 | **Finding / change record** | Evidence, impact, diagnosis, response, and linked corrective work or accepted limitation. | Closing the improvement loop. |
 
-The three plans answer distinct questions:
+**Organize the combined document around the lifecycle**
+
+Start with purpose and scope. Within each phase, distinguish requirements from proposed design:
+
+| Phase | Requirements: what must be true | Design: how to achieve or check it |
+|---|---|---|
+| **Build** | Capabilities, boundaries, assignment behavior and expected deliverables. | Functions, mechanisms, implementation choices, architecture and shared building blocks. |
+| **Test** | Success criteria, required coverage and acceptance thresholds. | Cases, datasets, graders, trial setup and evidence collection. |
+| **Deploy** | Release conditions, permitted use, ownership and recovery expectations. | Execution locations, storage, credentials, rollout and recovery procedures. |
+| **Monitor and improve** | Operating expectations, required review and conditions for intervention. | Signals, thresholds, alerts, response procedures and how findings become changes. |
+
+Plan all four phases before relying on the agent. Organizing the document by phase does not mean postponing evaluation or monitoring design until those phases begin.
+
+**Place architecture where it explains the design**
+
+- **Build:** show how the agent's components connect and how an assignment executes, including failure paths.
+- **Test and operation:** show how a version, cases and graders produce evidence for release, and how live findings feed back into changes.
+- **Deploy:** show execution locations, data flows, persistent storage, identities and trust boundaries.
+
+Keep these as complementary views. A lifecycle arrow explains the process; an architecture view identifies the components, evidence and connections that support it.
+
+Place a **consolidated implementation review** after the Build architecture when useful. Group shared components, map them to capabilities, and link to task-list findings about what exists or is missing. The task list holds detailed status and evidence. Code/configuration is the actual implementation; proposed technology names and checklist entries do not establish that it exists or works.
+
+The three plans inside the document answer distinct questions:
 
 - **Evaluation plan:** what to check, on which cases, by whom, with what pass criteria?
 - **Release plan:** where and with which access, at what rollout stage, and how to stop or recover?
 - **Monitoring plan:** which signals, thresholds, owners, and response procedures during use?
 
-### 2.2 Traceability without duplicating the spec
+### 2.2 Traceability across requirements, design and evidence
 
-Give capabilities, criteria, and checks stable IDs. Link detailed descriptions rather than copying them into every table. One criterion can need several checks; one check can support several criteria.
+Give capabilities, criteria, and evaluation cases stable IDs. Connect requirements to design, implementation work, results and monitoring. Link detailed descriptions rather than copying them into every table. One criterion can need several checks; one check can support several criteria.
 
 | Criterion | Design dependency | Evaluation evidence | Release condition | Live signal / response |
 |---|---|---|---|---|
@@ -181,6 +205,7 @@ Agent-generated scripts or skill changes can be used or promoted only within gra
 
 | Version | Date | Change |
 |---|---|---|
+| v0.5 | 2026-10-24 | Combined specification and design as the default planning artifact; placed architecture views and the implementation inventory within the lifecycle structure while keeping requirements, design, code and task tracking distinct. |
 | v0.4 | 2026-10-23 | Connected planning artifacts and traceability; clarified evaluation dimensions, rollout/recovery, diagnosis, and memory compatibility; removed universal gates, cadences, and duplicate playbooks. |
 | v0.3 | 2026-10-15 | Added release and monitoring plans, staged rollout, rollback, and response rules. |
 | v0.2 | 2026-10-15 | Added evaluation design in Plan and cases/graders in Configure. |
