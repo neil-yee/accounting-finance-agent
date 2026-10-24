@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.19 design draft · October 24, 2026 |
+| Version | v0.20 design draft · October 24, 2026 |
 | Owner | Neil Yee |
 | Purpose | Define requirements, proposed design and acceptance evidence across the agent lifecycle. |
 | Implementation evidence | Record status, repository findings and evidence in the [task list](task-list.md). |
@@ -12,6 +12,7 @@
 This document combines requirements and proposed design. **Requirements** state what must be true; **design** explains the components and methods intended to satisfy them. Plan all four lifecycle phases before relying on the agent. The [task list](task-list.md) tracks implementation work and assessment evidence.
 
 - [Build: capabilities, architecture and implementation inventory](#2-build-requirements-and-design)
+- [Runtime configuration and customization](#27-runtime-configuration-and-customization)
 - [Test: success criteria and evaluations](#3-test-requirements-and-evaluation-design)
 - [Deploy: release conditions and deployment design](#4-deploy-requirements-and-design)
 - [Monitor: operating expectations and improvement](#5-monitor-and-improve-requirements-and-design)
@@ -386,7 +387,7 @@ Review binds to a specific output version. Revised files require a new decision.
 
 ### 2.5 Component design details
 
-**Design:** use these details when configuring the shared building blocks. Exact technology choices and limits are resolved through the decisions in §6.
+**Design:** use these details when configuring the shared building blocks. Runtime settings and customization are defined in §2.7; unresolved choices are tracked in §6.
 
 #### Context assembly — C1, C2
 
@@ -452,7 +453,75 @@ The capability tables explain what the agent should do and how. This inventory g
 
 Assess optional planning tools, delegation, memory and later connectors only when selected for the scope. Asana work is tracked in the [later integration tasks](task-list.md#7-add-the-asana-task-workflow).
 
-### 2.7 Design review checklist
+### 2.7 Runtime configuration and customization
+
+**Purpose:** specify how the building blocks operate. The same components can produce different quality, cost, latency and reliability under different settings.
+
+**Flow:** capability → building block → configuration choice → evaluation evidence.
+
+These are proposed design choices, not a record of the current implementation. Exact values remain **Undecided** until selected. Use framework defaults as an explicit baseline; customize when a requirement or evaluation finding justifies it. Confirm supported settings and extension points against the selected model and pinned framework version.
+
+#### Model, context and execution settings
+
+| ID / capabilities | What to configure | Proposed approach / rationale | Evidence needed |
+|---|---|---|---|
+| CFG-1 · C2, C5 | Model/provider/version; reasoning level; output token limit; supported sampling settings. | Exact values **Undecided**. Select for task quality within agreed time and cost budgets; record provider semantics for reasoning and output limits. | E-PLAT-1, E-ART-1, E-REC-1: completion, quality, usage, latency and incomplete responses. |
+| CFG-2 · C1, C2 | System instructions; history selection; skill/reference loading; retrieval limits; tool-result truncation or offloading. | Load relevant context and preserve access to source material. Budgets and loading rules **Undecided**. | E-PLAT-1: relevant facts, source identity, conflicting inputs and earlier feedback. |
+| CFG-3 · C1, C4 | Compaction trigger; retained messages; summarizer model/budget; summary instructions; original-history retrieval and failure behavior. | Evaluate framework compaction first. Thresholds and prompt **Undecided**; customize to preserve task continuity. | E-PLAT-1, E-FILE-1, E-REC-1: repeated compaction, resumed work, lost details and summarizer failure. |
+| CFG-4 · C2, C5 | Call/token/time limits; tool and model timeouts; retry eligibility, attempts and delays; concurrency. | Enforce finite budgets across parent and delegated work. Values **Undecided**; retries require known effect status. | E-CTRL-1, E-REC-1: budget exhaustion, timeout, safe retry and shared usage. |
+| CFG-5 · C4, C7–C11 | Sandbox image/packages; tool/MCP availability and permissions; storage/checkpoint backend; file-transfer rules. | Select for supported tasks and durable work. Versions and limits **Undecided**; see §§2.5 and 4.2. | E-ART-1, E-FILE-1, E-CTRL-1: usable dependencies, file preservation and enforced access. |
+| CFG-6 · C4, C6 | Memory loading/update policy; trace fields, sampling, access and retention. | Owner-maintained memory initially; tracing enabled for evaluations and pilots. Detailed policies **Undecided** under D4/D7. | E-PROV-1, E-REL-1: attributable configuration, usable traces and compatible retained state. |
+
+**Compaction instruction example — candidate for evaluation**
+
+> Summarize the conversation so work can continue. Preserve the current objective, constraints, user corrections, decisions, source and artifact identifiers, completed actions and their observed results, unresolved questions, and remaining work. Distinguish verified results from assumptions and planned actions. Keep references to supporting files. Do not invent missing facts or report planned work as completed.
+
+The prompt shapes the summary; middleware controls when it runs, what input it receives and how the result enters context. Store the selected prompt as a versioned asset. Keep authoritative approvals, operation records and original evidence outside the lossy summary. A summary is not a backup or a permission grant.
+
+#### Middleware customization
+
+Middleware/hooks run around agent, model or tool execution. Configuration can change an existing middleware's settings or prompt; new behavior may require custom code.
+
+For each selected middleware, record:
+
+- **Purpose and capability:** the behavior or boundary it supports.
+- **Implementation:** built-in component and version, configured override, or custom module path.
+- **Placement:** lifecycle hook and execution order, including interactions with other middleware.
+- **Contract:** input/state read, output/state changes, side effects and error handling.
+- **Scope:** parent agent, selected subagents, or both; verify what the framework actually inherits.
+- **Evidence:** cases showing the intended effect and compatibility with checkpoints, limits and other middleware.
+
+Examples include summary-prompt customization (CFG-3), todo planning, tool-result offloading, approval interrupts and budget enforcement. Prefer configuring an existing component when it meets the need. Record any replacement or additional hook explicitly to avoid applying the same behavior twice.
+
+#### Optional subagents
+
+Enable delegation when it helps a defined capability. Record whether the framework's default subagent is enabled, configured, replaced or disabled; additional specialized subagents are optional design choices.
+
+For each enabled subagent, define:
+
+- **Role and invocation:** name, purpose, when it should be used and whether the parent chooses or application code routes the task.
+- **Context and instructions:** task input, selected history, references, system prompt and compaction policy.
+- **Model and tools:** explicit settings or inherited values, skills, middleware, permissions and workspace access.
+- **Limits and state:** shared run budget, child limits, nesting/concurrency, checkpoints and lifetime.
+- **Return contract:** result, supporting files/evidence, unresolved issues and failure/cancellation handling; parent reviews before delivery.
+
+A separate context does not establish security isolation. Shared files need ownership/conflict rules. Delegation does not make a result independently verified. Evaluate output quality, context transfer, combined usage and failure propagation through E-PLAT-1, E-ART-1, E-FILE-1, E-CTRL-1 and E-REC-1 as applicable.
+
+#### Recording and changing configuration
+
+For each selected setting or customization, record:
+
+- **Choice:** value or versioned asset/module reference, scope and rationale.
+- **Source:** configuration path, applicable framework default and allowed override precedence.
+- **Evidence:** evaluation cases/results supporting the choice and known limitations.
+
+Keep design decisions here; executable values and prompt assets live in versioned files. Task-list items hold implementation status and evidence links. Each run records its effective configuration, including overrides, middleware order, subagent definitions and relevant dependency/prompt versions. Record credential references, never secret values.
+
+Compare candidate configurations on the same cases and agreed budgets, using repetitions where needed. Change one factor at a time when diagnosing a cause; evaluate the combined configuration before release. Include compaction and delegated calls in total usage. Monitoring should group outcomes by configuration version so regressions can be investigated.
+
+**Work links:** [PLAN-03 and PLAN-05](task-list.md#1-plan) resolve choices; [BUILD-01, BUILD-02, BUILD-03, BUILD-05, BUILD-06 and BUILD-08](task-list.md#2-configure-the-shared-foundation) implement settings and records; [TEST-01–TEST-06](task-list.md#3-evaluate-the-foundation) provide evidence. D1, D4, D5 and D7 track unresolved decisions.
+
+### 2.8 Design review checklist
 
 These checks describe acceptance of the design; no completion is asserted.
 
@@ -463,6 +532,7 @@ These checks describe acceptance of the design; no completion is asserted.
 - [ ] Credentials, data flows, concurrency, and sandbox access are explicitly scoped.
 - [ ] Review identifies output versions; task approval and reusable-asset approval stay distinct.
 - [ ] Every required component has implementation and verification work in the task list.
+- [ ] Settings, middleware and enabled subagents have explicit scope, versioned sources, override rules and evaluation coverage.
 
 ## 3. Test: requirements and evaluation design
 
@@ -516,7 +586,7 @@ For each individual check, specify:
 - **Four dimensions:** what is checked, who grades, when/setting, and why.
 - **Cases and grading:** inputs, reference answers or rubric, and acceptance threshold.
 - **Trial design:** repetitions or sample size, setup and reset procedure.
-- **Configuration:** the version being evaluated.
+- **Configuration:** the effective version and overrides from §2.7, including model settings, compaction prompt, middleware and enabled subagents.
 
 Scenarios such as interpreting revision feedback, preserving instructions through a long conversation, or recovering a failed transfer test the general capabilities. Start with the proposed shared mechanisms; use failures to determine whether instructions, context, tools or application handling need improvement.
 
@@ -726,7 +796,9 @@ Use monitoring signals to guide diagnosis. Establish the cause through investiga
 |---|---|
 | New skill | Capability cases and relevant regressions. |
 | New tool or access | Boundary and retry checks. |
-| Model or orchestration | Broad representative coverage. |
+| Model, reasoning or output settings | Representative quality/completion cases, usage and latency comparisons. |
+| Context or compaction prompt/policy | Long and repeatedly compacted histories, corrections, source references, resume and summarizer failure. |
+| Middleware or subagents | Relevant capability cases plus ordering/inheritance, shared budgets, permissions, state and failure propagation. |
 | Purpose or authority | Revisit all plans. |
 
 **Memory changes**
@@ -744,7 +816,7 @@ These are design decisions, not findings about repository implementation. Owner:
 
 | ID | Decision | Resolve before |
 |---|---|---|
-| D1 | Exact model/framework versions, settings, dependencies, execution provider/image, and runtime budget enforcement. | Configuration baseline |
+| D1 | Runtime configuration (§2.7): model/framework versions, settings, context/compaction policy and prompts, middleware composition, enabled subagents, dependencies, execution image and budgets. | Configuration baseline |
 | D2 | Selected work capabilities, supported format features and limits, recalculation/conversion/rendering methods, first finance workflow and independent reference answers. | Task evaluation design |
 | D3 | Cases, graders, tolerances, repetitions/sample sizes, critical failures, cost/time/call/retry/revision thresholds. | Evaluation and release decisions |
 | D4 | Operational owner, signal sources, alert/review cadence, thresholds, trace data/access/retention. | Real-work pilot |
@@ -756,6 +828,7 @@ These are design decisions, not findings about repository implementation. Owner:
 
 | Version | Date | Change |
 |---|---|---|
+| v0.20 | 2026-10-24 | Added runtime configuration, compaction prompt guidance, middleware customization and optional subagent definitions; connected choices to effective run records and evaluations. |
 | v0.19 | 2026-10-24 | Recast the building blocks checklist as an implementation inventory; made the task list the single place for implementation status and evidence. |
 | v0.18 | 2026-10-24 | Combined specification and architecture under Build, Test, Deploy and Monitor; distinguished requirements from design, added the evaluation/operation view, and consolidated repository links. Architecture history remains in Git. |
 | v0.17 | 2026-10-24 | Added a consolidated implementation review checklist linking shared building blocks, capabilities and task-list evidence; all findings remain unassessed. |

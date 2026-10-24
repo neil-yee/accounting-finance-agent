@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.14 design draft · October 24, 2026 |
+| Version | v0.15 design draft · October 24, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.19 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.20 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
@@ -17,9 +17,9 @@ This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and accep
 |---|---|---|---|---|
 | PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–3 | Reviewed scope and C1–C12 general capabilities → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
 | PLAN-02 | Define task outputs and evaluation plan — §§2.3, 3.1–3.3; D2, D3 | Formats, independent answers/rubrics, cases, four dimensions, thresholds, sample sizes, budgets and grader checks. | Not assessed | — |
-| PLAN-03 | Select configuration and release design — §§2, 4; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries); D1, D5 | Version/provider choices, host/storage, identities, concurrency, data policy, transfer limits and stop/recovery/rollback plan. | Not assessed | — |
+| PLAN-03 | Select configuration and release design — §§2, 4; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries); D1, D5 | Runtime choices and rationale per §2.7; host/storage, identities, concurrency, data policy, transfer limits and stop/recovery/rollback plan. | Not assessed | — |
 | PLAN-04 | Define monitoring and response — §5.2; D4 | SC-1–SC-7 signals, data sources, thresholds, owners, cadence, trace access/retention and incident responses. | Not assessed | — |
-| PLAN-05 | Define references and memory policy — C1, C4–C6; §5.3; D7 | Ownership, scope, versions, read/write rules, retention/deletion, compatibility and promotion rules. | Not assessed | — |
+| PLAN-05 | Define references and memory policy — C1, C4–C6; §§2.7, 5.3; D7 | Ownership, scope, versions, read/write rules, retention/deletion, compatibility and promotion rules. | Not assessed | — |
 | PLAN-06 | Cross-check architecture and task coverage — §§2–6 | Architecture views cover agent execution, evaluation/operation and deployment boundaries; each requirement has work and evidence links. | Not assessed | — |
 
 **Plan gate:** approve the design and evaluation/release/monitoring plans for the selected scope. Resolve decisions needed for that scope; record later decisions and their prerequisites.
@@ -30,14 +30,14 @@ Work may reuse or adapt existing implementation after assessment. Start with fra
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Dependency/configuration manifest, provider settings and invocation path; a runnable minimal task. | Not assessed | — |
-| BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state and context-limit behavior. | Not assessed | — |
+| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Versioned configuration manifest and effective override rules per §2.7; model/reasoning/output settings, middleware composition and enabled subagent definitions; a runnable minimal task. | Not assessed | — |
+| BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state; versioned compaction prompt/trigger, retained history, retrieval and failure behavior per §2.7. | Not assessed | — |
 | BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries) | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Not assessed | — |
 | BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | Selected C8–C11 paths with declared supported features; read/revision/export, independent calculations, formula/recalculation, presentation and cross-file checks. | Not assessed | — |
 | BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | State/file stores, task ownership, checkpoints, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
 | BUILD-06 | Implement permissions and budgets — C5; [runtime](agent-spec.md#runtime-and-tool-contracts--c2-c5) and [access design](agent-spec.md#access-and-approval-enforcement--c3-c5-c7) | Checks across model/actions/storage/delivery; bounded calls/time/retries and delegation; enforced reference/source restrictions. | Not assessed | — |
 | BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | Explicit partial/failure/review states, operation records, retry eligibility, reconciliation and cleanup-failure handling. | Not assessed | — |
-| BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, configuration/source/output identities, actual-check reports and version-specific approval records. | Not assessed | — |
+| BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, effective configuration/overrides and prompt/middleware/subagent versions, source/output identities, actual-check reports and version-specific approvals. | Not assessed | — |
 | BUILD-09 | Create cases and graders — §§3.2–3.3 | Versioned case IDs linked to capabilities and criteria, with fixtures/rubrics, thresholds, repetitions, setup/reset, expected results and seeded defects to check graders. | Not assessed | — |
 | BUILD-10 | Configure operational monitoring — §§4–5 | Automatic checks, signal collection, alerts/review routing, access/retention and stop/recovery controls. | Not assessed | — |
 
@@ -47,7 +47,7 @@ Work may reuse or adapt existing implementation after assessment. Start with fra
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Representative CSV, missing/conflicting-input, long-context, revision-reference and repeat cases; independent outputs/rubric and budget results. | Not assessed | — |
+| TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Representative CSV, missing/conflicting-input, repeated compaction, revision-reference and selected delegation cases; compare configuration candidates with independent outputs/rubric and total usage/latency. | Not assessed | — |
 | TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Separate C9–C11 checks and composed packages: reading/revision, supported features, conversion fidelity, seeded defects, correct formulas/figures and presentation. | Not assessed | — |
 | TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, state/file restart, concurrent edits, exclusions, conflicts and transfer-failure cases. | Not assessed | — |
 | TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, actual filesystem/network/identity checks and enforced shared budgets. | Not assessed | — |
@@ -105,7 +105,7 @@ Scope this work after the foundation and finance gates. These are planned depend
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
 | CHANGE-01 | Add a skill, tool, connector or workload — §§2, 3.2–3.3, 5.3 | New objective/scope, design/access impact, capability cases, relevant regressions and release/monitoring decision. | Not assessed | — |
-| CHANGE-02 | Change model, shared guidance or memory policy — C1, C4–C6; §5.3; D7 | Impact-based evaluation; representative existing/stale/conflicting state; migration/invalidation, rollback and separate asset approval where required. | Not assessed | — |
+| CHANGE-02 | Change runtime settings, middleware, subagents, shared guidance or memory policy — C1–C6; §§2.7, 5.3; D1, D7 | Impact-based evaluation; representative existing/stale/conflicting state; migration/invalidation, rollback and separate asset approval where required. | Not assessed | — |
 
 ## 9. Repository review procedure
 
@@ -122,6 +122,7 @@ Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inve
 
 | Version | Date | Change |
 |---|---|---|
+| v0.15 | 2026-10-24 | Linked runtime settings, compaction, middleware and subagent configuration to build evidence, evaluation comparisons and change review. |
 | v0.14 | 2026-10-24 | Made this task list the single place for implementation status and evidence; linked the spec inventory without duplicating assessments. |
 | v0.13 | 2026-10-24 | Retargeted design and lifecycle references to the combined specification and design document. |
 | v0.12 | 2026-10-24 | Connected repository review to the spec implementation checklist and defined how detailed findings update its summary. |
