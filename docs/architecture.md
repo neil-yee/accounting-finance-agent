@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.13 design draft · October 24, 2026 |
+| Version | v0.14 design draft · October 24, 2026 |
 | Owner | Neil Yee |
-| Specification | [Agent specification](agent-spec.md) v0.14 |
+| Specification | [Agent specification](agent-spec.md) v0.15 |
 | Implementation assessment | Not assessed. Every component and path below describes intended behavior. |
 
 The four views explain system boundaries, responsibilities, execution, and deployment. They apply the [anatomy](mental-model/01-anatomy.md) and link to the spec and evaluations. Solid arrows show calls/data flow; dotted arrows show oversight or policy influence. Line style does not indicate implementation status.
@@ -180,7 +180,7 @@ Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tra
 
 ## 5. Traceability and evidence to seek
 
-The spec classifies capabilities as shared foundation (C1–C7), reusable work capabilities (C8–C11), and task-specific capability (C12). These share the same components; the classification does not require separate services.
+The spec classifies capabilities as shared foundation (C1–C7), reusable work capabilities (C8–C11), and task-specific capability (C12). Each capability now contains behavior IDs (for example, C9.4 for recalculation). Use those IDs to connect component responsibilities and repository evidence to specific requirements. Capabilities can share components; the classification does not require separate services.
 
 | Architecture responsibility | Spec | Evaluation | Evidence required during repository review |
 |---|---|---|---|
@@ -207,6 +207,7 @@ These checks describe acceptance of the design; no completion is asserted.
 
 | Version | Date | Change |
 |---|---|---|
+| v0.14 | 2026-10-24 | Aligned the spec reference and documented behavior IDs for component/evidence mapping. |
 | v0.13 | 2026-10-24 | Aligned specification version and corrected traceability link labels. |
 | v0.12 | 2026-10-24 | Updated traceability links for the assignment flow and moved evaluation tasks. |
 | v0.11 | 2026-10-24 | Retained technical detail from the spec under capability-linked implementation sections; aligned spec references. |

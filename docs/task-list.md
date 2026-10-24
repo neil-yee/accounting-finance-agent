@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.9 design draft · October 24, 2026 |
+| Version | v0.10 design draft · October 24, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification | [Agent specification](agent-spec.md) v0.14 |
-| Architecture | [Target architecture](architecture.md) v0.13 |
+| Specification | [Agent specification](agent-spec.md) v0.15 |
+| Architecture | [Target architecture](architecture.md) v0.14 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
@@ -16,7 +16,7 @@ This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and accep
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–4 | Reviewed scope and C1–C12 by scope → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
+| PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–4 | Reviewed scope and C1–C12 behavior IDs → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
 | PLAN-02 | Define task outputs and evaluation plan — §§3, 5.1–5.2; D2, D3 | Formats, independent answers/rubrics, cases, four dimensions, thresholds, sample sizes, budgets and grader checks. | Not assessed | — |
 | PLAN-03 | Select configuration and release design — §§2, 5.3; [architecture §4](architecture.md#4-deployment-and-trust-boundaries); D1, D5 | Version/provider choices, host/storage, identities, concurrency, data policy, transfer limits and stop/recovery/rollback plan. | Not assessed | — |
 | PLAN-04 | Define monitoring and response — §5.4; D4 | SC-1–SC-7 signals, data sources, thresholds, owners, cadence, trace access/retention and incident responses. | Not assessed | — |
@@ -39,7 +39,7 @@ Work may reuse or adapt existing implementation after assessment.
 | BUILD-06 | Implement permissions and budgets — C5; [runtime](architecture.md#42-runtime-and-tool-contracts--c2-c5) and [access design](architecture.md#44-access-and-approval-enforcement--c3-c5-c7) | Checks across model/actions/storage/delivery; bounded calls/time/retries and delegation; enforced reference/source restrictions. | Not assessed | — |
 | BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §3.1 | Explicit partial/failure/review states, operation records, retry eligibility, reconciliation and cleanup-failure handling. | Not assessed | — |
 | BUILD-08 | Implement provenance and review — C3, C6; [evidence design](architecture.md#45-evidence-and-configuration--c6) | Traces, work log, configuration/source/output identities, actual-check reports and version-specific approval records. | Not assessed | — |
-| BUILD-09 | Create cases and graders — §§5.1–5.2 | Versioned fixtures/rubrics, thresholds, repetitions, setup/reset, expected results and seeded defects to check graders. | Not assessed | — |
+| BUILD-09 | Create cases and graders — §§5.1–5.2 | Versioned cases linked to behavior IDs and criteria, with fixtures/rubrics, thresholds, repetitions, setup/reset, expected results and seeded defects to check graders. | Not assessed | — |
 | BUILD-10 | Configure operational monitoring — §§5.3–5.4 | Automatic checks, signal collection, alerts/review routing, access/retention and stop/recovery controls. | Not assessed | — |
 
 **Configure gate:** a representative task completes the intended path; fixtures, graders, instrumentation, and recovery procedures are ready for evaluation. Completion of this gate does not establish task quality across the planned scope.
@@ -110,7 +110,7 @@ Scope this work after the foundation and finance gates. These are planned depend
 
 ## 9. Repository review procedure
 
-1. Select a requirement/task and identify its intended behavior and completion evidence.
+1. Select a requirement/task and record the capability and behavior IDs it covers, its intended behavior and completion evidence.
 2. Locate relevant code/configuration and existing evaluation records. Record exact paths, versions and results.
 3. Distinguish implementation evidence from behavioral verification and release approval. Check whether old evidence applies to the current configuration and criterion.
 4. Set the assessment and link evidence. Record concrete gaps or necessary changes; reuse suitable work instead of rebuilding it.
@@ -120,6 +120,7 @@ Scope this work after the foundation and finance gates. These are planned depend
 
 | Version | Date | Change |
 |---|---|---|
+| v0.10 | 2026-10-24 | Added behavior-ID mapping to planning, evaluation cases and repository assessment. |
 | v0.9 | 2026-10-24 | Aligned criterion-based monitoring and corrected section/version references. |
 | v0.8 | 2026-10-24 | Aligned work references with the reordered assignment lifecycle and evaluation plan. |
 | v0.7 | 2026-10-24 | Pointed requirements to capability IDs and architecture details after removal of the spec shared-rules section; renumbered lifecycle references. |
