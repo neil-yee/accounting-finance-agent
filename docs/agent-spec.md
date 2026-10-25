@@ -1,6 +1,6 @@
 # Finance & Accounting Agent — Specification and Design
 
-**Version:** v0.24 design draft · October 25, 2026 · **Owner:** Neil Yee
+**Version:** v0.25 design draft · October 25, 2026 · **Owner:** Neil Yee
 
 This document defines the intended agent, its proposed design, and the evidence needed to use it. It does **not** assert that the repository meets these requirements. Record implementation status, paths, gaps and results in the [task list](task-list.md).
 
@@ -587,8 +587,8 @@ Owner: Neil Yee, with specialist review where needed. Owner decisions and assist
 
 **Next practical sequence**
 
-1. Turn the agreed benchmark into a frozen fixture, independent answers and grader/rubric (PLAN-01/02).
-2. Resolve its settings and access/storage choices (PLAN-03/05); use the [inventory](#26-implementation-inventory) to assess existing code before adding work.
+1. Use PLAN-01–06 to confirm the scope, design and evaluation/release/monitoring policies. The task list records their planning assessment.
+2. Implement the selected settings, access/storage policy and benchmark inputs/oracles/graders under BUILD-01–10. Use the [inventory](#26-implementation-inventory) to reuse existing code. Exact build identifiers and verified effective settings are implementation evidence; reopen planning only if findings require a design change.
 3. Run the selected work cases and targeted foundation cases. Record gaps and results in TEST-01–06.
 4. Review whether the evidence supports the requested scope; use REL-01–03 for real-work release.
 5. Review outcomes, add regressions and expand only the capability or integration needed next.
@@ -599,6 +599,7 @@ Owner: Neil Yee, with specialist review where needed. Owner decisions and assist
 
 | Version | Date | Change |
 |---|---|---|
+| v0.25 | 2026-10-25 | Corrected the practical sequence: planning settles decisions/design; Build creates and configures the selected baseline and evaluation assets. Requirements unchanged. |
 | v0.24 | 2026-10-25 | Filled remaining choices with labeled defaults for fixture/rubric, tooling, limits, compaction/delegation, retention and recovery; separated choices from technical verification. |
 | v0.23 | 2026-10-25 | Recorded owner decisions for the Excel benchmark, quality/consistency gates, requested model, time/API budgets, retry policy, local deployment and simple thread memory. Implementation remains unassessed. |
 | v0.22 | 2026-10-25 | Consolidated repeated design, separated first-trial scope from optional extensions, clarified delivery/retry rules, added a concrete evidence chain and practical decision sequence. No implementation assessment asserted. |
