@@ -1,48 +1,50 @@
-# Finance & Accounting Agent — Agent Specification and Design
+# Finance & Accounting Agent — Specification and Design
 
-| Field | Value |
-|---|---|
-| Version | v0.21 design draft · October 25, 2026 |
-| Owner | Neil Yee |
-| Purpose | Define requirements, proposed design and acceptance evidence across the agent lifecycle. |
-| Implementation evidence | Record status, repository findings and evidence in the [task list](task-list.md). |
+**Version:** v0.22 design draft · October 25, 2026 · **Owner:** Neil Yee
 
-**Reading order:** purpose → Build → Test → Deploy → Monitor and improve.
+This document defines the intended agent, its proposed design, and the evidence needed to use it. It does **not** assert that the repository meets these requirements. Record implementation status, paths, gaps and results in the [task list](task-list.md).
 
-This document combines requirements and proposed design. **Requirements** state what must be true; **design** explains the components and methods intended to satisfy them. Plan all four lifecycle phases before relying on the agent. The [task list](task-list.md) tracks implementation work and assessment evidence.
+**Reading path:** purpose → one agent system → supported work → components and settings → evaluation → deployment → monitoring and improvement.
 
-- [Build: capabilities, architecture and implementation inventory](#2-build-requirements-and-design)
-- [Runtime configuration and customization](#27-runtime-configuration-and-customization)
-- [Test: success criteria and evaluations](#3-test-requirements-and-evaluation-design)
-- [Deploy: release conditions and deployment design](#4-deploy-requirements-and-design)
-- [Monitor: operating expectations and improvement](#5-monitor-and-improve-requirements-and-design)
-- [Open decisions](#6-decisions-to-resolve)
+- [Build: system, requirements and design](#2-build-requirements-and-design)
+- [Configuration and customization](#27-runtime-configuration-and-customization)
+- [Test: criteria, cases and graders](#3-test-requirements-and-evaluation-design)
+- [Deploy: permitted use and recovery](#4-deploy-requirements-and-design)
+- [Monitor and improve](#5-monitor-and-improve-requirements-and-design)
+- [Decisions and next steps](#6-decisions-to-resolve)
 
-This spec applies the [overview](mental-model/00-overview.md), [anatomy](mental-model/01-anatomy.md), and [ADLC](mental-model/02-adlc.md). All technology choices are proposals to validate.
+Requirements describe what must hold; design describes how to provide or check it. The [overview](mental-model/00-overview.md), [anatomy](mental-model/01-anatomy.md) and [ADLC](mental-model/02-adlc.md) explain the underlying models.
 
 ## 1. Purpose and scope
 
-Build a reusable, human-supervised accounting and finance agent that gathers context, performs work, and produces results people can inspect and approve. Add task-specific skills and tools without redesigning the shared foundation.
+Build a reusable, human-supervised agent for knowledge work, starting with accounting and finance files. It should understand a request, use approved tools, produce reviewable work and preserve enough context and evidence to continue or investigate it.
 
-**First stage**
+The shared foundation should support new tasks through skills, tools or connectors without requiring a separate agent design for every workflow.
 
-- Accept terminal requests.
-- Maintain persistent task conversations.
-- Perform sandboxed file/code work.
-- Support human review.
-- Use synthetic or explicitly approved data.
+### Proposed first trial
 
-Introduce Asana after the foundation and first finance workflow meet their evaluation gates.
+- One owner using the terminal, with one active execution per task/thread.
+- Synthetic or explicitly approved inputs; file/code operations in a sandbox.
+- Persistent conversations and task files on the host; tracing enabled.
+- Start with one bounded Excel task, then add Word/PDF deliverables and other selected capabilities as their evaluations pass.
+- Review each deliverable before business use. Exact formats, settings and budgets are decisions D1–D3.
 
-**Boundaries**
+These are proposed scope choices for a manageable trial, not findings about existing code.
 
-- No journal posting or payments.
-- No changes to authoritative ERP records or original shared files.
-- No external communication in the first stage.
-- Later Asana publication is limited to approved task statuses, summaries and output links.
-- Further access requires a separate scope and release decision.
+### Extensions, selected when needed
 
-Approval of an output does not authorize changes to reusable scripts, models, memory, skills, or permissions. Those require separate owner approval.
+- Bank reconciliation is a candidate finance workflow, not a prerequisite for proving general file work.
+- Asana, read-only SQL, web search and Drive/SharePoint access require their own tool/access scope and cases.
+- Specialized subagents, concurrent work, hosted/multi-user deployment and automatic memory updates need a demonstrated use case and relevant evaluation.
+- Keep reusable memory owner-maintained if enabled. Record whether framework-provided delegation is enabled; do not assume it is absent.
+
+### Boundaries
+
+- No journal posting, payments or changes to authoritative ERP records.
+- Protect original input files and shared references; work on task copies.
+- No sending messages or publishing to business systems in the first trial. Model and tracing API calls are part of the approved execution design and data policy.
+- Later Asana writes are limited to approved task statuses, summaries and output links.
+- Approval of a deliverable does not authorize changes to shared instructions, skills, tools, memory policy or access.
 
 ## 2. Build: requirements and design
 
@@ -68,7 +70,7 @@ flowchart TD
     RECOVER -->|"stop"| RETURN
 ```
 
-Limits, persistence and tracing apply throughout. The detailed execution and failure paths are in §2.4.
+Limits, persistence and tracing apply throughout. Assignment outcomes and recovery rules are in §2.2; component connections are in §2.4.
 
 The same loop supports many kinds of work. Skills supply guidance; tools supply executable operations. Understanding, planning and responding often emerge from the model using the supplied context and tools. They do not each require a separate module. Add specialized handling when an operating requirement or evaluation finding justifies it.
 
@@ -96,7 +98,7 @@ Functions describe responsibilities, not separate services or sequential stages.
 
 These are requirements for the system above. The model/tool loop supplies much of the behavior; evaluations establish whether it works reliably.
 
-**Traceability:** retain C1–C12 as stable requirement IDs. C1–C3 describe behavior, C4–C7 describe shared operating requirements, and C8–C12 describe work capabilities. These IDs do not denote separate components. SC references identify the main success criteria in §3.1; all findings remain unassessed.
+**References:** C1–C3 identify expected behavior, C4–C7 identify operating requirements, and C8–C12 identify work capabilities. These are requirement IDs, not separate modules. SC IDs refer to acceptance criteria in §3.1.
 
 | Requirement / criteria | Expected behavior | What supplies it |
 |---|---|---|
@@ -134,7 +136,7 @@ These requirements support all selected work capabilities. They also apply when 
 | Requirement / criteria | What must hold | Supporting functions and mechanisms |
 |---|---|---|
 | **C7 — Usable workspace** · SC-2, SC-3 | Task files are locatable and scoped; source files stay protected; working copies, prior outputs and concurrent edits are handled deliberately. | Actions, Context, Controls and Continuity: file tools, workspace backend, scoped access and version/conflict handling. |
-| **C4 — Preserved and resumable work** · SC-2, SC-7 | Required state and files survive temporary environments and interruptions. Recovery accounts for completed effects. Optional reusable memory has approved scope, ownership, retention, correction and deletion rules. | Continuity, Context and Controls: checkpoints, durable storage, transfer, operation records and retrieval. Automatic memory updates need a later decision. |
+| **C4 — Preserved and resumable work** · SC-2, SC-7 | Preserve required state and files under an explicit checkpoint/export policy; disclose loss since the last durable save. Recovery accounts for completed effects. Optional reusable memory has approved scope, ownership, retention, correction and deletion rules. | Continuity, Context and Controls: checkpoints, durable storage, transfer, operation records and retrieval. Automatic memory updates need a later decision. |
 | **C5 — Controlled execution and accurate failures** · SC-3, SC-7 | Permissions, budgets and approvals are enforced; blocked, partial and failed work is reported accurately; retries avoid repeating completed external effects. | Controls and Continuity: host/tool checks, sandbox restrictions, bounded retries and operation records. Retrieved instructions cannot grant authority. |
 | **C6 — Review evidence** · SC-3, SC-4 | Reviewers can follow sources, actions, actual checks, effective configuration and output versions. Records have defined access and retention. | Context, Continuity and Controls: tracing callbacks, logs, versioned manifests and review records. |
 
@@ -154,198 +156,88 @@ When reusing this design, carry forward the applicable shared requirements, sele
 
 ### 2.2 Assignment requirements
 
-**Requirements:** how the system meets the behavior, work and operating requirements during an assignment.
+The same system handles new tasks, clarification and revisions.
 
-**Assign → gather context → execute → check and preserve → review → approve or revise.**
-
-| Step | Required behavior | Requirement IDs |
+| Step | Required behavior | Requirements |
 |---|---|---|
-| Assign | Receive the request; select or create its thread and workspace. | C1, C4, C7 |
-| Gather context | Restore relevant history, inputs, references and feedback; clarify material gaps. | C1, C4 |
-| Execute | Plan the work, prepare input copies and a sandbox when needed, and use the selected tools within approved limits. | C2, C5, C7 + relevant C8–C12 |
-| Check and preserve | Validate outputs, save files and evidence before cleanup, then return results and limitations. | C3, C4, C6, C7 |
-| Review and approve | Hold deliverables in Needs review until a reviewer approves that version or requests changes. Record the decision. | C3, C5, C6 |
-| Revise | Continue the same task/thread using feedback and the identified prior version; return to context gathering. | C1–C4, C6, C7 |
-| Block or recover | At any step, report missing inputs or failed/partial work, preserve recoverable progress, and reconcile possible effects before retrying. | C4–C7 |
+| Receive | Select/create a thread and workspace; interpret the request and clarify material gaps. | C1, C4, C7 |
+| Work | Load relevant context, execute permitted operations and adapt to results within the budget. | C1, C2, C5, C7 + selected C8–C12 |
+| Check and preserve | Perform the required checks; save deliverables, supporting work and evidence before temporary resources are removed. | C3, C4, C6 |
+| Return | Provide an answer, artifacts, a question, or an accurate partial/blocked/failed outcome. | C3, C5, C6 |
+| Review and revise | Human reviews the identified output version; feedback continues the task. Revised outputs need a new review. | C1–C4, C6 |
 
-C5 permissions and budgets, and C6 evidence collection, apply throughout. Steps may repeat as the task develops.
+Clarification can be a normal terminal reply. Use an application interrupt only when execution must pause and resume durably. A completed model call or trace does not establish a completed assignment.
 
-**Work interface:** start with terminal requests. A later Asana dispatcher may gather eligible task fields, comments, attachments, changes and feedback through the same assignment lifecycle.
+**Failure rule:** preserve recoverable work, identify what completed and report what remains uncertain. Retry eligible transient failures within the budget. Reads and demonstrably idempotent operations may be retried safely; an uncertain external write needs reconciliation or an idempotency guarantee before retry. A checkpoint does not undo an external effect.
 
-Proposed Asana task statuses: **To do → Agent working → Needs review → Done**, or **Blocked**.
-
-Before integration, define:
-
-- Which tasks are eligible and how execution is locked.
-- Which feedback triggers a revision.
-- How approval is recorded and interpreted.
-- How informational comments and agent-generated updates are prevented from triggering revisions or duplicate runs.
-
-Technical run outcomes remain separate from task statuses.
+**Later Asana integration:** define task/thread mapping, eligibility, execution ownership, status transitions and version-specific review. Distinguish actionable feedback from informational or agent-generated updates; prevent duplicate dispatch and trigger loops. These requirements apply when that integration is selected (D6 / E-ASANA-1).
 
 ### 2.3 Delivery requirements
 
-This expands **C3** (reviewable results) and **C6** (evidence) into what accompanies each delivery.
+| Outcome | What to return |
+|---|---|
+| Answer | The requested answer, relevant sources/assumptions and material limitations. |
+| Artifact task | Files or accessible links, a concise summary, checks actually performed and unresolved issues. Preserve useful supporting code and source references. |
+| Needs input, partial, blocked or failed | A clear status, what completed, recoverable files if any, missing input or failure, and the next safe step. |
 
-**Every delivery includes:**
+For financial outputs, identify period, currency, units, sources, assumptions, calculations and exceptions. For multi-file packages, verify that figures and narrative agree across files.
 
-- The requested artifact.
-- A concise summary and unresolved issues.
-- Useful supporting code and provenance.
+Report **file integrity, formula correctness, recalculated values and visual inspection** separately when relevant. Writing formulas does not calculate them. An unavailable required check blocks acceptance; optional unavailable checks are disclosed as limitations.
 
-**Financial work also identifies:**
-
-- Period, currency and units.
-- Sources and assumptions.
-- Calculations and tie-outs.
-- Exceptions, checks performed and limitations.
-
-**Report these checks separately:**
-
-- File integrity.
-- Formula correctness.
-- Recalculation.
-- Visual review.
-
-State what was actually checked. An unavailable check must be visible and must block acceptance where that check is required.
+During supervised business use, the owner records approval of the specific output version. A simple review record is sufficient for the terminal trial; a separate approval service is unnecessary unless the workflow requires it.
 
 ### 2.4 Agent architecture
 
-**Design:** these views show components, responsibilities and execution paths. All are proposed; arrows do not indicate implementation status. Solid arrows show calls/data flow; dotted arrows show policy or observation relationships.
-
-#### System overview
+**Proposed design:** the host runs the agent loop and owns state, credentials and policy. The sandbox executes generated code on task copies. Tools and storage make the five functions concrete.
 
 ```mermaid
 flowchart LR
-    USER["Person: assign and review"] <--> UI["Terminal interface: first stage"]
-    USER <--> ASANA["Asana: later approved stage"]
-    UI <--> HOST["Agent host: orchestration and policies"]
-    ASANA <--> ADAPTER["Task adapter / dispatcher"]
-    ADAPTER <--> HOST
-    HOST <--> MODEL["Model provider: proposed OpenAI"]
-    HOST <--> SANDBOX["Execution sandbox: code and working copies"]
-    HOST <--> STORE["Persistent state, files, operation and review records"]
-    HOST --> TRACE["Traces and monitoring"]
-    HOST <--> CONNECTOR["Optional scoped connector / MCP"]
-    CONNECTOR <--> SYSTEM["Approved business sources"]
+    USER["Owner: assign and review"] <--> HOST["Agent host: loop, context, tools, checks"]
+    HOST <--> MODEL["Model API"]
+    HOST <--> STATE["Durable thread state and task files"]
+    REFS["Approved skills and references"] --> HOST
+    HOST <-->|"authorized code, copies and results"| SBX["Temporary sandbox: packages and working files"]
+    HOST --> TRACE["Traces, usage and review records"]
+    HOST <-.-> CONNECT["Optional task adapter / scoped connector"]
+    CONNECT <-.-> EXTERNAL["Asana or approved business source"]
 ```
 
-The foundation should work through the terminal. Asana and other connectors require their own approved scope and evidence. Code execution should use a sandbox; model invocation, orchestration, authorization, and credential management should remain on the host.
+Solid arrows show the proposed first-trial flows; dotted arrows show optional extensions. Model and tracing credentials remain on the host. The sandbox receives only the data and access required for its work. Boundaries and deployment choices are in §4.2.
 
-#### Responsibilities and mechanisms
-
-```mermaid
-flowchart TB
-    SOURCE["Request, references, feedback"] --> CTX["CONTEXT: select and assemble relevant information"]
-    CTX --> CORE["CORE: model calls, orchestration, output handling"]
-    CORE -->|"operation request"| GATE["CONTROLS: authorize, validate, enforce budgets"]
-    GATE -->|"allowed"| ACTION["ACTIONS: files, code, connectors, delegation"]
-    ACTION -->|"result or error"| CTX
-    GATE -->|"denied or approval needed"| CORE
-    CORE -->|"candidate output"| DELIVERY["Validation and version-specific human review"]
-    STATE["CONTINUITY: state, files, checkpoints, operation records"] <--> CORE
-    STATE --> CTX
-    ACTION <--> STATE
-    POLICY["Access, budget, retention and approval policy"] -.-> GATE
-    POLICY -.-> CORE
-    POLICY -.-> STATE
-    POLICY -.-> DELIVERY
-    OBS["Observation: traces, outcomes, checks, review decisions"] -.-> CORE
-    OBS -.-> ACTION
-    OBS -.-> DELIVERY
-```
-
-These are responsibilities, not necessarily separate services. Observation spans the functions. Approval after delivery cannot replace authorization before an external action.
-
-| Component / concept | Functions served | Mechanisms / proposed implementation |
-|---|---|---|
-| Agent harness | Core, Context, Actions | Deep Agents / LangChain orchestration, model adapter, response handling, tool routing. |
-| Task adapter | Context, Controls, Continuity | Request normalization, task/thread mapping, eligibility, deduplication, concurrency control. |
-| Skills, references, todos | Context, Continuity | Discovery/retrieval, read-only reference routes, planning tool, stored task state; middleware where suitable. |
-| Execution and connector tools | Actions, Controls | Host-side authorization; sandbox file/code operations; separately scoped connector identities. |
-| Runtime policy | Controls, Core | Checks before calls/actions, shared budgets, output checks, approval and access validation. |
-| Durable state and artifact store | Continuity, Context | Checkpoints, per-task files, versions/hashes, operation records and recovery metadata. |
-| Review and evidence records | Controls, Continuity | Versioned manifests, decisions, configuration/source IDs, traces and monitoring signals. |
-
-A separate sub-agent context does not imply separate security. If delegation is enabled, its permissions, persistence, and usage must remain within the parent task's approved scope.
-
-#### Execution and failure paths
-
-```mermaid
-flowchart TD
-    IN["Receive task or revision"] --> ADMIT{"Eligible, authorized, and task ownership acquired?"}
-    ADMIT -->|"no"| REJECT["Record blocked or duplicate event"]
-    ADMIT -->|"yes"| PREP["Restore state; gather context; prepare working copies and sandbox as needed"]
-    PREP --> LIMIT{"Budget available?"}
-    LIMIT -->|"yes"| MODEL["Assemble context and invoke model"]
-    MODEL --> ROUTE{"Handle response"}
-    ROUTE -->|"operation"| CHECK["Validate request and authorize"]
-    CHECK --> EXEC["Execute at approved location"]
-    EXEC --> SAVE["Record result, operation identity and progress"]
-    SAVE --> LIMIT
-    ROUTE -->|"candidate answer"| VALIDATE["Check requested outputs and evidence"]
-    VALIDATE -->|"repair needed; budget permits"| LIMIT
-    VALIDATE -->|"ready for review, or unresolved limitation"| PRESERVE["Persist files, state, checks and outcome"]
-    PREP -->|"error"| FAILURE["Record failure or uncertainty; reconcile partial effects"]
-    MODEL -->|"error / timeout"| FAILURE
-    ROUTE -->|"invalid / incomplete"| FAILURE
-    CHECK -->|"denied / failed"| FAILURE
-    EXEC -->|"error / uncertain effect"| FAILURE
-    LIMIT -->|"no"| FAILURE
-    FAILURE -->|"eligible bounded retry; safe resume point established"| PREP
-    FAILURE -->|"stop or escalate"| PRESERVE
-    PRESERVE --> DURABLE{"Required preservation complete?"}
-    DURABLE -->|"yes"| CLEAN["Clean up execution resources; record cleanup outcome"]
-    DURABLE -->|"no"| RECOVER["Report partial result; preserve remaining recoverable state; follow retention/recovery policy"]
-    CLEAN --> OUT["Return files or recovery details and accurate status"]
-    RECOVER --> OUT
-    OUT -->|"Needs review"| REVIEW{"Human reviews identified version"}
-    REVIEW -->|"approve"| DONE["Record approval / Done"]
-    REVIEW -->|"revise"| IN
-```
-
-Retry from a verified safe point, not blindly from the beginning. A timeout may follow a completed external effect. Operation records and reconciliation must prevent repeated effects. Cleanup errors remain visible; do not claim complete preservation or success without the required evidence.
-
-Review binds to a specific output version. Revised files require a new decision. The later Asana path must distinguish human feedback from informational comments and agent-generated updates.
+This is one host application with supporting services, not a requirement to build a service for every anatomy function. The loop in §2.1 explains execution; §2.2 defines outcomes and recovery.
 
 ### 2.5 Component design details
 
-**Design:** use these details when configuring the shared building blocks. Runtime settings and customization are defined in §2.7; unresolved choices are tracked in §6.
+Use these contracts when assessing or configuring components. The inventory links them to implementation work; §2.7 records settings and customizations.
 
 #### Context assembly — C1, C2
 
-- Start with model instructions, conversation state and available tools. Let the model interpret requests and ordinary revision feedback from that context. Clarification can be a normal reply; use a framework interrupt when the workflow needs a durable pause. Add specialized context or revision middleware only when an operating requirement or evaluation evidence calls for it.
-- Select the task, constraints, expected outputs, relevant history/tool results and revision feedback. Use the framework context-management facilities and evaluate whether material requirements, decisions and source identity survive compaction. Resolve ambiguous revision targets conversationally; explicit output identities remain necessary for formal approval records.
-- Discover approved skills and load details when needed; `SkillsMiddleware` and read-only routes are candidates. Retrieve knowledge/memory with source, scope and version; label fictional trial references. Provider-retained context needs an understood scope and lifecycle. Stored information influences the model through supplied input or tool results.
-- Copy required execution assets deliberately: virtual skill/memory paths are not necessarily mounted inside the sandbox. Skills provide procedures; host authorization controls access.
+- Supply task instructions, relevant history, sources, tools and feedback. Let the model handle ordinary task interpretation; add custom context logic only for a requirement or demonstrated failure.
+- Version skill/reference sources and retain their identity. Copy needed assets into the sandbox deliberately: a virtual file path does not establish that a runtime can read it.
+- Evaluate retention of important constraints and corrections through compaction. Stored memory helps only when retrieved into usable context.
 
 #### Runtime and tool contracts — C2, C5
 
-- Validate Deep Agents / LangChain behavior and extension points. Configure and record model/version, reasoning, context/output limits, timeouts and bounded retries. Supply todo state, such as `TodoListMiddleware`, when useful.
-- Route answers, tool requests, refusals, invalid/incomplete responses and failures to explicit outcomes. Support waiting, revision, stopping and recovery. Empty responses and exhausted budgets cannot count as success.
-- Keep orchestration and model credentials on the host; execute generated code in the sandbox. Delegated tasks need explicit context, tools, scope and budgets shared with the parent. Separate context does not establish security isolation.
-- Enforce call, output, time, retry and delegation limits across the whole run. Define cost policy and measurement limits. Retry only eligible failures after establishing possible effects.
-- Add host-side connectors/MCP tools for approved needs. Define each operation's identity, permissions, returned data, errors and side effects. Prefer read-only business access initially.
+- Handle answers, tool requests, refusals, incomplete responses and errors explicitly. Enforce finite call/time/retry budgets across parent, summarizer and delegated work.
+- Define tool inputs, outputs/errors, permissions and side effects. Optional connectors use scoped identities; begin with read-only business access where it meets the task.
+- Prefer framework features and ordinary model/tool behavior. Dedicated tools, middleware or subagents need a purpose and evaluation coverage.
 
 #### State, files and recovery — C4, C7
 
-- Define task/thread/run identity; use ownership locks when concurrent execution is enabled. Checkpoint required messages, results, plans and execution state; SQLite is an option for local trials. Keep files in durable storage beyond sandbox lifetime.
-- Transfer working copies in and eligible outputs/supporting work out before cleanup. Define exclusions, size limits, version/conflict handling and transfer-failure behavior. Preserve recoverable work and report incomplete transfer or cleanup errors.
-- Retain original inputs, prior output versions and concurrent edits. Remote deletion must not silently erase retained work. Cloud sync and live co-editing require separate design and evaluation.
-- Use checkpoints and operation records to reconcile completed, missing or uncertain effects before retry. Checkpoints cannot undo external actions.
-- Keep reusable guidance owner-maintained. Configure memory ownership, scope, source/version, retention, correction and deletion. Automatic writes require a later policy, compatibility review and evaluation decision; see [improvement design](#53-response-and-improvement-design).
+- Identify threads, runs, source files and output versions. Keep checkpoints and task files outside the temporary sandbox. Define checkpoint/export milestones and acceptable unsaved work before the trial. Save eligible work before cleanup; after abrupt provider/sandbox loss, recover the last durable version and identify any unavailable work. Report transfer/cleanup failures separately.
+- Preserve originals; specify transfer exclusions, size limits and conflict handling. Prevent simultaneous executions for the same task in the trial. Add locking and multi-user isolation when concurrency is selected.
+- Use action/result records to reconcile interrupted effects. Define retention and deletion for files, state and optional memory; restore compatible versions during recovery.
 
 #### Access and approval enforcement — C3, C5, C7
 
-- Enforce source/reference read-only access and task boundaries outside the model, including against instructions embedded in inputs. Restrict and verify filesystem, process, network, resource and identity access; keep host secrets out of generated-code environments unless separately authorized.
-- Deny out-of-scope actions. For approved writes, record intent/result and prevent duplicate effects across retries or concurrent workers.
-- For formal review, bind output approval to a versioned manifest; modifications invalidate approval for the changed version. Initial human review occurs between runs. Separately approve and evaluate changes to shared scripts, models, skills, memory policy or access.
-- Assess controls at their actual enforcement boundaries. Instructions, program checks, human review and environment restrictions provide different protections; verify effective behavior.
+- Enforce file, network, identity and resource boundaries in the host/tools/environment. Instructions and summaries do not grant access; test restrictions against malicious or conflicting input.
+- Keep shared guidance read-only to the agent. Separate permission to perform an action from review of its output and approval to change reusable assets.
+- Bind review to the delivered version. A revised output does not inherit prior approval; retain the original version and decision. Reviewing an output afterward cannot prevent an unauthorized action beforehand.
 
 #### Evidence and configuration — C6
 
-- Record outcomes, input/output fingerprints, relevant actions, actual checks, usage and approvals; link them to the task/run and delivered version. Use LangSmith tracing for evaluations and pilots under the approved data, access and retention policy.
-- Identify code/dependencies, model/settings, instructions, skills/tools, access, environment and storage schema in the configuration manifest. Link input and memory versions separately.
+- Link the run to inputs, effective configuration, tool outcomes, actual checks and delivered files. Record usage, elapsed time, failures and the review decision; minimize sensitive trace content.
+- Use durable records for approvals and external effects. A trace is diagnostic evidence, not an independent correctness check or the only copy of recoverable work.
 
 ### 2.6 Implementation inventory
 
@@ -368,109 +260,84 @@ The anatomy and requirements in §2.1 describe the connected system. This invent
 | Finance skill and references | C12 | Selected reconciliation guidance, approved references and access to the shared file/code tools. | [FIN-02](task-list.md#4-define-and-evaluate-the-first-finance-workflow) |
 | Operational monitoring | C5, C6; all selected capabilities | Outcome/usage signals, alerts or review routing, thresholds and operator response paths. | [BUILD-10](task-list.md#2-configure-the-shared-foundation) |
 
-**How to use this inventory**
-
-1. Follow the work links to record implementation paths, scope, limitations and gaps in the task list.
-2. Keep implementation status and evidence in those task-list items. This inventory defines the intended components and their connections.
-3. Use the evaluations in §3 to check behavioral reliability. An installed package alone does not show that a capability is connected to the agent or works reliably.
-
-Assess optional planning tools, delegation, memory and later connectors only when selected for the scope. Asana work is tracked in the [later integration tasks](task-list.md#7-add-the-asana-task-workflow).
+Follow the work links to record paths, scope, status, gaps and evidence in the task list. This inventory describes intended components; it does not duplicate their assessment. Evaluate behavior through §3. Assess optional components only when selected for the scope.
 
 ### 2.7 Runtime configuration and customization
 
-**Purpose:** specify how the building blocks operate. The same components can produce different quality, cost, latency and reliability under different settings.
+Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The following choices are **proposed or unresolved**, not observations of the current runtime.
 
-**Flow:** capability → building block → configuration choice → evaluation evidence.
+| Configuration / requirements | Decisions to record | Starting approach |
+|---|---|---|
+| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Exact values unresolved under D1. Choose for the selected task and budget; record how the provider counts reasoning/output tokens. |
+| **CFG-2: context** · C1, C2 | Instructions, history/reference/skill loading, retrieval limits and large-result handling. | Use framework facilities and approved sources; record inherited defaults and prompt versions. |
+| **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Evaluate the framework baseline before introducing a custom summary policy. |
+| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | One active execution per task; finite values required under D1. Follow the retry rule in §2.2. |
+| **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Select only what the trial requires; proposed host files and local checkpoints. Resolve versions/limits in D1/D5. |
+| **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Owner-maintained memory if used; tracing on for trials. Resolve retention/access in D4/D7. |
 
-These are proposed design choices, not a record of the current implementation. Exact values remain **Undecided** until selected. Use framework defaults as an explicit baseline; customize when a requirement or evaluation finding justifies it. Confirm supported settings and extension points against the selected model and pinned framework version.
+For each selected choice, record **value or asset/module reference → rationale → configuration source and override rules → supporting cases/results**. A pinned framework default can be the selected value; an undocumented default cannot explain a result reliably. Credentials are referenced by name, never stored in the spec or trace.
 
-#### Model, context and execution settings
+#### Compaction customization
 
-| ID / requirements | What to configure | Proposed approach / rationale | Evidence needed |
-|---|---|---|---|
-| CFG-1 · C2, C5 | Model/provider/version; reasoning level; output token limit; supported sampling settings. | Exact values **Undecided**. Select for task quality within agreed time and cost budgets; record provider semantics for reasoning and output limits. | E-PLAT-1, E-ART-1, E-REC-1: completion, quality, usage, latency and incomplete responses. |
-| CFG-2 · C1, C2 | System instructions; history selection; skill/reference loading; retrieval limits; tool-result truncation or offloading. | Load relevant context and preserve access to source material. Budgets and loading rules **Undecided**. | E-PLAT-1: relevant facts, source identity, conflicting inputs and earlier feedback. |
-| CFG-3 · C1, C4 | Compaction trigger; retained messages; summarizer model/budget; summary instructions; original-history retrieval and failure behavior. | Evaluate framework compaction first. Thresholds and prompt **Undecided**; customize to preserve task continuity. | E-PLAT-1, E-FILE-1, E-REC-1: repeated compaction, resumed work, lost details and summarizer failure. |
-| CFG-4 · C2, C5 | Call/token/time limits; tool and model timeouts; retry eligibility, attempts and delays; concurrency. | Enforce finite budgets across parent and delegated work. Values **Undecided**; retries require known effect status. | E-CTRL-1, E-REC-1: budget exhaustion, timeout, safe retry and shared usage. |
-| CFG-5 · C4, C7–C11 | Sandbox image/packages; tool/MCP availability and permissions; storage/checkpoint backend; file-transfer rules. | Select for supported tasks and durable work. Versions and limits **Undecided**; see §§2.5 and 4.2. | E-ART-1, E-FILE-1, E-CTRL-1: usable dependencies, file preservation and enforced access. |
-| CFG-6 · C4, C6 | Memory loading/update policy; trace fields, sampling, access and retention. | Owner-maintained memory initially; tracing enabled for evaluations and pilots. Detailed policies **Undecided** under D4/D7. | E-PROV-1, E-REL-1: attributable configuration, usable traces and compatible retained state. |
+A candidate summary instruction:
 
-**Compaction instruction example — candidate for evaluation**
+> Preserve the current objective, constraints, user corrections, decisions, source and artifact identifiers, completed actions with observed results, unresolved questions and remaining work. Distinguish verified results from assumptions and plans. Keep references to supporting files; do not invent missing facts or claim planned work is complete.
 
-> Summarize the conversation so work can continue. Preserve the current objective, constraints, user corrections, decisions, source and artifact identifiers, completed actions and their observed results, unresolved questions, and remaining work. Distinguish verified results from assumptions and planned actions. Keep references to supporting files. Do not invent missing facts or report planned work as completed.
-
-The prompt shapes the summary; middleware controls when it runs, what input it receives and how the result enters context. Store the selected prompt as a versioned asset. Keep authoritative approvals, operation records and original evidence outside the lossy summary. A summary is not a backup or a permission grant.
+The instruction shapes the summary. Middleware determines the trigger, input and placement in context. Keep original evidence, approvals and action records outside the lossy summary. Evaluate repeated compaction, corrections, resume and summarizer failure—not just summary length.
 
 #### Middleware customization
 
-Middleware/hooks run around agent, model or tool execution. Configuration can change an existing middleware's settings or prompt; new behavior may require custom code.
+For each selected built-in, configured or custom middleware, record:
 
-For each selected middleware, record:
+- Purpose and supported requirement.
+- Component/version or custom code path; prompt/configuration references.
+- Hook, order and parent/subagent scope; verify actual inheritance.
+- State read/changed, side effects and error behavior.
+- Cases covering its effect and interactions with checkpoints, limits and other middleware.
 
-- **Purpose and capability:** the behavior or boundary it supports.
-- **Implementation:** built-in component and version, configured override, or custom module path.
-- **Placement:** lifecycle hook and execution order, including interactions with other middleware.
-- **Contract:** input/state read, output/state changes, side effects and error handling.
-- **Scope:** parent agent, selected subagents, or both; verify what the framework actually inherits.
-- **Evidence:** cases showing the intended effect and compatibility with checkpoints, limits and other middleware.
-
-Examples include summary-prompt customization (CFG-3), todo planning, tool-result offloading, approval interrupts and budget enforcement. Prefer configuring an existing component when it meets the need. Record any replacement or additional hook explicitly to avoid applying the same behavior twice.
+Examples include compaction, todo state, large-result offloading, approval interrupts and budget checks. Prefer configuration of an existing component when it meets the need; identify replacements so behavior is not applied twice.
 
 #### Optional subagents
 
-Enable delegation when it helps a defined capability. Record whether the framework's default subagent is enabled, configured, replaced or disabled; additional specialized subagents are optional design choices.
+Record whether the framework's default subagent is enabled, configured, replaced or disabled. Add a specialized subagent when a role benefits from separate context or tools.
 
 For each enabled subagent, define:
 
-- **Role and invocation:** name, purpose, when it should be used and whether the parent chooses or application code routes the task.
-- **Context and instructions:** task input, selected history, references, system prompt and compaction policy.
-- **Model and tools:** explicit settings or inherited values, skills, middleware, permissions and workspace access.
-- **Limits and state:** shared run budget, child limits, nesting/concurrency, checkpoints and lifetime.
-- **Return contract:** result, supporting files/evidence, unresolved issues and failure/cancellation handling; parent reviews before delivery.
+- Role and invocation rule: model-chosen delegation or application routing.
+- Supplied context/instructions, model/settings, tools/skills and middleware.
+- Permissions, workspace ownership, state lifetime and compaction policy.
+- Shared run budget, child limits, nesting/concurrency and cancellation behavior.
+- Returned result, evidence/files, uncertainty and failure handling; parent checks before delivery.
 
-A separate context does not establish security isolation. Shared files need ownership/conflict rules. Delegation does not make a result independently verified. Evaluate output quality, context transfer, combined usage and failure propagation through E-PLAT-1, E-ART-1, E-FILE-1, E-CTRL-1 and E-REC-1 as applicable.
+Separate context is not security isolation or independent verification. Evaluate quality, context transfer, shared budgets, file conflicts and failure propagation for the selected design.
 
-#### Recording and changing configuration
+#### Effective configuration and changes
 
-For each selected setting or customization, record:
+Each run records effective values/overrides and the versions of code, dependencies, prompts, middleware and enabled subagents. Link input and memory versions separately. These records can be files alongside the run; no new configuration service is required for the trial.
 
-- **Choice:** value or versioned asset/module reference, scope and rationale.
-- **Source:** configuration path, applicable framework default and allowed override precedence.
-- **Evidence:** evaluation cases/results supporting the choice and known limitations.
+Compare candidates on the same cases and agreed budgets, including compaction/delegation usage. Change one factor at a time when diagnosing a cause, then evaluate the combined configuration before release. Group monitoring results by configuration version.
 
-Keep design decisions here; executable values and prompt assets live in versioned files. Task-list items hold implementation status and evidence links. Each run records its effective configuration, including overrides, middleware order, subagent definitions and relevant dependency/prompt versions. Record credential references, never secret values.
-
-Compare candidate configurations on the same cases and agreed budgets, using repetitions where needed. Change one factor at a time when diagnosing a cause; evaluate the combined configuration before release. Include compaction and delegated calls in total usage. Monitoring should group outcomes by configuration version so regressions can be investigated.
-
-**Work links:** [PLAN-03 and PLAN-05](task-list.md#1-plan) resolve choices; [BUILD-01, BUILD-02, BUILD-03, BUILD-05, BUILD-06 and BUILD-08](task-list.md#2-configure-the-shared-foundation) implement settings and records; [TEST-01–TEST-06](task-list.md#3-evaluate-the-foundation) provide evidence. D1, D4, D5 and D7 track unresolved decisions.
+Work: [PLAN-03/05](task-list.md#1-plan), [BUILD-01/02/03/05/06/08](task-list.md#2-configure-the-shared-foundation) and [TEST-01–06](task-list.md#3-evaluate-the-foundation). Unresolved choices: D1, D4, D5, D7.
 
 ### 2.8 Design review checklist
 
-These checks describe acceptance of the design; no completion is asserted.
-
-- [ ] Behavior, work capabilities and operating requirements map to supporting functions, components, criteria and evaluations.
-- [ ] Normal, denied, incomplete, failed, interrupted, and revised work have defined paths.
-- [ ] Persistence and reconciliation cover partial effects and transfer/cleanup failure.
-- [ ] Controls cover model calls, actions, state changes, and delivery at enforceable boundaries.
-- [ ] Credentials, data flows, concurrency, and sandbox access are explicitly scoped.
-- [ ] Review identifies output versions; task approval and reusable-asset approval stay distinct.
-- [ ] Every required component has implementation and verification work in the task list.
-- [ ] Settings, middleware and enabled subagents have explicit scope, versioned sources, override rules and evaluation coverage.
+- [ ] Selected work and boundaries are clear; deferred features are identified.
+- [ ] Requirements connect to components, configuration and acceptance evidence.
+- [ ] Answers, clarification, refusal, partial work and failure have defined outcomes.
+- [ ] Access, preservation, review and recovery rules cover the selected execution paths.
+- [ ] Required decisions are resolved for the next trial; implementation gaps are in the task list.
 
 ## 3. Test: requirements and evaluation design
 
-Evaluate the shared system and the work it supports. All results remain unassessed.
+Evaluate both the shared foundation and its supported work. One case may provide evidence for several requirements; functions are coverage categories, not five mandatory standalone suites.
 
-| Evaluation layer | Question | Existing evaluation groups |
+| Layer | Question | Evaluation groups |
 |---|---|---|
-| **Shared foundation** | Do the loop, context handling, tools, controls and persistence meet their requirements? | E-PLAT-1 for shared behavior; E-FILE-1, E-CTRL-1, E-PROV-1 and E-REC-1 for operating requirements. |
-| **Reusable work** | Can the system perform the supported kind of work correctly? | E-PLAT-1 for tabular work; E-ART-1 for Excel, Word, PDF and composed packages. |
-| **Task-specific work** | Does it achieve the defined business outcome? | E-FIN-1 for bank reconciliation; E-ASANA-1 for the later task-management integration. |
+| Shared foundation | Do context handling, execution, access, preservation and recovery work? | E-PLAT-1, E-FILE-1, E-CTRL-1, E-PROV-1, E-REC-1 |
+| Reusable work | Can it correctly perform the selected CSV/Excel/Word/PDF operations? | E-PLAT-1 for tabular work; E-ART-1 for office files. |
+| Task-specific work | Does the selected workflow achieve its business outcome? | E-FIN-1; E-ASANA-1 when task integration is selected. |
 
-E-REL-1 reviews evidence and readiness for the selected release scope. An evaluation group can contain cases at more than one layer; label individual cases by what they establish.
-
-Functions organize coverage. Translate each relevant responsibility into observable requirements; a function does not need one standalone test or a separate suite. A work case can supply evidence for several requirements. Add targeted cases for conditions it does not exercise: a successful workbook does not establish recovery after interruption or blocked access.
-
+E-REL-1 assesses release readiness. Test the conditions that normal tasks do not exercise: a correct workbook does not prove blocked access or recovery after interruption. All results remain unassessed.
 
 ### 3.1 Success criteria
 
@@ -481,7 +348,7 @@ Each criterion defines how to judge the capabilities and assignment behavior abo
 | ID | Requirements / scope | Success means… | Evaluation |
 |---|---|---|---|
 | SC-1 | C1–C3, C8–C12; each declared work/task capability | Outputs meet independent expected results and presentation rubrics; material gaps are clarified or reported. | E-PLAT-1, E-ART-1, E-FIN-1 |
-| SC-2 | C4, C7 | Task files are organized and isolated; sources stay unchanged; required state/files survive cleanup and restart, with versions and conflicts traceable. | E-FILE-1 |
+| SC-2 | C4, C7 | Task files are organized and isolated; sources stay unchanged; required state/files survive cleanup and restart within the declared recovery policy; versions, conflicts and any unsaved loss are traceable. | E-FILE-1 |
 | SC-3 | C3, C5–C7; all capability scopes | Permissions and limits hold; approvals apply only to their defined scope and version. | E-CTRL-1, E-PROV-1 |
 | SC-4 | C3, C6 | Reviewers can follow sources, assumptions, actions, checks, configuration, and approvals to the delivered version. | E-PROV-1 |
 | SC-5 | All; release | The proposed scope meets evaluation, ownership, access, data, recovery, and monitoring requirements before use. | E-REL-1 |
@@ -492,39 +359,40 @@ Each criterion defines how to judge the capabilities and assignment behavior abo
 
 ### 3.2 Starter evaluation tasks
 
-**Design:** representative assignments used to exercise the required capabilities.
+Build confidence in small steps. Select the next task by the capability being assessed; these are trial designs, not completed results.
 
-These are the first assignments used to exercise the capabilities. They cover reusable file work and the proposed finance workflow; additional cases are needed for the full declared scope.
+| Trial | What it establishes | Follow-up coverage |
+|---|---|---|
+| Bounded Excel task with fixed synthetic inputs | Read/create/revise a workbook and preserve it; compare figures with independent expected answers. | Missing inputs, unsupported features, revision feedback, budget limits and restart. |
+| CSV analysis or Word/PDF work, as selected | The specific operations and formats claimed under C8/C10/C11. | Types/encodings, document structure, conversion fidelity and presentation. |
+| Composed financial file package | Excel working paper and Word/PDF analysis agree. | Seed mismatched ratios, wrong cell references and formatting defects; compare all outputs against the independent fixture. |
+| Bank reconciliation, if selected | Matches, exceptions and balance bridges satisfy an independent reference answer. | Duplicates, missing records, ambiguities and finance review. |
 
-| Evaluation task | Requirements exercised | Objective | Evaluation |
-|---|---|---|---|
-| CSV summary | C1–C7 foundation + C8 tabular data | Produce a correct summary; clarify missing or ambiguous inputs. | E-PLAT-1 |
-| Office-file package | C1–C7 foundation + C9 Excel + C10 Word + C11 PDF | Produce a working paper, analysis and PDF export from synthetic data; check calculations, presentation and cross-file agreement. | E-ART-1 |
-| Monthly bank reconciliation | C1–C7 foundation + required C8–C11 work capabilities → C12 reconciliation | Match bank/ledger items and explain exceptions/balance bridges with reviewable supporting work. | E-FIN-1 |
+Define inputs, supported features, required outputs, expected answers/rubric and thresholds before running a case. Include targeted foundation checks alongside work trials. A smoke test demonstrates a connected path; it is not evidence of broad reliability.
 
-For each task, define:
+**Worked traceability example — Excel liquidity analysis**
 
-- Inputs and supported formats.
-- Procedure and permitted access.
-- Expected outputs.
-- Independent reference answers or a grading rubric.
-- Acceptance thresholds.
-
-Keep detailed procedures in linked skill/workflow documents. Add later tasks using the same structure.
+| Link | Concrete meaning |
+|---|---|
+| Requirement | C9 + C1–C7: create a correct, reviewable and preserved working paper. |
+| Design | Model/tool loop + source context + spreadsheet tools + protected workspace and checkpoints. |
+| Configuration | Record model/output settings, libraries, compaction policy and run budget. |
+| Criterion and case | SC-1 / E-ART-1: a fixed fixture distinguishes current liabilities from a non-current loan. Check formulas, independent expected ratios and agreement with any report. |
+| Evidence and release | Save grader results, file versions and human layout review. Resolve material mismatches before accepting this scope; also meet the applicable foundation and release checks. |
+| Monitoring and response | Record discrepancies or reviewer corrections, identify the affected configuration and add the failure as a regression case. |
 
 ### 3.3 Evaluation design
 
-For each individual check, specify:
+Each case record contains:
 
-- **Traceability:** case ID, requirement ID(s) from §2, success criterion, evaluation layer and functions exercised.
+- **Links:** case ID, requirement/criterion IDs, layer and functions exercised.
 - **Four dimensions:** what is checked, who grades, when/setting, and why.
-- **Cases and grading:** inputs, reference answers or rubric, and acceptance threshold.
-- **Trial design:** repetitions or sample size, setup and reset procedure.
-- **Configuration:** the effective version and overrides from §2.7, including model settings, compaction prompt, middleware and enabled subagents.
+- **Procedure:** inputs/setup, expected result or rubric, threshold, repetitions and reset/cleanup.
+- **Evidence:** effective configuration, case/grader versions, results, trace/output links and limitations.
 
-Scenarios such as interpreting revision feedback, preserving instructions through a long conversation, or recovering a failed transfer test shared behavior and operating requirements. Start with the proposed shared mechanisms; use failures to determine whether instructions, context, tools or application handling need improvement.
+The evaluation groups below organize cases; they do not require a separate harness or service each. Apply cases to the selected scope: memory, delegation and connector cases become required when those features are enabled. Test rejection of overlapping execution for the same task in the initial trial; test concurrent coordination only when enabled. Include default framework delegation if it is active.
 
-The classification table links evaluation groups to the four dimensions and success criteria. Grading guidance follows, then the case and acceptance table. Results remain unassessed.
+Use reference answers or checks prepared independently of the agent’s claimed result. Its own validation report is evidence of what it checked, not a substitute for the evaluator’s oracle. Offline means evaluation outside live business work; online means observation or checking during operation.
 
 | Evaluation / criteria | What is checked | Who grades | When / setting | Why |
 |---|---|---|---|---|
@@ -535,7 +403,7 @@ The classification table links evaluation groups to the four dimensions and succ
 | E-CTRL-1<br>SC-3 | Permission boundaries and budgets | Code + access reviewer | Offline; boundary signals online | Capability and regression |
 | E-PROV-1<br>SC-3, SC-4 | Evidence and review records | Code + human reviewer | Offline and online | Capability and regression |
 | E-REC-1<br>SC-7 | Failure, partial progress, retry/resume | Code + operator review | Offline; failure signals online | Capability and regression |
-| E-REL-1<br>SC-5 | Release step and readiness record | Owner | Offline, before release or scope expansion | Capability and regression |
+| E-REL-1<br>SC-5 | Release step and readiness record | Owner | Before release or scope expansion | Release readiness |
 | E-ASANA-1<br>SC-6 | Full assignment-to-review path | Code + human reviewer | Offline; lifecycle signals online | Capability; retain as regression |
 
 **Grading guidance**
@@ -556,159 +424,91 @@ Choose the grader from the requirement, not its layer. Many foundation checks ha
 - Reuse evidence only for the requirements and conditions actually exercised. Record gaps explicitly.
 - Judge acceptable outcomes; wording and valid tool sequences may vary. Run offline checks after release when useful.
 
-| Evaluation | Required cases / mechanisms | Acceptance condition |
+| Group | Cases to include | Acceptance evidence |
 |---|---|---|
-| E-PLAT-1 | Model loop, context selection, skills, tools: representative CSV tasks, missing/conflicting inputs, long histories and feedback referring to earlier outputs, repeat trials. | Expected results match within declared tolerances; important constraints survive context shortening; revisions use the intended output or clarify ambiguity; unsupported assumptions are surfaced; budgets hold. |
-| E-ART-1 | C9–C11 file tools, recalculation, conversion and inspection: reading/revision cases, valid and deliberately defective Excel/Word/PDF packages, and declared supported/unsupported features. | Required content/features are preserved on read/revision/export; critical formulas/figures and cross-file values agree; required recalculation/presentation checks pass; unsupported features are reported; graders detect seeded defects. |
-| E-FILE-1 | Checkpoints, transfer, versions: text/XLSX/binary files, task isolation/file lookup, concurrent edits, exclusions, cleanup/restart and transfer failure. | Required files are locatable and scoped to the right task/run; sources preserved; state/files recoverable; conflicts retained; incomplete preservation reported. |
-| E-FIN-1 | Skill and calculations: bank/ledger matches, duplicates, exceptions, balance bridges, proposed entries and artifacts. | Independent expected results and all critical finance checks pass; reviewer accepts representative work. Proposed entries remain drafts. |
-| E-CTRL-1 | Policy/runtime/environment checks: authorized/denied requests, injected instructions, secrets, filesystem/network, budgets and delegation. | Forbidden effects are blocked; configured limits enforced; effective access matches the approved policy. |
-| E-PROV-1 | Manifest, work log, trace, review: follow input to output; modify an approved artifact; test separate approval scopes. | Evidence identifies the run/configuration/source/output versions; changed artifacts cannot inherit stale approval. |
-| E-REC-1 | Error handling and operation records: startup failure, timeout after a possible effect, incomplete response, exhausted budget, transfer/cleanup failure, restart. | Accurate partial/failure status; bounded retries; no repeated completed effects; recovery or escalation follows the documented procedure. |
-| E-REL-1 | Release record, identities, monitoring, recovery rehearsal and representative memory/state compatibility. | All mandatory readiness conditions pass for the proposed stage; limitations and accountable owner recorded. |
-| E-ASANA-1 | Dispatcher, task/thread mapping, approvals: normal work, actionable/informational feedback, duplicate/out-of-order events, concurrent workers, failure/restart. | Eligible work follows the defined path; duplicates/loops prevented; context, files, and approval identity retained. |
+| E-PLAT-1 | Small work tasks, missing/conflicting inputs, long histories, corrections, repeated runs. | Correct results or appropriate clarification; retained constraints; valid revisions within budget. |
+| E-ART-1 | Selected office operations; valid and defective workbooks/documents, conversion and composed packages. | Independent answers agree; required content/features, calculations and presentation pass; unsupported features disclosed. |
+| E-FILE-1 | File lookup, task isolation, cleanup/restart, size exclusions, conflicts and transfer failure. | Correct files/versions survive; originals unchanged; partial preservation reported. |
+| E-FIN-1 | Known bank/ledger matches, duplicates, exceptions and balance bridges. | Expected financial results and finance review pass; proposed entries remain drafts. |
+| E-CTRL-1 | Allowed/denied access, injected instructions, secret/network/file boundaries, limits and enabled delegation. | No forbidden effects; configured limits and approved permissions hold. |
+| E-PROV-1 | Input-to-output walkthrough, changed approved files, separate output/asset approvals. | Run/source/configuration/output identity and actual checks are recoverable; stale approval rejected. |
+| E-REC-1 | Startup failure, timeout with uncertain effect, incomplete response, budget exhaustion, transfer/cleanup failure. | Accurate partial/failure status; bounded safe retry or escalation; recoverable work preserved. |
+| E-REL-1 | Scope, evidence, identities, storage, monitoring and recovery readiness. | Owner accepts the defined scope and limitations against all applicable release conditions. |
+| E-ASANA-1 | Normal/revision/duplicate/out-of-order events, feedback, triggers and restart; concurrency if enabled. | Correct routing and preserved review identity; no duplicate effects or trigger loops. |
 
-**Before accepting evaluation results**
-
-- Define sample sizes, tolerances, budgets and thresholds in D3 before judging a release candidate.
-- Treat critical boundary or financial errors as failures; do not average them away.
-- Retain case/grader versions, results, variation and limitations.
-- Include task, component and integration evidence.
-- Cover the required behaviors of each selected capability; identify untested situations and limits explicitly.
-- Assess C8–C11 separately and in composed tasks. Passing one workflow does not establish general file-format support.
-
-Coverage alone does not establish reliability.
+Set thresholds and repetitions in D3 before judging a candidate. Critical financial, access or preservation errors cannot be averaged away. Report case coverage, failures and limitations; preserve independent answers and check that graders detect seeded defects. Passing one workflow does not establish general format support.
 
 ### 3.4 Evaluation and operation architecture
 
-**Design:** a versioned configuration is evaluated against cases and graders. The resulting evidence supports a release decision; the deployed version produces monitoring evidence that informs the next change.
-
 ```mermaid
 flowchart LR
-    CHANGE["Build: proposed change"] --> CONFIG["Versioned agent configuration"]
-    CONFIG --> EVAL["Evaluation runner"]
-    CASES["Cases, reference answers and graders"] --> EVAL
-    EVAL --> EVIDENCE["Results, traces and review evidence"]
-    EVIDENCE --> GATE{"Release requirements met and owner approval recorded?"}
-    READY["Access, storage, recovery and monitoring readiness"] --> GATE
-    GATE -->|"yes"| RELEASE["Release record: version and permitted scope"]
-    GATE -->|"no: revise or defer"| CHANGE
-    RELEASE --> LIVE["Deployed agent runtime"]
-    LIVE --> OBS["Traces, artifact checks and human review"]
-    OBS --> MON["Monitoring: signals, thresholds and owners"]
-    MON --> RESPONSE["Investigate, contain, recover or improve"]
-    RESPONSE -->|"change needed"| CHANGE
-    RESPONSE -->|"useful new case"| CASES
-    RESPONSE -->|"stop or recover"| LIVE
+    CHANGE["Requirements or configuration change"] --> CANDIDATE["Versioned candidate"]
+    CANDIDATE --> EVAL["Run cases and graders"]
+    CASES["Fixtures, independent answers, rubrics"] --> EVAL
+    EVAL --> EVIDENCE["Results, traces, artifacts, review"]
+    EVIDENCE --> RELEASE{"Scope and readiness accepted?"}
+    RELEASE -->|"revise"| CHANGE
+    RELEASE -->|"yes"| USE["Supervised use with monitoring"]
+    USE --> FINDING["Defect, drift or improvement finding"]
+    FINDING --> CHANGE
+    FINDING -->|"regression case"| CASES
 ```
 
-Evaluation and monitoring use the same requirement and success-criterion IDs. Deployment must identify the version and scope actually approved; a change returns through relevant evaluation and release checks. This view describes the development and operation process; §2.4 describes execution inside an assignment.
+Use the same requirement and criterion IDs in cases, release evidence and monitoring. A later configuration change needs relevant re-evaluation; earlier results remain evidence only for the versions and conditions they exercised.
 
 ## 4. Deploy: requirements and design
 
-Release only the scope supported by evaluation evidence and operational readiness. Plan the deployment before starting real-work trials.
+Deployment means operating an identified configuration for an approved scope. Local supervised use is a valid deployment; hosted or multi-user operation is optional.
 
 ### 4.1 Release requirements
 
-Use the evaluation evidence to decide which scope of use is ready. **SC-5 / E-REL-1** governs the release decision, including required capability results and operational readiness.
-
-| Stage | Authorized use | Evidence to enter / expand |
+| Stage | Permitted use | Evidence needed |
 |---|---|---|
-| 0. Controlled trial | Synthetic or explicitly approved cases with restricted access. | Trial scope, identities, limits, and data handling agreed. |
-| 1. Parallel operation | Approved real tasks alongside the normal process; outputs non-authoritative and consequential writes suppressed. | Required offline evaluations and readiness review pass. |
-| 2. Supervised use | Every deliverable reviewed before business use; no posting/payments. | Reviewed representative trials meet agreed quality, cost/time, and recovery criteria. |
-| 3. Broader use, if justified | Specifically approved workload/access expansion. | Evidence for added scope, relevant regressions, monitoring and recovery readiness. |
+| Controlled trial | Synthetic or explicitly approved inputs, restricted tools and budgets. | D1–D3/D5 choices needed for the trial, data handling and recoverable workspace. |
+| Parallel operation | Approved real work alongside the normal process; outputs remain non-authoritative. | Relevant offline cases pass, owner accepts scope and E-REL-1 readiness evidence. |
+| Supervised use | Reviewed deliverables may support business work; no posting/payments. | Representative trials meet agreed quality, reviewer-effort, time/cost and recovery criteria. |
+| Scope expansion | Additional workload, connector, users or autonomy. | Evidence for the added scope, affected regressions and updated operating procedures. |
 
-**Scope expansion**
-
-- Supervised use may remain the endpoint.
-- Asana requires its own gate after foundation and finance evaluation.
-- Another connector or automatic memory writes require a separate scope decision.
+Release only selected capabilities. Bank reconciliation is required evidence for that workflow, not for an Excel-only release. Asana requires foundation evidence and cases for the work it will dispatch, plus its own integration checks. Supervised use may remain the endpoint.
 
 ### 4.2 Deployment architecture and trust boundaries
 
-**Design:** execution locations, persistent storage, identities and permitted data flows.
+The host/sandbox/storage layout is shown in §2.4. Proposed first-trial choices are Deep Agents/LangChain, an OpenAI model, LangSmith sandbox/tracing, local checkpoints (SQLite is a candidate) and durable host task folders. Pin the chosen versions in D1; this is not an implementation audit.
 
-```mermaid
-flowchart LR
-    UI["Terminal / approved task adapter"] --> AGENT
-    subgraph HOST["Agent host: local trial or selected service runtime"]
-        AGENT["Orchestration, context, authorization, budgets"]
-        REFS["Approved skills / memory: read-only to agent"]
-        TRANSFER["Workspace transfer and conflict handling"]
-        CONNECTOR["Optional connector with scoped identity"]
-        SECRETS["Host credential manager"]
-        AGENT --> REFS
-        AGENT <--> TRANSFER
-        AGENT <--> CONNECTOR
-        SECRETS --> AGENT
-        SECRETS --> CONNECTOR
-    end
-    DATA["Durable checkpoints, task files, action/review/configuration records"] <--> AGENT
-    DATA <--> TRANSFER
-    PROVIDER["Model API"] <--> AGENT
-    AGENT --> TRACE["LangSmith traces / monitoring: approved data policy"]
-    subgraph SBX["Temporary execution boundary"]
-        EXEC["Generated code and file tools"] <--> COPY["Working copies"]
-    end
-    AGENT <-->|"authorized operations and results"| EXEC
-    TRANSFER <-->|"copy in / preserve out"| COPY
-    CONNECTOR <--> REMOTE["Approved external system"]
-```
-
-| Boundary | Required design |
+| Boundary | Required setup |
 |---|---|
-| Host → model / tracing | Use host credentials and approved data handling. Record model/configuration identity; minimize sensitive trace content. |
-| Host → sandbox | Transfer only eligible task data/assets. Do not copy host secrets by default. Restrict and verify filesystem, process, network, and resource access. |
-| Sandbox → persistent storage | Preserve outputs and operation evidence before destructive cleanup. Version conflicts; report incomplete transfer. |
-| Host → external system | Use a named, scoped connector identity. Initial business access is read-only; Asana task updates require their explicit publication scope. |
-| Agent → shared references | Enforce read-only access; owner-approved changes follow the release process. |
-| Work item → other tasks/users | Scope state, files, retrieved memory, credentials, and review records. Define ownership/locking for concurrent execution. |
+| Host → model/tracing | Host credentials; approved transmitted data, trace access and retention. |
+| Host → sandbox | Eligible task copies/assets; explicit filesystem/network/resource limits. Do not copy host secrets by default. |
+| Sandbox → durable storage | Preserve outputs before cleanup; handle size exclusions, conflicts and incomplete transfer. |
+| Agent → sources/shared guidance | Read-only originals/references; controlled working copies and owner-approved shared changes. |
+| Task → other tasks/users | Scoped state and files. One active execution per task initially; locks/isolation for selected concurrent or multi-user use. |
+| Optional connector → business system | Named identity and explicit operation scope; approved write behavior and retry/deduplication rules. |
 
-Proposed choices: Deep Agents orchestration, OpenAI model, LangSmith sandbox/tracing, SQLite for local checkpoints, and per-task durable files. Hosted storage, exact versions, retention, identities, and concurrency behavior are decisions D1, D4, D5, and D7 in the spec. A virtual path or provider name alone does not prove isolation.
+An SDK, virtual path or sandbox label does not prove these boundaries. Verify their effective behavior. When hosting remotely, resolve storage durability, credential delivery, backups and restart behavior before release (D5).
 
 ### 4.3 Release and recovery design
 
-**Design:** record the selected configuration and prepare the procedures needed to operate, stop and recover it.
+Keep one release record with:
 
-**Release record**
+- Configuration/version, selected capabilities and accepted limitations.
+- Evaluation evidence and owner decision.
+- Runtime location, identities, storage, data/trace retention and budgets.
+- Monitoring/review responsibility and cadence.
+- Stop, recovery and rollback instructions, including compatible state/memory versions.
 
-- Configuration and input/memory compatibility.
-- Scope, stage and operational owner.
-- Identities and data/trace retention.
-- Budgets and deployment/storage choices.
-- Monitoring thresholds and accepted limitations.
-
-**Recovery rehearsals**
-
-| Action | What to rehearse |
-|---|---|
-| Stop | Stop new and active work. |
-| Recover | Reconcile completed or partial effects before retrying. |
-| Rollback | Restore a compatible configuration and state. |
-| Repair | Re-review outputs and correct external effects. |
-
-Reverting code does not necessarily reverse actions or stored data.
+Rehearse stopping work, resuming after interruption, restoring a compatible version and repairing affected outputs. For the first trial, these may be documented terminal steps. Record unresolved preservation/cleanup failures. Reverting code does not reverse external actions or stored data.
 
 ## 5. Monitor and improve: requirements and design
 
-Carry the success criteria into operation and use findings to guide changes. Configure monitoring before deployment.
+Use operating evidence to decide what needs attention and whether a change helps.
 
 ### 5.1 Monitoring requirements
 
-**Requirements:** maintain evidence and accountable review for the approved scope.
-
-- Retain appropriate records for each run.
-- Perform applicable automatic checks before delivery.
-- Review every output during supervised use.
-- Set sample/trend review cadence, thresholds and the responsible owner in D4.
-- Minimize sensitive trace content; define access and retention.
+Before real-work use, assign an owner and review cadence. During the trial, Neil reviews each run's status, files, checks and usage. During supervised business use, every deliverable requires review. A run log and review record are sufficient initially; automated alerts are needed when the chosen operating model requires them.
 
 ### 5.2 Monitoring design
 
-**Design:** collect the following signals and define thresholds, ownership and response routing in D4.
-
-Monitor the same success criteria used for evaluation, using run records, artifact checks and human review.
+Collect signals against the same success criteria. Set thresholds and escalation rules in D4, group results by task and effective configuration, and minimize sensitive content.
 
 | Criterion / requirements | Signals and evidence | Response to define |
 |---|---|---|
@@ -724,68 +524,51 @@ Use monitoring signals to guide diagnosis. Establish the cause through investiga
 
 ### 5.3 Response and improvement design
 
-**Requirements:** material findings need an accountable response; changes must meet relevant acceptance criteria before release.
+1. Record the finding, affected run/output, requirement and impact. Contain material incorrect outputs, access breaches or data loss.
+2. Diagnose the cause using inputs, configuration, traces and actual effects. A trace shows events; it does not establish their correctness.
+3. Link corrective work to the task list. Add a useful regression case and evaluate the affected behavior plus relevant regressions.
+4. Record the release decision or accepted limitation, then monitor the result.
 
-**Design:** use the following response process and evaluation coverage.
-
-**Response sequence**
-
-1. Stop and investigate material incorrect results, boundary breaches or data loss.
-2. Link the finding to its requirement and success criterion; diagnose the cause and add useful regression cases.
-3. Update affected requirements, design and task-list items; verify the change against relevant evaluations before release.
-4. Record accepted limitations with an owner and rationale.
-
-**Match evaluation to the change**
-
-| Change | Evaluation needed |
+| Change | Evidence to revisit |
 |---|---|
-| New skill | Capability cases and relevant regressions. |
-| New tool or access | Boundary and retry checks. |
-| Model, reasoning or output settings | Representative quality/completion cases, usage and latency comparisons. |
-| Context or compaction prompt/policy | Long and repeatedly compacted histories, corrections, source references, resume and summarizer failure. |
-| Middleware or subagents | Relevant capability cases plus ordering/inheritance, shared budgets, permissions, state and failure propagation. |
-| Purpose or authority | Revisit all plans. |
+| Skill or business procedure | Relevant work cases, independent answers and affected regressions. |
+| Model, reasoning or output settings | Representative quality/completion, latency and total usage. |
+| Context, compaction or middleware | Information retention, corrections, ordering, checkpoint compatibility and failure behavior. |
+| Tool, subagent or access | Task quality, permissions, shared budgets, state/file ownership, retries and failure propagation. |
+| Memory or storage policy/schema | Empty/existing/stale/conflicting state, compatibility, migration or invalidation, deletion and rollback. |
+| Purpose, users or authority | Revisit scope, architecture and all lifecycle plans. |
 
-**Memory changes**
-
-Begin with owner-maintained guidance. Before enabling automatic updates or changing memory policy/schema:
-
-- Define scope, validation, correction, expiry and deletion.
-- Define compatibility with software changes.
-- Evaluate empty, existing, stale and conflicting memory.
-- Plan migration or invalidation, plus rollback.
+Automatic memory updates are deferred. If later enabled, define who owns each memory, permitted readers/writers, validation, retention/correction/deletion and promotion into trusted guidance. Test memory changes separately from code changes and record their versions together.
 
 ## 6. Decisions to resolve
 
-These are design decisions, not findings about repository implementation. Owner: Neil Yee, with specialist review where required.
+Owner: Neil Yee, with specialist review where needed. Resolve choices for the next selected scope; do not wait for every optional feature. Record selected values and rationale here or link their versioned configuration; implementation findings remain in the task list.
 
-| ID | Decision | Resolve before |
+| ID | Decision | Needed when |
 |---|---|---|
-| D1 | Runtime configuration (§2.7): model/framework versions, settings, context/compaction policy and prompts, middleware composition, enabled subagents, dependencies, execution image and budgets. | Configuration baseline |
-| D2 | Selected work capabilities, supported format features and limits, recalculation/conversion/rendering methods, first finance workflow and independent reference answers. | Task evaluation design |
-| D3 | Cases, graders, tolerances, repetitions/sample sizes, critical failures, cost/time/call/retry/revision thresholds. | Evaluation and release decisions |
-| D4 | Operational owner, signal sources, alert/review cadence, thresholds, trace data/access/retention. | Real-work pilot |
-| D5 | Host/storage, identity/access policy, concurrency model, backups, transfer limits, stop/recovery/rollback and state compatibility. | Deployment readiness |
-| D6 | Asana eligibility, trigger/status mapping, actionable feedback, publication/approval scope, deduplication and locking. | Asana configuration |
-| D7 | Memory ownership/scope, approved references, retention/correction/deletion, and any later automatic-write policy. | Memory use or policy expansion |
+| D1 | Exact model/framework/image versions; reasoning/output settings; finite budgets/timeouts/retries; context/middleware baseline; enabled delegation. | Before the first representative run. |
+| D2 | Selected work, formats/features, input/output contract, required recalculation/conversion/rendering and independent expected answers. | Before claiming that work capability; choose one bounded trial first. |
+| D3 | Case thresholds/rubrics, repetitions, critical failures and time/cost/reviewer-effort limits. | Before judging a candidate against acceptance criteria. |
+| D4 | Review owner/cadence, signals, thresholds, trace access and retention. | Basic trace policy before the trial; operational response before real-work use. |
+| D5 | Runtime/storage/identities, transfer limits, backups and stop/recovery; concurrency/isolation if selected. | Trial data/access/storage before execution; deployment-specific details before release. |
+| D6 | Asana eligibility, task/thread identity, publication scope, status/feedback rules and deduplication. | Only when adding Asana. |
+| D7 | Memory sources, ownership/scope, retention/correction/deletion and any later automatic-write policy. | When memory is enabled or its policy changes. |
+
+**Next practical sequence**
+
+1. Select one bounded task and write its expected result and checks (PLAN-01/02).
+2. Resolve its settings and access/storage choices (PLAN-03/05); use the [inventory](#26-implementation-inventory) to assess existing code before adding work.
+3. Run the selected work cases and targeted foundation cases. Record gaps and results in TEST-01–06.
+4. Review whether the evidence supports the requested scope; use REL-01–03 for real-work release.
+5. Review outcomes, add regressions and expand only the capability or integration needed next.
+
+**Minimum artifacts:** this design; the task list; versioned configuration/prompts; cases/graders; run/evaluation records with output links; a release record for real-work use. Findings can be linked task items. These can be simple files—each artifact does not need its own service or management tool.
 
 ## 7. Change log
 
 | Version | Date | Change |
 |---|---|---|
-| v0.21 | 2026-10-25 | Led with the shared loop and anatomy; grouped behavior, work capabilities and operating requirements while preserving IDs. Added layered evaluation coverage and requirement-based grading guidance. |
-| v0.20 | 2026-10-24 | Added runtime configuration, compaction prompt guidance, middleware customization and optional subagent definitions; connected choices to effective run records and evaluations. |
-| v0.19 | 2026-10-24 | Recast the building blocks checklist as an implementation inventory; made the task list the single place for implementation status and evidence. |
-| v0.18 | 2026-10-24 | Combined specification and architecture under Build, Test, Deploy and Monitor; distinguished requirements from design, added the evaluation/operation view, and consolidated repository links. Architecture history remains in Git. |
-| v0.17 | 2026-10-24 | Added a consolidated implementation review checklist linking shared building blocks, capabilities and task-list evidence; all findings remain unassessed. |
-| v0.16 | 2026-10-24 | Generalized all capability tables, used familiar agent mechanisms and moved scenario detail to evaluations. Retired Cx.y specification IDs in favor of stable C1–C12 references and evaluation case IDs. |
-| v0.15 | 2026-10-24 | Split the capability catalog into focused behavior tables with stable IDs and explicit function/mechanism/implementation mappings; linked evaluation cases to behavior IDs. |
-| v0.14 | 2026-10-24 | Connected assignment steps to capability IDs and evaluations/monitoring to success criteria; clarified section purposes and reduced repeated explanations. |
-| v0.13 | 2026-10-24 | Reordered operating flow before delivery and moved starter tasks alongside evaluation design. |
-| v0.12 | 2026-10-24 | Reformatted dense prose into labeled lists, numbered steps and compact tables; separated requirements within capability cells for easier scanning. |
-| v0.11 | 2026-10-24 | Moved essential rules into their capability rows, removed the shared-rules section, and relocated technical detail to the architecture. |
-| v0.10 | 2026-10-23 | Combined capability, function, mechanism and implementation mappings in one table; consolidated shared requirements and aligned document references. |
-| v0.9 | 2026-10-23 | Classified capabilities by reuse scope; made workspace and CSV/Excel/Word/PDF capabilities explicit; connected task composition, design, criteria and evaluation coverage. |
-| v0.8 | 2026-10-23 | Recast as intended requirements/design; removed implementation and pass/fail claims. Added explicit artifact and recovery evaluations, decision IDs, and revised lifecycle guidance. |
-| v0.7 | 2026-10-23 | Connected capabilities, design, success criteria, evaluations, and monitoring. |
-| v0.6 and earlier | 2026-10-22 | Earlier document structures retained in Git history. |
+| v0.22 | 2026-10-25 | Consolidated repeated design, separated first-trial scope from optional extensions, clarified delivery/retry rules, added a concrete evidence chain and practical decision sequence. No implementation assessment asserted. |
+| v0.21 | 2026-10-25 | Introduced anatomy-first requirements and layered evaluation with requirement-based grading. |
+| v0.20 | 2026-10-24 | Added runtime settings, middleware customization and subagent definitions. |
+| Earlier versions | — | Full document and architecture history retained in Git. |

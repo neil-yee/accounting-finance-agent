@@ -2,14 +2,16 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.16 design draft · October 25, 2026 |
+| Version | v0.17 design draft · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.21 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.22 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
 
 **Assessment values:** Not assessed · Missing · Partial · Meets completion criterion. Keep evidence links beside each finding. Code presence can satisfy a build item; evaluation items require results, and release items require the corresponding approval. An unchecked gate is unassessed, not a declaration that it failed.
+
+**Scope first:** select the next trial or release under spec §1. Deferred features stay unassessed and do not block unrelated work. Include finance, Asana, delegation, memory and concurrency checks when the selected scope uses them.
 
 ## 1. Plan
 
@@ -34,12 +36,12 @@ Work may reuse or adapt existing implementation after assessment. Start with fra
 | BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state; versioned compaction prompt/trigger, retained history, retrieval and failure behavior per §2.7. | Not assessed | — |
 | BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries) | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Not assessed | — |
 | BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | Selected C8–C11 paths with declared supported features; read/revision/export, independent calculations, formula/recalculation, presentation and cross-file checks. | Not assessed | — |
-| BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | State/file stores, task ownership, checkpoints, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
+| BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | State/file stores, task ownership, checkpoint/export milestones, acceptable unsaved work, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
 | BUILD-06 | Implement permissions and budgets — C5; [runtime](agent-spec.md#runtime-and-tool-contracts--c2-c5) and [access design](agent-spec.md#access-and-approval-enforcement--c3-c5-c7) | Checks across model/actions/storage/delivery; bounded calls/time/retries and delegation; enforced reference/source restrictions. | Not assessed | — |
 | BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | Explicit partial/failure/review states, operation records, retry eligibility, reconciliation and cleanup-failure handling. | Not assessed | — |
 | BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, effective configuration/overrides and prompt/middleware/subagent versions, source/output identities, actual-check reports and version-specific approvals. | Not assessed | — |
 | BUILD-09 | Create cases and graders — §§3.2–3.3 | Versioned case IDs linked to requirements, criteria, evaluation layers and functions exercised; fixtures/rubrics, expected results, thresholds, repetitions, setup/reset and seeded defects to check graders. | Not assessed | — |
-| BUILD-10 | Configure operational monitoring — §§4–5 | Automatic checks, signal collection, alerts/review routing, access/retention and stop/recovery controls. | Not assessed | — |
+| BUILD-10 | Configure operational monitoring — §§4–5 | Applicable automatic checks, signal collection, owner review/routing, access/retention and stop/recovery controls; alerts when the operating model requires them. | Not assessed | — |
 
 **Configure gate:** a representative task completes the intended path; fixtures, graders, instrumentation, and recovery procedures are ready for evaluation. Completion of this gate does not establish task quality across the planned scope.
 
@@ -51,7 +53,7 @@ Cover shared behavior and operating requirements alongside reusable file work, f
 |---|---|---|---|---|
 | TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Representative CSV, missing/conflicting-input, repeated compaction, revision-reference and selected delegation cases; compare configuration candidates with independent outputs/rubric and total usage/latency. | Not assessed | — |
 | TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Separate C9–C11 checks and composed packages: reading/revision, supported features, conversion fidelity, seeded defects, correct formulas/figures and presentation. | Not assessed | — |
-| TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, state/file restart, concurrent edits, exclusions, conflicts and transfer-failure cases. | Not assessed | — |
+| TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, restart/abrupt-loss recovery under the declared policy, overlap rejection (or coordination if enabled), exclusions, conflicts and transfer failure. | Not assessed | — |
 | TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, actual filesystem/network/identity checks and enforced shared budgets. | Not assessed | — |
 | TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, stale-approval cases, separate approval scopes and complete configuration references. | Not assessed | — |
 | TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup failure and safe resume/retry. | Not assessed | — |
@@ -59,6 +61,8 @@ Cover shared behavior and operating requirements alongside reusable file work, f
 **Foundation gate:** mandatory criteria pass for the defined cases and repetitions, with case/grader/configuration versions, limitations, and a recorded decision. Preserve passing capability cases as regressions.
 
 ## 4. Define and evaluate the first finance workflow
+
+Apply this section when a business workflow such as C12 is selected. It is not a prerequisite for an Excel-only trial or release.
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
@@ -70,7 +74,7 @@ Cover shared behavior and operating requirements alongside reusable file work, f
 
 ## 5. Release within the approved scope
 
-Prerequisite: the required foundation and finance evidence for that release.
+Prerequisite: foundation and work-capability evidence for the selected release; finance evidence when that workflow is included.
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
@@ -84,7 +88,7 @@ Prerequisite: the required foundation and finance evidence for that release.
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| MON-01 | Operate per-run checks and response paths — §5.2 | Versioned run/outcome records, applicable automatic checks, alert ownership and demonstrated response routing. | Not assessed | — |
+| MON-01 | Operate per-run checks and response paths — §5.2 | Versioned run/outcome records, applicable checks, owner review and demonstrated response; alert routing when selected. | Not assessed | — |
 | MON-02 | Review outputs and trends — §5.2 | Reviews at agreed cadence; quality, corrections, costs and workload comparisons by task/configuration; decisions recorded. | Not assessed | — |
 | MON-03 | Diagnose findings and release fixes — §5.3 | Evidence, impact, owner and response; useful regression cases, verified fixes or accepted limitations; memory/state compatibility considered. | Not assessed | — |
 
@@ -92,7 +96,7 @@ Prerequisite: the required foundation and finance evidence for that release.
 
 ## 7. Add the Asana task workflow
 
-Scope this work after the foundation and finance gates. These are planned dependencies, not assertions about whether code exists.
+Select this integration after the foundation and dispatched work have relevant evidence. Apply the finance gate if it will dispatch finance workflows. These are planned dependencies, not findings about current code.
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
@@ -124,6 +128,7 @@ Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inve
 
 | Version | Date | Change |
 |---|---|---|
+| v0.17 | 2026-10-25 | Aligned with pragmatic trial scope: conditional finance/integration gates and owner-led monitoring; preserved unassessed implementation records. |
 | v0.16 | 2026-10-25 | Aligned planning and case records with anatomy-first requirements and layered, requirement-based evaluation grading. |
 | v0.15 | 2026-10-24 | Linked runtime settings, compaction, middleware and subagent configuration to build evidence, evaluation comparisons and change review. |
 | v0.14 | 2026-10-24 | Made this task list the single place for implementation status and evidence; linked the spec inventory without duplicating assessments. |
