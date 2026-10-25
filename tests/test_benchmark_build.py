@@ -21,10 +21,10 @@ from accounting_finance_agent import knowledge
 class BenchmarkBuildChecks(unittest.TestCase):
     def test_versioned_profile_allows_40_requests_and_blocks_41st(self):
         settings = load_settings(profile=EXCEL_PROFILE, validate_credentials=False)
-        self.assertEqual(EXCEL_PROFILE, 'excel-benchmark-v2')
+        self.assertEqual(EXCEL_PROFILE, 'excel-benchmark-v3')
         self.assertEqual(settings.max_model_calls, 40)
         self.assertEqual(settings.max_tool_calls, 40)
-        self.assertEqual(settings.run_seconds, 600)
+        self.assertEqual(settings.run_seconds, 1800)
         controls = RunControls(settings, RunContext('run', 'thread', 'UTC', 'virtual'), Mock())
         for _ in range(40):
             controls.reserve('model', api_attempt=True)

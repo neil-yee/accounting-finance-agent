@@ -41,7 +41,7 @@ class Settings:
 
 # Version this named baseline whenever a setting changes. Runtime evidence must
 # distinguish these requested values from actual enforcement/provider behavior.
-EXCEL_PROFILE = "excel-benchmark-v2"
+EXCEL_PROFILE = "excel-benchmark-v3"
 EXCEL_SETTINGS = {
     "sandbox_snapshot_id": "3dce6ed0-f050-432a-bc9a-79a7b960972f",
     "model": "gpt-6-luna",
@@ -49,7 +49,7 @@ EXCEL_SETTINGS = {
     "tracing_enabled": True,
     "max_model_calls": 40,
     "max_tool_calls": 40,
-    "run_seconds": 600,
+    "run_seconds": 1800,
     "model_timeout_seconds": 180,
     "tool_timeout_seconds": 120,
     "max_output_tokens": 32000,

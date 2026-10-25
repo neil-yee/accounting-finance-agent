@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.27 request ceiling revised · October 25, 2026 |
+| Version | v0.28 work deadline revised · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.27 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.28 |
 | Assessment baseline | Initial review against spec v0.24; first build increment at `8eb7d90` reviewed against unchanged requirements in spec v0.25. Historical evidence is labeled; no new tests or paid runs. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below distinguish existing implementation, historical evidence and remaining gaps against the selected requirements. The initial review is in [§10](#10-repository-assessment--october-25-2026); subsequent build changes are in [§11](#11-build-progress). Reuse the foundation before adding missing behavior.
@@ -345,10 +345,20 @@ US$1 reservation policy, 600-second work deadline and 40-tool-attempt ceiling
 remain unchanged. Existing v1 attempts retain their recorded configuration; the
 revision applies to future runs and starts a new comparison baseline.
 
+### Work deadline revision
+
+The owner extended the work deadline from 10 to 30 minutes (1,800 seconds).
+Profile `excel-benchmark-v3` records this new baseline. The US$1 API budget,
+40 provider requests, 40 tool attempts and separate 60-second preservation/cleanup
+phase are unchanged. Earlier attempts retain their recorded limits and outcomes.
+The existing profile assertion now expects v3 and 1,800 seconds; tests were not
+rerun for this configuration change.
+
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.28 | 2026-10-25 | Extended the owner-requested work deadline to 30 minutes in profile v3; retained other limits and historical evidence. |
 | v0.27 | 2026-10-25 | Versioned the larger 40-request ceiling as profile v2; kept other limits and prior run evidence intact. |
 | v0.26 | 2026-10-25 | Enabled image input with token preflight/shared budgets, recorded 85 offline checks and successful live image inspection; no formal evaluation/release promotion. |
 | v0.25 | 2026-10-25 | Recorded the ad hoc Excel/PDF demonstration, checkpoint/media fixes and 80 passing offline checks; preserved formal evaluation/release gates. |

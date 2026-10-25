@@ -8,18 +8,20 @@ and broader live checks remain pending. See
 
 ## Versioned Excel trial profile
 
-`excel-benchmark-v2` configures the current trial baseline. Its strict runner requires a
+`excel-benchmark-v3` configures the current trial baseline. Its strict runner requires a
 POSIX host (Linux/macOS) and a sandbox supporting unprivileged network namespaces.
 The current cloud host and frozen snapshot passed the build checks. The existing
 `local` profile retains its earlier behavior and limitations.
 
 ```powershell
-uv run --locked finance-agent --profile excel-benchmark-v2 --show-config
-uv run --locked finance-agent --profile excel-benchmark-v2 --sandbox
+uv run --locked finance-agent --profile excel-benchmark-v3 --show-config
+uv run --locked finance-agent --profile excel-benchmark-v3 --sandbox
 ```
 
-The v2 profile raises the request ceiling from 20 to 40. Prior runs retain their
-v1 configuration and outcomes. The dollar, time and tool ceilings are unchanged.
+The v3 profile raises the work deadline from 10 to 30 minutes (1,800 seconds),
+following v2's increase to 40 requests. Prior runs retain their recorded
+configuration and outcomes. The US$1 API budget, 40-request ceiling, 40-tool
+ceiling and separate 60-second preservation/cleanup phase are unchanged.
 
 `EXCEL_SETTINGS` in `config.py` supplies the ceiling. Our `BudgetClient` reserves
 one slot through `RunControls.reserve()` before each inference attempt or uncached
@@ -40,7 +42,7 @@ Do not change settings during a three-run series.
 | Model/reasoning/API tier | gpt-6-luna / high / Standard (`default`) |
 | Tracing/delegation | Tracing on; delegation disabled |
 | Requests/tools | At most 40 provider requests including compaction, retries and image-token preflights; 40 tool attempts |
-| Time | 600-second work deadline; shared 60-second preservation/cleanup phase |
+| Time | 1,800-second (30-minute) work deadline; shared 60-second preservation/cleanup phase |
 | API budget | US$1, conservative preflight reservations; unknown usage keeps its reservation |
 | Output | At most 32,000 tokens, reduced to fit remaining spend |
 | Retry policy | Up to five eligible retries; SDK retries disabled; read-only tool retries only |
