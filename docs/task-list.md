@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.24 build complete · October 25, 2026 |
+| Version | v0.25 demonstration fixes · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
 | Specification and design | [Agent specification and design](agent-spec.md) v0.25 |
 | Assessment baseline | Initial review against spec v0.24; first build increment at `8eb7d90` reviewed against unchanged requirements in spec v0.25. Historical evidence is labeled; no new tests or paid runs. |
@@ -293,10 +293,24 @@ numerical/label contract is in the agent-only task input. Human evaluation still
 checks grounded explanations, formula meaning and rendered presentation. The
 three fresh-thread model runs and release decisions remain outstanding.
 
+### Demonstration follow-up — repeated edits and media handling
+
+A separate fictional income-statement/analysis Excel + PDF task completed after
+two runtime fixes. Repeated checkpoints now retain different versions without
+filename collisions, and exports are serialized. Unsupported media is explained
+in outgoing text-only requests; stored tool results remain available for review.
+Both behaviors have regression coverage; the full offline suite passes **80 tests
+with zero network attempts**. The earlier failed/limited runs remain recorded.
+The successful continuation is `needs_review`, not human-approved. Its workbook
+calculations/caches and PDF layout were checked independently. This is ad hoc
+demonstration evidence, not the fixed three-run benchmark. No Test/Release status
+is promoted on that basis. See the [engineering report](engineering-checks.md).
+
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.25 | 2026-10-25 | Recorded the ad hoc Excel/PDF demonstration, checkpoint/media fixes and 80 passing offline checks; preserved formal evaluation/release gates. |
 | v0.24 | 2026-10-25 | Completed BUILD-03–10 implementation, captured and probed a frozen image, recorded 78 passing offline checks and compiled tool inspection; kept benchmark/release evidence separate. |
 | v0.23 | 2026-10-25 | Separated implementation from verification/evaluation; marked BUILD-01/02 source-complete, assigned image/pricing to their owning Build tasks, and retained all checks under linked Test/Monitor tasks. |
 | v0.22 | 2026-10-25 | Recorded the first source build increment: staged benchmark profile, scoped guidance and configuration provenance; retained Partial statuses and explicit verification gaps. |

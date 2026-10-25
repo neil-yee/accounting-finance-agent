@@ -47,6 +47,19 @@ class SharedWorkspaceTests(unittest.TestCase):
         target.write_bytes(content)
         return target
 
+    def test_repeated_checkpoints_preserve_every_prior_version(self):
+        original = self.local("report.txt", b"first")
+        baseline = workspace.upload_workspace(self.remote)
+        for data in (b"second", b"third", b"fourth"):
+            self.remote.files["/workspace/report.txt"] = data
+            summary = workspace.download_workspace(self.remote, "same-checkpoint", baseline)
+            baseline = summary["remote_files"]
+        self.assertEqual(original.read_bytes(), b"fourth")
+        saved = {p.read_bytes() for p in (self.root / ".versions").rglob("report.txt")}
+        self.assertEqual(saved, {b"first", b"second", b"third"})
+        workspace.download_workspace(self.remote, "same-checkpoint", baseline)
+        self.assertEqual(original.read_bytes(), b"fourth")
+
     def test_new_and_changed_files_return_to_the_same_folder(self):
         original = self.local("report.txt", b"original")
         baseline = workspace.upload_workspace(self.remote)

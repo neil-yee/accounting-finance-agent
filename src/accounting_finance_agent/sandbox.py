@@ -89,12 +89,13 @@ def sandbox_backend(*, snapshot_id: str | None = None, allowed_hosts: tuple[str,
             transferred_bytes = 0
             def preserve():
                 nonlocal baseline, transferred_bytes
-                summary = download_workspace(sandbox, name + '-checkpoint', baseline, protected=protected)
-                transferred_bytes += sum((workspace_root()/name).stat().st_size for name in summary['changed_files'])
-                if transferred_bytes > 50 * 1024**2:
-                    raise RuntimeError('Run export allowance exhausted; inspect preserved local files.')
-                baseline = summary['remote_files']
-                record('workspace_checkpoint', transfers=summary)
+                with controls.lock:
+                    summary = download_workspace(sandbox, name + '-checkpoint', baseline, protected=protected)
+                    transferred_bytes += sum((workspace_root()/name).stat().st_size for name in summary['changed_files'])
+                    if transferred_bytes > 50 * 1024**2:
+                        raise RuntimeError('Run export allowance exhausted; inspect preserved local files.')
+                    baseline = summary['remote_files']
+                    record('workspace_checkpoint', transfers=summary)
             if controls:
                 controls.preserve = preserve
                 inventory = backend.execute("python3 -c " + shlex.quote("import json,sys,openpyxl; print(json.dumps(dict(python=sys.version,openpyxl=openpyxl.__version__)))") + "; libreoffice --version", timeout=30)

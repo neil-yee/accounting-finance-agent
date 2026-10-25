@@ -200,4 +200,16 @@ class SafeRecoveryChecks(unittest.TestCase):
             with self.assertRaises(TimeoutError):middleware.wrap_tool_call(request,Mock())
             self.assertEqual(call.call_count,1)
 
+class TextOnlyMediaChecks(unittest.TestCase):
+    def test_media_is_explained_without_changing_saved_tool_messages(self):
+        from langchain_core.messages import ToolMessage
+        from accounting_finance_agent.file_metadata import text_only_messages
+        original=ToolMessage(content=[{'type':'image','base64':'private-bytes'},
+                                      {'type':'text','text':'existing tool output'}],tool_call_id='read-1')
+        adapted=text_only_messages([original])[0]
+        self.assertEqual(original.content[0]['base64'],'private-bytes')
+        self.assertNotIn('private-bytes',str(adapted.content))
+        self.assertIn('not supported',str(adapted.content))
+        self.assertEqual(adapted.content[1]['text'],'existing tool output')
+
 if __name__=='__main__':unittest.main()

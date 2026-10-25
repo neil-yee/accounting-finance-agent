@@ -95,3 +95,21 @@ blocked DNS/direct IP and network-namespace re-entry, and recalculated/rendered 
 small workbook inside that boundary. See [build evidence](build-evidence.json) and
 [task progress](task-list.md#11-build-progress). These checks made no model calls
 and do not substitute for the three financial benchmark runs or human review.
+
+## Fictional income-statement demonstration
+
+An ad hoc January/February income-statement + analysis workbook and separate
+two-page PDF were produced in the frozen sandbox with tracing enabled. This
+is separate from the fixed financial benchmark. Two earlier attempts exposed
+a repeated-checkpoint filename collision and an unsupported-image request; both
+were corrected before the continuation completed with `needs_review` status.
+
+Version preservation now keeps distinct content-addressed prior copies within
+one run, and checkpoint exports are serialized. Text-only model requests replace
+unsupported media with an explicit limitation while preserving original tool
+results for the reviewer. The expanded offline suite passes **80 tests with zero
+network attempts**. New regression cases cover repeated checkpoints and media
+adaptation without modifying stored messages. Main income-statement arithmetic
+and formula caches were independently checked; the PDF pages were inspected.
+This demonstration does not establish the formal three-run benchmark or release
+readiness. Private outputs, run records and traces remain Git-ignored.

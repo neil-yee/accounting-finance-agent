@@ -104,12 +104,17 @@ def _local_path(relative: str) -> Path:
 def _preserve(folder: str, run_name: str, relative: str, content: bytes) -> Path:
     target = _local_path(f"{folder}/{run_name}/{relative}")
     target.parent.mkdir(parents=True, exist_ok=True)
-    # Permit an identical retry without overwriting a different saved version.
-    if target.exists() and target.read_bytes() == content:
+    try:
+        with target.open("xb") as output:
+            output.write(content)
         return target
-    with target.open("xb") as output:
-        output.write(content)
-    return target
+    except FileExistsError:
+        if target.read_bytes() == content:
+            return target
+        # Multiple checkpoints/recovery attempts can preserve different versions
+        # of one file during the same run. Keep each version without overwrite.
+        revision = sha256(content).hexdigest()
+        return _preserve(folder, f"{run_name}/{revision}", relative, content)
 
 
 def _replace(target: Path, content: bytes) -> None:

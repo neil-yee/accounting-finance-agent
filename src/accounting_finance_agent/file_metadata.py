@@ -50,6 +50,37 @@ def add_file_names(messages: list[BaseMessage]) -> list[BaseMessage]:
     return result
 
 
+def text_only_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
+    """Keep unsupported media out of priced text-only requests, with an explanation.
+
+    Saved tool results stay intact for the human reviewer; only the outgoing
+    request is adapted. The model must not claim it visually inspected previews.
+    """
+    result = []
+    media = {"image", "image_url", "input_image", "file", "input_file",
+             "audio", "input_audio", "video"}
+    for message in messages:
+        if not isinstance(message.content, list):
+            result.append(message)
+            continue
+        content = []
+        changed = False
+        for block in message.content:
+            if isinstance(block, dict) and block.get("type") in media:
+                name = block.get("filename", "binary attachment")
+                content.append({"type": "text", "text": (
+                    f"{name}: binary content is available to the reviewer but is not "
+                    "supported by this text-only run. Inspect file structure/text using "
+                    "sandbox libraries. Report visual inspection as unavailable to you; "
+                    "do not retry reading image previews or claim you saw them."
+                )})
+                changed = True
+            else:
+                content.append(block)
+        result.append(message.model_copy(update={"content": content}) if changed else message)
+    return result
+
+
 class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
     """Retain filesystem behavior while repairing outgoing file metadata.
 
@@ -72,7 +103,11 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         def with_filenames(prepared: ModelRequest):
             if self.controls:
                 prepared = self.controls.model_request(prepared)
-            return handler(prepared.override(messages=add_file_names(list(prepared.messages))))
+            messages = add_file_names(list(prepared.messages))
+            from accounting_finance_agent.config import EXCEL_PROFILE
+            if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
+                messages = text_only_messages(messages)
+            return handler(prepared.override(messages=messages))
 
         return super().wrap_model_call(request, with_filenames)
 
@@ -84,9 +119,11 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         async def with_filenames(prepared: ModelRequest):
             if self.controls:
                 prepared = self.controls.model_request(prepared)
-            return await handler(
-                prepared.override(messages=add_file_names(list(prepared.messages)))
-            )
+            messages = add_file_names(list(prepared.messages))
+            from accounting_finance_agent.config import EXCEL_PROFILE
+            if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
+                messages = text_only_messages(messages)
+            return await handler(prepared.override(messages=messages))
 
         return await super().awrap_model_call(request, with_filenames)
 
