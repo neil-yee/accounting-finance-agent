@@ -8,15 +8,26 @@ and broader live checks remain pending. See
 
 ## Versioned Excel trial profile
 
-`excel-benchmark-v1` configures the first trial. Its strict runner requires a
+`excel-benchmark-v2` configures the current trial baseline. Its strict runner requires a
 POSIX host (Linux/macOS) and a sandbox supporting unprivileged network namespaces.
 The current cloud host and frozen snapshot passed the build checks. The existing
 `local` profile retains its earlier behavior and limitations.
 
 ```powershell
-uv run --locked finance-agent --profile excel-benchmark-v1 --show-config
-uv run --locked finance-agent --profile excel-benchmark-v1 --sandbox
+uv run --locked finance-agent --profile excel-benchmark-v2 --show-config
+uv run --locked finance-agent --profile excel-benchmark-v2 --sandbox
 ```
+
+The v2 profile raises the request ceiling from 20 to 40. Prior runs retain their
+v1 configuration and outcomes. The dollar, time and tool ceilings are unchanged.
+
+`EXCEL_SETTINGS` in `config.py` supplies the ceiling. Our `BudgetClient` reserves
+one slot through `RunControls.reserve()` before each inference attempt or uncached
+image-token preflight. Retries and compaction share the counter; the next request
+is blocked when 40 slots have been used. This is application enforcement, separate
+from LangChain middleware and LangGraph's recursion limit. The local profile counts
+logical model calls in middleware instead. A retry is another request, not another
+40-request allowance. A larger ceiling does not override the dollar or time budget.
 
 The first command prints settings, dependency/source/reference hashes and snapshot
 identity without model calls. The second starts an interactive session. The
@@ -28,7 +39,7 @@ Do not change settings during a three-run series.
 |---|---|
 | Model/reasoning/API tier | gpt-6-luna / high / Standard (`default`) |
 | Tracing/delegation | Tracing on; delegation disabled |
-| Requests/tools | At most 20 provider attempts including compaction/retries; 40 tool attempts |
+| Requests/tools | At most 40 provider requests including compaction, retries and image-token preflights; 40 tool attempts |
 | Time | 600-second work deadline; shared 60-second preservation/cleanup phase |
 | API budget | US$1, conservative preflight reservations; unknown usage keeps its reservation |
 | Output | At most 32,000 tokens, reduced to fit remaining spend |

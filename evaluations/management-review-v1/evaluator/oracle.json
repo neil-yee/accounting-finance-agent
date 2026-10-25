@@ -1,0 +1,1614 @@
+{
+  "bridge_sign_convention": "positive values increase net income; expense increases are negative",
+  "categories": [
+    "Revenue",
+    "Direct costs",
+    "Payroll",
+    "Marketing",
+    "Software",
+    "Consulting",
+    "Interest",
+    "Income tax"
+  ],
+  "currency": "USD",
+  "departments": [
+    "Strategy Advisory",
+    "Implementation Services",
+    "Data & Analytics"
+  ],
+  "metrics": {
+    "bridge/budget/consolidated/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-8500"
+    },
+    "bridge/budget/consolidated/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-1000"
+    },
+    "bridge/budget/consolidated/gross_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0233429143802804633742705339"
+    },
+    "bridge/budget/consolidated/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "1500"
+    },
+    "bridge/budget/consolidated/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-100"
+    },
+    "bridge/budget/consolidated/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "bridge/budget/consolidated/net_income_variance": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-20300"
+    },
+    "bridge/budget/consolidated/net_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0865212089539238742269837122"
+    },
+    "bridge/budget/consolidated/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "bridge/budget/consolidated/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-9000"
+    },
+    "bridge/budget/consolidated/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5200"
+    },
+    "bridge/budget/department:Data & Analytics/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-7000"
+    },
+    "bridge/budget/department:Data & Analytics/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-2000"
+    },
+    "bridge/budget/department:Data & Analytics/gross_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0371951219512195121951219512"
+    },
+    "bridge/budget/department:Data & Analytics/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/budget/department:Data & Analytics/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/budget/department:Data & Analytics/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/budget/department:Data & Analytics/net_income_variance": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-15000"
+    },
+    "bridge/budget/department:Data & Analytics/net_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.1897865853658536585365853658"
+    },
+    "bridge/budget/department:Data & Analytics/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/budget/department:Data & Analytics/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-2000"
+    },
+    "bridge/budget/department:Data & Analytics/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5000"
+    },
+    "bridge/budget/department:Implementation Services/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/budget/department:Implementation Services/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "bridge/budget/department:Implementation Services/gross_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0119047619047619047619047619"
+    },
+    "bridge/budget/department:Implementation Services/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/budget/department:Implementation Services/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-100"
+    },
+    "bridge/budget/department:Implementation Services/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/budget/department:Implementation Services/net_income_variance": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-2100"
+    },
+    "bridge/budget/department:Implementation Services/net_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0363333333333333333333333333"
+    },
+    "bridge/budget/department:Implementation Services/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "bridge/budget/department:Implementation Services/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5000"
+    },
+    "bridge/budget/department:Implementation Services/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-500"
+    },
+    "bridge/budget/department:Strategy Advisory/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-1500"
+    },
+    "bridge/budget/department:Strategy Advisory/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-1000"
+    },
+    "bridge/budget/department:Strategy Advisory/gross_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0262820512820512820512820513"
+    },
+    "bridge/budget/department:Strategy Advisory/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/budget/department:Strategy Advisory/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/budget/department:Strategy Advisory/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/budget/department:Strategy Advisory/net_income_variance": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-3200"
+    },
+    "bridge/budget/department:Strategy Advisory/net_margin_variance": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0475320512820512820512820513"
+    },
+    "bridge/budget/department:Strategy Advisory/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/budget/department:Strategy Advisory/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-2000"
+    },
+    "bridge/budget/department:Strategy Advisory/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "300"
+    },
+    "bridge/month/consolidated/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-7500"
+    },
+    "bridge/month/consolidated/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-28000"
+    },
+    "bridge/month/consolidated/gross_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0509605662285136501516683518"
+    },
+    "bridge/month/consolidated/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "bridge/month/consolidated/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "400"
+    },
+    "bridge/month/consolidated/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "bridge/month/consolidated/net_income_change": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-21800"
+    },
+    "bridge/month/consolidated/net_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0568924839905628581058308055"
+    },
+    "bridge/month/consolidated/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-14000"
+    },
+    "bridge/month/consolidated/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "28000"
+    },
+    "bridge/month/consolidated/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5700"
+    },
+    "bridge/month/department:Data & Analytics/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-6000"
+    },
+    "bridge/month/department:Data & Analytics/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-9000"
+    },
+    "bridge/month/department:Data & Analytics/gross_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0535714285714285714285714286"
+    },
+    "bridge/month/department:Data & Analytics/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "bridge/month/department:Data & Analytics/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/month/department:Data & Analytics/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/month/department:Data & Analytics/net_income_change": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-10500"
+    },
+    "bridge/month/department:Data & Analytics/net_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.1098214285714285714285714286"
+    },
+    "bridge/month/department:Data & Analytics/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-2000"
+    },
+    "bridge/month/department:Data & Analytics/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "10000"
+    },
+    "bridge/month/department:Data & Analytics/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5000"
+    },
+    "bridge/month/department:Implementation Services/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/month/department:Implementation Services/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-12000"
+    },
+    "bridge/month/department:Implementation Services/gross_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0611111111111111111111111111"
+    },
+    "bridge/month/department:Implementation Services/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/month/department:Implementation Services/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "200"
+    },
+    "bridge/month/department:Implementation Services/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-0"
+    },
+    "bridge/month/department:Implementation Services/net_income_change": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5800"
+    },
+    "bridge/month/department:Implementation Services/net_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0263333333333333333333333333"
+    },
+    "bridge/month/department:Implementation Services/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-4000"
+    },
+    "bridge/month/department:Implementation Services/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "10000"
+    },
+    "bridge/month/department:Implementation Services/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-500"
+    },
+    "bridge/month/department:Strategy Advisory/consulting": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-1500"
+    },
+    "bridge/month/department:Strategy Advisory/direct_costs": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-7000"
+    },
+    "bridge/month/department:Strategy Advisory/gross_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0369963369963369963369963370"
+    },
+    "bridge/month/department:Strategy Advisory/income_tax": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "2500"
+    },
+    "bridge/month/department:Strategy Advisory/interest": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "200"
+    },
+    "bridge/month/department:Strategy Advisory/marketing": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "500"
+    },
+    "bridge/month/department:Strategy Advisory/net_income_change": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5500"
+    },
+    "bridge/month/department:Strategy Advisory/net_margin_change": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.0441391941391941391941391942"
+    },
+    "bridge/month/department:Strategy Advisory/payroll": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-8000"
+    },
+    "bridge/month/department:Strategy Advisory/revenue": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "8000"
+    },
+    "bridge/month/department:Strategy Advisory/software": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-200"
+    },
+    "pnl/consolidated/February 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "10500"
+    },
+    "pnl/consolidated/February 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "150000"
+    },
+    "pnl/consolidated/February 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4186046511627906976744186047"
+    },
+    "pnl/consolidated/February 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "108000"
+    },
+    "pnl/consolidated/February 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "5500"
+    },
+    "pnl/consolidated/February 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2600"
+    },
+    "pnl/consolidated/February 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "11000"
+    },
+    "pnl/consolidated/February 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-80300"
+    },
+    "pnl/consolidated/February 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.3112403100775193798449612403"
+    },
+    "pnl/consolidated/February 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-72200"
+    },
+    "pnl/consolidated/February 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "142000"
+    },
+    "pnl/consolidated/February 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-74800"
+    },
+    "pnl/consolidated/February 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "258000"
+    },
+    "pnl/consolidated/February 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "16700"
+    },
+    "pnl/consolidated/February 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "180200"
+    },
+    "pnl/consolidated/February 2026/budget/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "pnl/consolidated/February 2026/budget/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "149000"
+    },
+    "pnl/consolidated/February 2026/budget/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4419475655430711610486891386"
+    },
+    "pnl/consolidated/February 2026/budget/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "118000"
+    },
+    "pnl/consolidated/February 2026/budget/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "7000"
+    },
+    "pnl/consolidated/February 2026/budget/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2500"
+    },
+    "pnl/consolidated/February 2026/budget/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "12000"
+    },
+    "pnl/consolidated/February 2026/budget/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-60000"
+    },
+    "pnl/consolidated/February 2026/budget/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.2247191011235955056179775281"
+    },
+    "pnl/consolidated/February 2026/budget/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-50500"
+    },
+    "pnl/consolidated/February 2026/budget/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "143000"
+    },
+    "pnl/consolidated/February 2026/budget/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-53000"
+    },
+    "pnl/consolidated/February 2026/budget/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "267000"
+    },
+    "pnl/consolidated/February 2026/budget/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "11500"
+    },
+    "pnl/consolidated/February 2026/budget/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "168500"
+    },
+    "pnl/consolidated/January 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/consolidated/January 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "122000"
+    },
+    "pnl/consolidated/January 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4695652173913043478260869565"
+    },
+    "pnl/consolidated/January 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "108000"
+    },
+    "pnl/consolidated/January 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "9500"
+    },
+    "pnl/consolidated/January 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/consolidated/January 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "12000"
+    },
+    "pnl/consolidated/January 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-58500"
+    },
+    "pnl/consolidated/January 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.2543478260869565217391304348"
+    },
+    "pnl/consolidated/January 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-46000"
+    },
+    "pnl/consolidated/January 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "128000"
+    },
+    "pnl/consolidated/January 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-49000"
+    },
+    "pnl/consolidated/January 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "230000"
+    },
+    "pnl/consolidated/January 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "11000"
+    },
+    "pnl/consolidated/January 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "154000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "7000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "42000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.475"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "38000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1500"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "500"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2500"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-22500"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.28125"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-20500"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "40000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-21000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "80000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "9000"
+    },
+    "pnl/department:Data & Analytics/February 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "58500"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "0"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "40000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.5121951219512195121951219512"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "42000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "500"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-7500"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.09146341463414634146341463415"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "40000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-5500"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "82000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Data & Analytics/February 2026/budget/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "47000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "33000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.5285714285714285714285714286"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "37000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2500"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "500"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-12000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.1714285714285714285714285714"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-9000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "38000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-9500"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "70000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Data & Analytics/January 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "46000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "65000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.35"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "35000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2500"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1300"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "5000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-34300"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.343"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-30500"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "54000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-31800"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "100000"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4500"
+    },
+    "pnl/department:Implementation Services/February 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "65500"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "67000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.3619047619047619047619047619"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "38000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1200"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "5000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-32200"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.3066666666666666666666666667"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-28000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "55000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-29200"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "105000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Implementation Services/February 2026/budget/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "66000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "53000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4111111111111111111111111111"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "37000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1500"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "5000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-28500"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.3166666666666666666666666667"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-24000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "50000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-25500"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "90000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Implementation Services/January 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "61000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1500"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "43000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4487179487179487179487179487"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "35000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1500"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "800"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3500"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-23500"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.3012820512820512820512820513"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-21200"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "48000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-22000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "78000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3200"
+    },
+    "pnl/department:Strategy Advisory/February 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "56200"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "0"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "42000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.475"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "38000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "2000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "800"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-20300"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.25375"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-17500"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "48000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-18300"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "80000"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3500"
+    },
+    "pnl/department:Strategy Advisory/February 2026/budget/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "55500"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/consulting": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "0"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "36000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4857142857142857142857142857"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "34000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/income_tax": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/interest": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "1000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/marketing": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "4000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/net_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-18000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/net_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.2571428571428571428571428571"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/operating_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-13000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/payroll": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "40000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/pretax_income": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-14000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "70000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/software": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "3000"
+    },
+    "pnl/department:Strategy Advisory/January 2026/actual/total_operating_expenses": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "47000"
+    },
+    "project/Atlas Operating Model/February 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "25000"
+    },
+    "project/Atlas Operating Model/February 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.6031746031746031746031746032"
+    },
+    "project/Atlas Operating Model/February 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "38000"
+    },
+    "project/Atlas Operating Model/February 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "63000"
+    },
+    "project/Atlas Operating Model/January 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "22000"
+    },
+    "project/Atlas Operating Model/January 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4761904761904761904761904762"
+    },
+    "project/Atlas Operating Model/January 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "20000"
+    },
+    "project/Atlas Operating Model/January 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "42000"
+    },
+    "project/Beacon PMO/February 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "38000"
+    },
+    "project/Beacon PMO/February 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.3448275862068965517241379310"
+    },
+    "project/Beacon PMO/February 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "20000"
+    },
+    "project/Beacon PMO/February 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "58000"
+    },
+    "project/Beacon PMO/January 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "34000"
+    },
+    "project/Beacon PMO/January 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.3818181818181818181818181818"
+    },
+    "project/Beacon PMO/January 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "21000"
+    },
+    "project/Beacon PMO/January 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "55000"
+    },
+    "project/Cedar Market Entry/February 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "18000"
+    },
+    "project/Cedar Market Entry/February 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "-0.2"
+    },
+    "project/Cedar Market Entry/February 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "-3000"
+    },
+    "project/Cedar Market Entry/February 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "15000"
+    },
+    "project/Cedar Market Entry/January 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "14000"
+    },
+    "project/Cedar Market Entry/January 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.5"
+    },
+    "project/Cedar Market Entry/January 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "14000"
+    },
+    "project/Cedar Market Entry/January 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "28000"
+    },
+    "project/Delta Forecasting/February 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "20000"
+    },
+    "project/Delta Forecasting/February 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.5454545454545454545454545455"
+    },
+    "project/Delta Forecasting/February 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "24000"
+    },
+    "project/Delta Forecasting/February 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "44000"
+    },
+    "project/Delta Forecasting/January 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "18000"
+    },
+    "project/Delta Forecasting/January 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.55"
+    },
+    "project/Delta Forecasting/January 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "22000"
+    },
+    "project/Delta Forecasting/January 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "40000"
+    },
+    "project/Harbor ERP/February 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "27000"
+    },
+    "project/Harbor ERP/February 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.3571428571428571428571428571"
+    },
+    "project/Harbor ERP/February 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "15000"
+    },
+    "project/Harbor ERP/February 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "42000"
+    },
+    "project/Harbor ERP/January 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "19000"
+    },
+    "project/Harbor ERP/January 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.4571428571428571428571428571"
+    },
+    "project/Harbor ERP/January 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "16000"
+    },
+    "project/Harbor ERP/January 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "35000"
+    },
+    "project/Juniper Data Platform/February 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "22000"
+    },
+    "project/Juniper Data Platform/February 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.3888888888888888888888888889"
+    },
+    "project/Juniper Data Platform/February 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "14000"
+    },
+    "project/Juniper Data Platform/February 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "36000"
+    },
+    "project/Juniper Data Platform/January 2026/direct_costs": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "15000"
+    },
+    "project/Juniper Data Platform/January 2026/gross_margin": {
+      "formula_required": true,
+      "unit": "ratio",
+      "value": "0.5"
+    },
+    "project/Juniper Data Platform/January 2026/gross_profit": {
+      "formula_required": true,
+      "unit": "USD",
+      "value": "15000"
+    },
+    "project/Juniper Data Platform/January 2026/revenue": {
+      "formula_required": false,
+      "unit": "USD",
+      "value": "30000"
+    }
+  },
+  "months": [
+    "January 2026",
+    "February 2026"
+  ],
+  "projects": [
+    "Atlas Operating Model",
+    "Beacon PMO",
+    "Cedar Market Entry",
+    "Delta Forecasting",
+    "Harbor ERP",
+    "Juniper Data Platform"
+  ],
+  "version": 1
+}

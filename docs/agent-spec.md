@@ -1,6 +1,6 @@
 # Finance & Accounting Agent — Specification and Design
 
-**Version:** v0.26 design draft · October 25, 2026 · **Owner:** Neil Yee
+**Version:** v0.27 design draft · October 25, 2026 · **Owner:** Neil Yee
 
 This document defines the intended agent, its proposed design, and the evidence needed to use it. It does **not** assert that the repository meets these requirements. Record implementation status, paths, gaps and results in the [task list](task-list.md).
 
@@ -272,7 +272,7 @@ Settings influence quality, cost, latency and reliability. Record a versioned ba
 | **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Selected: **`gpt-6-luna`, high reasoning**, Responses API, Standard processing, fixed for the three-run series. Model documentation confirms high reasoning; account access and effective settings still need runtime verification. No silent substitution. |
 | **CFG-2: context** · C1, C2 | Instructions, history/reference/skill loading, retrieval limits and large-result handling. | Framework context/skill loading and large-result handling, with versioned defaults and approved procedural sources. Owner-approved image input supports rendered page inspection; embedded images use provider token-count preflight and the shared budgets. |
 | **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Assumed baseline: pinned framework compaction; no custom summary prompt for this benchmark. Record effective trigger, summarizer and retained-history settings; evaluate before changing them. |
-| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | Agreed: **10 minutes**, **US$1 model API**, **up to five retries**. Assumed secondary ceilings: 20 model requests including summarization/retries, 40 tool attempts, 32,000 output tokens per model request (reduced to fit remaining spend). |
+| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | Agreed: **10 minutes**, **US$1 model API**, **up to five retries**. Selected request ceiling: 40 provider requests including summarization/retries/image-token preflights. Other secondary ceilings: 40 tool attempts, 32,000 output tokens per model request (reduced to fit remaining spend). |
 | **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Local terminal/host and remote sandbox. Assumed tooling: openpyxl + LibreOffice Calc for recalculation/PDF rendering; SQLite checkpoints and durable task folders. See §4.2 for storage/recovery defaults. |
 | **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Thread-local history/files; approved shared references maintained by the owner. No automatic cross-task learning or shared writes. Tracing on; retention/access defaults are in §4.2. |
 
@@ -599,6 +599,7 @@ Owner: Neil Yee, with specialist review where needed. Owner decisions and assist
 
 | Version | Date | Change |
 |---|---|---|
+| v0.27 | 2026-10-25 | Raised the owner-requested provider-request ceiling to 40 in profile v2; retained tool, dollar and time limits. |
 | v0.26 | 2026-10-25 | Enabled owner-requested image input for rendered-page inspection, with provider token preflight and shared budgets; kept model inspection separate from owner approval. |
 | v0.25 | 2026-10-25 | Corrected the practical sequence: planning settles decisions/design; Build creates and configures the selected baseline and evaluation assets. Requirements unchanged. |
 | v0.24 | 2026-10-25 | Filled remaining choices with labeled defaults for fixture/rubric, tooling, limits, compaction/delegation, retention and recovery; separated choices from technical verification. |

@@ -1,0 +1,42 @@
+{
+  "company": "Northstar Consulting Group",
+  "currency": "USD",
+  "periods": [
+    "January 2026",
+    "February 2026"
+  ],
+  "budget_period": "February 2026",
+  "departments": [
+    "Strategy Advisory",
+    "Implementation Services",
+    "Data & Analytics"
+  ],
+  "project_data_definition": "Project revenue and direct cost are supplied for each listed project in each month. Direct cost is a positive expense amount. Department revenue and direct costs in department_actuals.csv reconcile to the sum of project rows by month and department.",
+  "accounting_convention": "All amounts in the CSV files are positive inputs. Revenue is income; every other supplied P&L category is an expense. Income tax is supplied as an expense amount; do not infer a tax rate or recalculate it.",
+  "management_notes": [
+    {
+      "id": "N1",
+      "text": "An additional Cedar Market Entry client acceptance milestone, beyond the revenue recognized below, moved to March. February recognized project revenue was $15,000; direct cost recorded in February was $18,000. No additional recovery or reclassification is supplied."
+    },
+    {
+      "id": "N2",
+      "text": "Strategy Advisory added two consultants effective February 1. Monthly payroll increased from $40,000 in January to $48,000 in February."
+    },
+    {
+      "id": "N3",
+      "text": "Data & Analytics incurred a one-time $7,000 consulting expense in February for an external data migration review. February consulting budget for the department is $0."
+    },
+    {
+      "id": "N4",
+      "text": "Data & Analytics software expense increased from $4,000 in January to $9,000 in February. No explanation for the increase is supplied; identify it as an unexplained movement for management follow-up."
+    }
+  ],
+  "analysis_guidance": "Describe amounts and changes based on supplied figures. Identify the specific notes that explain movements and flag the Data & Analytics software increase as unexplained. Do not assign causes to other movements absent a note. Budget variances should compare February actuals with February budget and clearly state the sign convention. Show project gross profit as project revenue less direct cost; the Cedar February project result is negative despite revenue. Calculate gross and net margins on the supplied P&L amounts.",
+  "source_files": {
+    "department_actuals.csv": "Monthly actual P&L amounts by department and category for January and February 2026.",
+    "february_budget.csv": "Latest-month (February 2026) budget amounts by department and category.",
+    "project_monthly.csv": "Monthly revenue and direct cost for six projects, two per department."
+  },
+  "cost_classification": "Direct costs are project-specific external delivery costs and exclude the separately reported internal payroll overhead. Payroll and other operating expenses are not allocated to individual projects. Project revenue less direct cost is project contribution/gross profit before those unallocated expenses, not fully allocated net profit.",
+  "variance_convention": "Amount variance is February actual minus comparison (January actual or February budget). Compute relative change only for a positive comparison base; for zero or negative bases show N/A, explain the reason, and describe absolute loss widening/narrowing where relevant. Margin changes are percentage-point differences, not relative growth."
+}

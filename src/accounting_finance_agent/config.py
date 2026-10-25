@@ -41,13 +41,13 @@ class Settings:
 
 # Version this named baseline whenever a setting changes. Runtime evidence must
 # distinguish these requested values from actual enforcement/provider behavior.
-EXCEL_PROFILE = "excel-benchmark-v1"
+EXCEL_PROFILE = "excel-benchmark-v2"
 EXCEL_SETTINGS = {
     "sandbox_snapshot_id": "3dce6ed0-f050-432a-bc9a-79a7b960972f",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "tracing_enabled": True,
-    "max_model_calls": 20,
+    "max_model_calls": 40,
     "max_tool_calls": 40,
     "run_seconds": 600,
     "model_timeout_seconds": 180,
@@ -56,7 +56,7 @@ EXCEL_SETTINGS = {
     "delegation_enabled": False,
     # OpenAI calls its Standard service tier "default" in the API.
     "service_tier": "default",
-    # Disable hidden SDK retries; the shared retry controller is still to build.
+    # Disable hidden SDK retries; BudgetClient meters the shared retry controller.
     "sdk_max_retries": 0,
     "sandbox_allowed_hosts": (),
 }

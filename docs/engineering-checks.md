@@ -125,3 +125,15 @@ net income, and reported layout observations. No spreadsheet/text extraction was
 requested for that check. Provider preflight/image usage is recorded in the work
 log; tracing remained enabled. This is a capability check rather than the formal
 three-run benchmark or human approval.
+
+## Multi-source case and request ceiling
+
+The full offline suite passes **94 tests with zero network attempts**. Eight new
+checks exercise fixture completeness/ties, Decimal answers, and valid/invalid
+cell maps including deliberately wrong values. A ninth verifies profile v2 allows
+40 request reservations and rejects the 41st without incrementing the counter.
+
+A separate paid management-review demonstration produced Excel/PDF deliverables.
+Independent grading exposed errors in generated formulas despite workbook PASS
+flags; reviewed repairs now match all 316 required metrics. This is assisted case
+evidence, not a formal release pass. See the [assessment](evaluations/management-review.md).

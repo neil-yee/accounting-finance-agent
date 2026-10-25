@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.26 image input enabled · October 25, 2026 |
+| Version | v0.27 request ceiling revised · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.26 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.27 |
 | Assessment baseline | Initial review against spec v0.24; first build increment at `8eb7d90` reviewed against unchanged requirements in spec v0.25. Historical evidence is labeled; no new tests or paid runs. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below distinguish existing implementation, historical evidence and remaining gaps against the selected requirements. The initial review is in [§10](#10-repository-assessment--october-25-2026); subsequent build changes are in [§11](#11-build-progress). Reuse the foundation before adding missing behavior.
@@ -323,10 +323,33 @@ this is visual-input evidence, not owner approval or a formal benchmark pass.
 The settings manifest records the supported input policy and the versioned rate
 card records the counting contract. [Operating instructions](operating-guide.md#versioned-excel-trial-profile).
 
+### Multi-source management-review demonstration
+
+The fictional three-department/six-project case now has frozen agent inputs, an
+independent Decimal oracle, a cached-cell grader and eight offline checks. The
+assisted run exposed sign/mapping errors and an ineffective self-check; reviewed
+repairs were rebuilt by the accounting agent. The resulting package matches all
+316 required metrics, retains source hashes and has a reviewed three-page PDF.
+This required stopped attempts and reviewer intervention; it is not a clean
+first-pass or formal benchmark result. Owner review and all existing Test/Release
+gates remain outstanding. The full offline suite now passes **94 tests with zero
+network attempts**, including the new 40-request boundary check. See the
+[attempt history and assessment](evaluations/management-review.md).
+
+### Request ceiling revision
+
+The owner requested a less restrictive request ceiling during the management-review
+trial. Profile `excel-benchmark-v2` raises it from 20 to 40 provider requests.
+Image-token preflights, inference retries and compaction share this counter. The
+US$1 reservation policy, 600-second work deadline and 40-tool-attempt ceiling
+remain unchanged. Existing v1 attempts retain their recorded configuration; the
+revision applies to future runs and starts a new comparison baseline.
+
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.27 | 2026-10-25 | Versioned the larger 40-request ceiling as profile v2; kept other limits and prior run evidence intact. |
 | v0.26 | 2026-10-25 | Enabled image input with token preflight/shared budgets, recorded 85 offline checks and successful live image inspection; no formal evaluation/release promotion. |
 | v0.25 | 2026-10-25 | Recorded the ad hoc Excel/PDF demonstration, checkpoint/media fixes and 80 passing offline checks; preserved formal evaluation/release gates. |
 | v0.24 | 2026-10-25 | Completed BUILD-03–10 implementation, captured and probed a frozen image, recorded 78 passing offline checks and compiled tool inspection; kept benchmark/release evidence separate. |

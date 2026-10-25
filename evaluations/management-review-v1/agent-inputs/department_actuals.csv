@@ -1,0 +1,49 @@
+Month,Department,Category,Amount_USD
+January 2026,Strategy Advisory,Revenue,70000
+January 2026,Strategy Advisory,Direct costs,36000
+January 2026,Strategy Advisory,Payroll,40000
+January 2026,Strategy Advisory,Marketing,4000
+January 2026,Strategy Advisory,Software,3000
+January 2026,Strategy Advisory,Consulting,0
+January 2026,Strategy Advisory,Interest,1000
+January 2026,Strategy Advisory,Income tax,4000
+January 2026,Implementation Services,Revenue,90000
+January 2026,Implementation Services,Direct costs,53000
+January 2026,Implementation Services,Payroll,50000
+January 2026,Implementation Services,Marketing,5000
+January 2026,Implementation Services,Software,4000
+January 2026,Implementation Services,Consulting,2000
+January 2026,Implementation Services,Interest,1500
+January 2026,Implementation Services,Income tax,3000
+January 2026,Data & Analytics,Revenue,70000
+January 2026,Data & Analytics,Direct costs,33000
+January 2026,Data & Analytics,Payroll,38000
+January 2026,Data & Analytics,Marketing,3000
+January 2026,Data & Analytics,Software,4000
+January 2026,Data & Analytics,Consulting,1000
+January 2026,Data & Analytics,Interest,500
+January 2026,Data & Analytics,Income tax,2500
+February 2026,Strategy Advisory,Revenue,78000
+February 2026,Strategy Advisory,Direct costs,43000
+February 2026,Strategy Advisory,Payroll,48000
+February 2026,Strategy Advisory,Marketing,3500
+February 2026,Strategy Advisory,Software,3200
+February 2026,Strategy Advisory,Consulting,1500
+February 2026,Strategy Advisory,Interest,800
+February 2026,Strategy Advisory,Income tax,1500
+February 2026,Implementation Services,Revenue,100000
+February 2026,Implementation Services,Direct costs,65000
+February 2026,Implementation Services,Payroll,54000
+February 2026,Implementation Services,Marketing,5000
+February 2026,Implementation Services,Software,4500
+February 2026,Implementation Services,Consulting,2000
+February 2026,Implementation Services,Interest,1300
+February 2026,Implementation Services,Income tax,2500
+February 2026,Data & Analytics,Revenue,80000
+February 2026,Data & Analytics,Direct costs,42000
+February 2026,Data & Analytics,Payroll,40000
+February 2026,Data & Analytics,Marketing,2500
+February 2026,Data & Analytics,Software,9000
+February 2026,Data & Analytics,Consulting,7000
+February 2026,Data & Analytics,Interest,500
+February 2026,Data & Analytics,Income tax,1500

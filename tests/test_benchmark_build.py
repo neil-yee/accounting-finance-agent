@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import httpx
 import openpyxl
 from accounting_finance_agent.budget import BudgetClient
-from accounting_finance_agent.config import Settings, EXCEL_PROFILE
+from accounting_finance_agent.config import Settings, EXCEL_PROFILE, load_settings
 from accounting_finance_agent.runtime import RunContext, RunControls, RunLimitExceeded
 from accounting_finance_agent.lifecycle import deadline
 from accounting_finance_agent.spreadsheets import validate_delivery
@@ -19,6 +19,19 @@ from accounting_finance_agent import knowledge
 
 
 class BenchmarkBuildChecks(unittest.TestCase):
+    def test_versioned_profile_allows_40_requests_and_blocks_41st(self):
+        settings = load_settings(profile=EXCEL_PROFILE, validate_credentials=False)
+        self.assertEqual(EXCEL_PROFILE, 'excel-benchmark-v2')
+        self.assertEqual(settings.max_model_calls, 40)
+        self.assertEqual(settings.max_tool_calls, 40)
+        self.assertEqual(settings.run_seconds, 600)
+        controls = RunControls(settings, RunContext('run', 'thread', 'UTC', 'virtual'), Mock())
+        for _ in range(40):
+            controls.reserve('model', api_attempt=True)
+        with self.assertRaisesRegex(RunLimitExceeded, 'limit reached \\(40\\)'):
+            controls.reserve('model', api_attempt=True)
+        self.assertEqual(controls.counts['model'], 40)
+
     def setUp(self):
         self.settings=replace(Settings('gpt-6-luna','high',False,'offline'),profile=EXCEL_PROFILE)
         self.controls=RunControls(self.settings,RunContext('run','thread','UTC','virtual'),Mock())
