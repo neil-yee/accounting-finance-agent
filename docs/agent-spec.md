@@ -1,6 +1,6 @@
 # Finance & Accounting Agent — Specification and Design
 
-**Version:** v0.23 design draft · October 25, 2026 · **Owner:** Neil Yee
+**Version:** v0.24 design draft · October 25, 2026 · **Owner:** Neil Yee
 
 This document defines the intended agent, its proposed design, and the evidence needed to use it. It does **not** assert that the repository meets these requirements. Record implementation status, paths, gaps and results in the [task list](task-list.md).
 
@@ -265,27 +265,31 @@ Follow the work links to record paths, scope, status, gaps and evidence in the t
 
 ### 2.7 Runtime configuration and customization
 
-Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The agreed trial values below are target settings, not observations of the current runtime. Technical values still awaiting verification are identified explicitly.
+Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The agreed trial values below are target settings, not observations of the current runtime. Defaults selected by the assistant under the owner’s authorization are labeled **Assumed baseline**. They are design choices to verify, not implemented capabilities.
 
 | Configuration / requirements | Decisions to record | Starting approach |
 |---|---|---|
-| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Requested baseline: **GPT-6 Luna, high reasoning**, fixed for all three runs. Exact API identifier, availability, reasoning support, pricing and output limit need verification under D1; do not silently substitute another model. |
-| **CFG-2: context** · C1, C2 | Instructions, history/reference/skill loading, retrieval limits and large-result handling. | Use framework facilities and approved sources; record inherited defaults and prompt versions. |
-| **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Evaluate the framework baseline before introducing a custom summary policy. |
-| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | One active execution per task; **10 minutes**, **US$1 model API spend**, and **up to five retries per eligible operation**. Enforcement details below; remaining call/token limits under D1. |
-| **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Local computer/terminal host, remote sandbox, durable local thread files/checkpoints. Choose supported packages, recalculation/rendering tools and transfer limits under D1/D5. |
-| **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Thread-local history/files; approved shared references maintained by the owner. No automatic cross-task learning or shared writes. Tracing on; retention/access details remain D4/D7. |
+| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Selected: **`gpt-6-luna`, high reasoning**, Responses API, Standard processing, fixed for the three-run series. Model documentation confirms high reasoning; account access and effective settings still need runtime verification. No silent substitution. |
+| **CFG-2: context** · C1, C2 | Instructions, history/reference/skill loading, retrieval limits and large-result handling. | Assumed baseline: framework context/skill loading and large-result handling, with versioned defaults and approved procedural sources. |
+| **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Assumed baseline: pinned framework compaction; no custom summary prompt for this benchmark. Record effective trigger, summarizer and retained-history settings; evaluate before changing them. |
+| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | Agreed: **10 minutes**, **US$1 model API**, **up to five retries**. Assumed secondary ceilings: 20 model requests including summarization/retries, 40 tool attempts, 32,000 output tokens per model request (reduced to fit remaining spend). |
+| **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Local terminal/host and remote sandbox. Assumed tooling: openpyxl + LibreOffice Calc for recalculation/PDF rendering; SQLite checkpoints and durable task folders. See §4.2 for storage/recovery defaults. |
+| **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Thread-local history/files; approved shared references maintained by the owner. No automatic cross-task learning or shared writes. Tracing on; retention/access defaults are in §4.2. |
 
 For each selected choice, record **value or asset/module reference → rationale → configuration source and override rules → supporting cases/results**. A pinned framework default can be the selected value; an undocumented default cannot explain a result reliably. Credentials are referenced by name, never stored in the spec or trace.
 
 #### Trial time, cost and retry policy
 
-- **Time:** 10 minutes from run start for setup, model calls, tools, recalculation and validation. At the limit, stop new work/cancel active work where supported. Allow a short bounded preservation/cleanup phase, with its duration configured before the trial; no additional model work in that phase.
+- **Time:** 10 minutes from run start through sandbox setup, model/tool work, recalculation and automated validation. Assumed timeouts: 180 seconds per model attempt and 120 seconds per tool attempt, always capped by remaining run time. Then at most 60 seconds for preservation/cleanup, with no model work. Owner review occurs afterward and is reported separately from automated runtime.
 - **Cost:** US$1 in model API usage per run, including retries, summarization and enabled subagents. Sandbox and tracing/service charges are outside this cap. Record input/output tokens, cached-token usage where available, reasoning-token billing semantics and estimated API cost.
 - **Preflight:** use verified pricing and bounded outputs; reserve a conservative maximum cost before each call, including concurrent/automatic calls. Account for outstanding requests and unknown usage conservatively. If the next call cannot fit, stop rather than overspend. Confirm effective API accounting/enforcement before claiming this cap is guaranteed.
-- **Retries:** automatic, at most five retries after an initial failed attempt (six total attempts), for each eligible operation. SDK and application retries share this limit. Use increasing delays with jitter, honor server retry delays and count waiting time against the run budget.
+- **Retries:** automatic, at most five retries after an initial failed attempt (six total attempts), for each eligible operation. SDK and application retries share this limit. Assumed retry delays: 1, 2, 4, 8 and 16 seconds plus up to one second of jitter. Honor server-requested delays; if a delay cannot fit the remaining budget, stop. Waiting counts against run time.
 - **Eligibility:** temporary connection failures, rate limits and eligible transient service errors. Invalid requests, denied permissions and incorrect calculations are not automatic transport retries. Before repeating writes, establish whether they completed or rely on a verified idempotency guarantee (§2.2).
 - **Visibility:** report progress such as “Retry 2 of 5.” Stop when either budget is exhausted; preserve available work and report an incomplete result. Five retries are a ceiling, not an obligation to continue after a non-recoverable failure.
+
+**Model verification and price baseline:** [OpenAI’s model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna) lists `gpt-6-luna`, high reasoning and Responses API support. [Published pricing](https://developers.openai.com/api/docs/pricing), checked October 25, 2026, lists Standard short-context rates per million tokens of $0.10 input, $0.50 output and $0.01 cached input, with separate cache-write charges. Use a versioned rate card covering cache writes, context-length multipliers and endpoint/tier premiums; refresh before the series. No paid model request was made to verify account access.
+
+**Assumed budget implementation:** reserve output capacity and conservatively priced input before each API attempt, including failed/timed-out attempts until usage is reconciled. Use provider usage for final accounting without counting cached/reasoning tokens twice. The published rates make the $1 target plausible, but enforcement remains an implementation requirement, not a billing guarantee established by this document.
 
 #### Compaction customization
 
@@ -309,7 +313,7 @@ Examples include compaction, todo state, large-result offloading, approval inter
 
 #### Optional subagents
 
-Record whether the framework's default subagent is enabled, configured, replaced or disabled. Add a specialized subagent when a role benefits from separate context or tools.
+**Assumed first-benchmark baseline: disable all delegation, including the framework’s default general-purpose subagent.** Verify that the delegation tool is not exposed and no child calls occur; an instruction to avoid delegation is insufficient. Keep this section as the design template for later enabled subagents.
 
 For each enabled subagent, define:
 
@@ -327,7 +331,7 @@ Each run records effective values/overrides and the versions of code, dependenci
 
 Compare candidates on the same cases and agreed budgets, including compaction/delegation usage. Change one factor at a time when diagnosing a cause, then evaluate the combined configuration before release. Group monitoring results by configuration version.
 
-Work: [PLAN-03/05](task-list.md#1-plan), [BUILD-01/02/03/05/06/08](task-list.md#2-configure-the-shared-foundation) and [TEST-01–06](task-list.md#3-evaluate-the-foundation). Unresolved choices: D1, D4, D5, D7.
+Work: [PLAN-03/05](task-list.md#1-plan), [BUILD-01/02/03/05/06/08](task-list.md#2-configure-the-shared-foundation) and [TEST-01–06](task-list.md#3-evaluate-the-foundation). Remaining technical verification is tracked under D1, D4, D5 and D7.
 
 ### 2.8 Design review checklist
 
@@ -371,7 +375,7 @@ Each criterion defines how to judge the capabilities and assignment behavior abo
 
 #### Agreed benchmark: two-month income statement working paper
 
-**Inputs:** a small, fixed synthetic dataset with revenue, cost of sales and expense categories for two months. Include business notes explaining selected changes; deliberately leave other changes unexplained. Freeze the fixture, its currency/units and rounding rules before the three runs. Keep independently prepared expected answers with the evaluator, separate from the agent's input.
+**Inputs:** a small, fixed synthetic dataset with revenue, cost of sales and expense categories for two months. Include business notes explaining selected changes; deliberately leave other changes unexplained. The [selected fixture and grading rubric](evaluations/excel-benchmark.md) supplies January/February 2026 USD data, notes, calculation rules, reference answers and pass conditions. Freeze its version before the three runs. Supply only its designated inputs/notes to the agent; keep reference answers and evaluator files outside the agent workspace.
 
 **Required Excel sheets**
 
@@ -489,7 +493,7 @@ Release only selected capabilities. Bank reconciliation is required evidence for
 
 ### 4.2 Deployment architecture and trust boundaries
 
-The host/sandbox/storage layout is shown in §2.4. Agreed first-trial locations are the owner’s computer for the terminal/host and durable files, and a remote execution sandbox. Proposed technologies remain Deep Agents/LangChain, the requested model profile in §2.7, LangSmith sandbox/tracing and local checkpoints (SQLite is a candidate). Pin the chosen versions in D1; this is not an implementation audit.
+The host/sandbox/storage layout is shown in §2.4. Agreed first-trial locations are the owner’s computer for the terminal/host and durable files, and a remote execution sandbox. Proposed technologies remain Deep Agents/LangChain, the requested model profile in §2.7, LangSmith sandbox/tracing and SQLite checkpoints. Pin the chosen versions in D1; this is not an implementation audit.
 
 | Boundary | Required setup |
 |---|---|
@@ -501,6 +505,17 @@ The host/sandbox/storage layout is shown in §2.4. Agreed first-trial locations 
 | Optional connector → business system | Named identity and explicit operation scope; approved write behavior and retry/deduplication rules. |
 
 An SDK, virtual path or sandbox label does not prove these boundaries. Verify their effective behavior. When hosting remotely, resolve storage durability, credential delivery, backups and restart behavior before release (D5).
+
+#### Assumed first-trial storage, recovery and tooling
+
+- **Storage:** `workspace/threads/<thread-id>/` for task copies/deliverables; `.state/checkpoints.sqlite` for thread state; local run records and ignored `traces/` exports. Keep raw traces/workspaces out of Git. Source fixtures are read-only; shared `skills/` and owner-maintained `memory/AGENTS.md` supply approved guidance.
+- **Retention:** keep benchmark fixtures, final outputs, grader/review records and configuration manifests until the owner deletes them. Retain raw hosted/local traces and scratch/checkpoint data for 30 days after thread closure; active threads stay available. Treat cleanup as a policy to implement, not an instruction to delete existing files now. Hosted retention must be confirmed with the provider.
+- **Backup:** after each completed run, save an additional owner-only local archive outside the working tree, including a consistent SQLite backup and delivered files. This protects against accidental workspace edits, not device loss. Apply the same retention policy to raw state in backup archives. No cloud sync for the first benchmark.
+- **Recovery:** checkpoint completed agent steps and export changed task files after each successful file-producing tool call, before recalculation, after validation and at normal exit. Copy-out must be application-driven. Abrupt sandbox loss can lose work since the last confirmed export; report that loss, never claim guaranteed recovery of in-flight work.
+- **Transfer:** assume at most 10 MiB per file and 50 MiB per run; report exclusions explicitly and never silently omit a required output. Do not export source secrets or caches. Attempt preservation before normal cleanup; report unconfirmed sandbox deletion.
+- **Access:** owner-only host files and private trace project. No business-data/web tools, package downloads or other external access from the task sandbox during the benchmark; bake dependencies into the selected image beforehand. Host model/tracing and sandbox-control traffic remains available. Verify provider enforcement rather than treating an empty allowlist as a deny rule.
+- **Tooling:** use openpyxl to build the workbook; run LibreOffice Calc headlessly to recalculate and save a separate final XLSX, then export print-layout PDF and page previews for review. Reopen the final XLSX with formulas and cached values; do not rewrite it through openpyxl after recalculation if that would discard caches. These are selected mechanisms, not verified installed tools. [LibreOffice documents headless operation and conversion](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html).
+- **Dependency baseline:** keep the repository’s locked Python versions; select an immutable sandbox image with LibreOffice, required fonts and PDF rendering dependencies. Capture exact OS/package versions at build time and freeze the image for all three runs. A provider build identifier must be discovered, not invented. Unavailable recalculation/rendering blocks acceptance.
 
 ### 4.3 Release and recovery design
 
@@ -520,7 +535,7 @@ Use operating evidence to decide what needs attention and whether a change helps
 
 ### 5.1 Monitoring requirements
 
-Before real-work use, assign an owner and review cadence. During the trial, Neil reviews each run's status, files, checks and usage. During supervised business use, every deliverable requires review. A run log and review record are sufficient initially; automated alerts are needed when the chosen operating model requires them.
+Assumed cadence: Neil reviews each benchmark run’s status, files, checks and usage, then compares the three-run series. For continuing supervised use, review every deliverable and summarize recurring defects/cost weekly. Any wrong financial result, boundary breach, missing output or budget failure requires investigation before using that result. During supervised business use, every deliverable requires review. A run log and review record are sufficient initially; automated alerts are needed when the chosen operating model requires them.
 
 ### 5.2 Monitoring design
 
@@ -558,17 +573,17 @@ Automatic memory updates are deferred. If later enabled, define who owns each me
 
 ## 6. Decisions to resolve
 
-Owner: Neil Yee, with specialist review where needed. The trial's product decisions are settled below; technical choices and implementation evidence remain open. Keep selected values in §2.7 and the benchmark contract in §3.2 rather than duplicating live configuration here.
+Owner: Neil Yee, with specialist review where needed. Owner decisions and assistant-selected defaults now define the trial. Remaining work is verification and implementation, except for explicitly deferred extensions. Keep selected values in §2.7 and the benchmark contract in §3.2 rather than duplicating live configuration here.
 
 | ID | Agreed direction | Still to resolve before the applicable trial/release |
 |---|---|---|
-| D1 | GPT-6 Luna/high; 10 minutes; US$1 model API usage; at most five automatic retries per eligible operation. | Verify exact API model ID, reasoning support and pricing; pin dependencies/image; configure output/call limits, compaction/delegation baseline, cost reservation, retry accounting and bounded cleanup. |
-| D2 | Two-month Excel income statement, four sheets, detailed analysis, recalculated values and professional formatting. | Create frozen input/notes and independent expected answers; set currency/units and supported features; select and verify recalculation/rendering tools. |
-| D3 | Three fresh-thread runs with identical inputs/configuration; each passes all required checks. | Write numeric tolerances/rounding, zero-denominator cases and the presentation/analysis rubric before execution; record all outcomes. |
-| D4 | Tracing on; owner review. | Trace access/retention and operational review/response cadence. |
-| D5 | Local terminal/host and durable task files; remote sandbox; one active execution per task. | Storage paths/backend, identities/network restrictions, transfer/backup limits, checkpoint/export milestones and recovery/cleanup behavior. |
+| D1 | Owner model/budgets/retries; assumed secondary limits, default compaction and no delegation (§2.7). | Verify account access and effective settings; freeze rate card/dependencies/image; implement shared accounting, cancellation and retry limits. |
+| D2 | Owner output scope; assumed January/February USD fixture, openpyxl/LibreOffice pipeline (§3.2, §4.2). | Materialize agent inputs separately from the oracle; verify final formula caches, rendering and immutable image. |
+| D3 | Owner three-run rule; assumed numeric/zero-base rules and binary rubric in the benchmark document. | Implement independent graders, check seeded defects, record visual/meaning review and all outcomes. |
+| D4 | Tracing on; owner review per run and series; private traces with 30-day raw retention. | Verify provider retention/access and effective usage capture; implement cleanup and review records. |
+| D5 | Local host/remote sandbox; assumed SQLite, task folders, local backup, transfer limits and export milestones (§4.2). | Verify filesystem/network boundaries and export/backup/cleanup paths; demonstrate recovery behavior later. |
 | D6 | Asana deferred. | Integration decisions only when selected. |
-| D7 | Preserve thread history/files; owner-maintained approved shared references; no automatic cross-task learning or shared updates. | Source list, access enforcement, retention/deletion and correction procedure. |
+| D7 | Thread-local state; approved skills and memory/AGENTS.md; owner-only updates and retention policy (§4.2). | Verify read-only scope, prevent unrelated thread retrieval, and document owner correction/deletion steps. |
 
 **Next practical sequence**
 
@@ -584,6 +599,7 @@ Owner: Neil Yee, with specialist review where needed. The trial's product decisi
 
 | Version | Date | Change |
 |---|---|---|
+| v0.24 | 2026-10-25 | Filled remaining choices with labeled defaults for fixture/rubric, tooling, limits, compaction/delegation, retention and recovery; separated choices from technical verification. |
 | v0.23 | 2026-10-25 | Recorded owner decisions for the Excel benchmark, quality/consistency gates, requested model, time/API budgets, retry policy, local deployment and simple thread memory. Implementation remains unassessed. |
 | v0.22 | 2026-10-25 | Consolidated repeated design, separated first-trial scope from optional extensions, clarified delivery/retry rules, added a concrete evidence chain and practical decision sequence. No implementation assessment asserted. |
 | v0.21 | 2026-10-25 | Introduced anatomy-first requirements and layered evaluation with requirement-based grading. |

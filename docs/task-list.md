@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.18 design draft · October 25, 2026 |
+| Version | v0.19 design draft · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.23 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.24 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
@@ -13,14 +13,14 @@ This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and accep
 
 **Scope first:** select the next trial or release under spec §1. Deferred features stay unassessed and do not block unrelated work. Include finance, Asana, delegation, memory and concurrency checks when the selected scope uses them.
 
-The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). These decisions do not mark the broader work items complete: fixtures, API/tool support, configuration and enforcement still need evidence.
+The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). The [fixture and rubric](evaluations/excel-benchmark.md) and labeled defaults now settle the design choices. Work items remain unassessed: materialized cases, account/tool support, configuration and enforcement still need evidence.
 
 ## 1. Plan
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
 | PLAN-01 | Agree objective, boundaries, capabilities and criteria — §§1–3 | Reviewed anatomy and C1–C12 behavior/work/operating requirements → design → SC-1–SC-7 mapping; assumptions and exclusions explicit. | Not assessed | — |
-| PLAN-02 | Define task outputs and evaluation plan — §§2.3, 3.1–3.3; D2, D3 | Formats, independent answers/rubrics, cases, four dimensions, thresholds, sample sizes, budgets and grader checks. | Not assessed | — |
+| PLAN-02 | Define task outputs and evaluation plan — §§2.3, 3.1–3.3; D2, D3 | Materialize the selected fixture/rubric into separate agent inputs and independent evaluator answers; retain four dimensions, three-run design, thresholds and seeded-defect checks. | Not assessed | — |
 | PLAN-03 | Select configuration and release design — §§2, 4; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries); D1, D5 | Runtime choices and rationale per §2.7; host/storage, identities, concurrency, data policy, transfer limits and stop/recovery/rollback plan. | Not assessed | — |
 | PLAN-04 | Define monitoring and response — §5.2; D4 | SC-1–SC-7 signals, data sources, thresholds, owners, cadence, trace access/retention and incident responses. | Not assessed | — |
 | PLAN-05 | Define references and memory policy — C1, C4–C6; §§2.7, 5.3; D7 | Ownership, scope, versions, read/write rules, retention/deletion, compatibility and promotion rules. | Not assessed | — |
@@ -34,11 +34,11 @@ Work may reuse or adapt existing implementation after assessment. Start with fra
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Verified API identifier/high-reasoning support/pricing for the requested GPT-6 Luna profile; versioned effective settings and overrides, middleware/subagents and a runnable minimal task. | Not assessed | — |
+| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Verify account access and freeze the documented gpt-6-luna/high Standard rate card/profile; verify effective secondary limits, framework compaction and absence of delegation; retain versioned settings/overrides. | Not assessed | — |
 | BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state; versioned compaction prompt/trigger, retained history, retrieval and failure behavior per §2.7. | Not assessed | — |
 | BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries) | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Not assessed | — |
-| BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | First benchmark: four-sheet Excel creation, actual recalculated saved values, independent figures/formulas and visual presentation checks per §3.2. Extend C8–C11 paths only for selected scope. | Not assessed | — |
-| BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | State/file stores, task ownership, checkpoint/export milestones, acceptable unsaved work, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
+| BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | First benchmark: openpyxl + selected LibreOffice image, saved recalculated formula values, independent figures and rendered visual review per §3.2 and its fixture/rubric; no final rewrite that discards caches. | Not assessed | — |
+| BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | Verify selected SQLite/thread folders, application-driven export milestones, local archive/retention and transfer limits (§4.2); record any work lost after the last confirmed durable export. | Not assessed | — |
 | BUILD-06 | Implement permissions and budgets — C5; [runtime](agent-spec.md#runtime-and-tool-contracts--c2-c5) and [access design](agent-spec.md#access-and-approval-enforcement--c3-c5-c7) | Enforced 10-minute/US$1 model-API limits, conservative per-call cost reservation including retries/compaction/delegation, supplied-data-only scope and access restrictions; evidence of budget exhaustion handling. | Not assessed | — |
 | BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | At most five eligible retries including SDK retries; visible attempt counts, backoff and shared budgets; explicit partial/failure states, write reconciliation and bounded preservation/cleanup. | Not assessed | — |
 | BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, effective configuration/overrides and prompt/middleware/subagent versions, source/output identities, actual-check reports and version-specific approvals. | Not assessed | — |
@@ -130,6 +130,7 @@ Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inve
 
 | Version | Date | Change |
 |---|---|---|
+| v0.19 | 2026-10-25 | Connected selected design defaults and benchmark fixture/rubric to implementation evidence; preserved unassessed statuses. |
 | v0.18 | 2026-10-25 | Linked agreed benchmark/model/budget/retry/memory decisions to implementation and evaluation evidence; retained unassessed status. |
 | v0.17 | 2026-10-25 | Aligned with pragmatic trial scope: conditional finance/integration gates and owner-led monitoring; preserved unassessed implementation records. |
 | v0.16 | 2026-10-25 | Aligned planning and case records with anatomy-first requirements and layered, requirement-based evaluation grading. |
