@@ -1,6 +1,6 @@
 # Finance & Accounting Agent — Specification and Design
 
-**Version:** v0.22 design draft · October 25, 2026 · **Owner:** Neil Yee
+**Version:** v0.23 design draft · October 25, 2026 · **Owner:** Neil Yee
 
 This document defines the intended agent, its proposed design, and the evidence needed to use it. It does **not** assert that the repository meets these requirements. Record implementation status, paths, gaps and results in the [task list](task-list.md).
 
@@ -21,15 +21,16 @@ Build a reusable, human-supervised agent for knowledge work, starting with accou
 
 The shared foundation should support new tasks through skills, tools or connectors without requiring a separate agent design for every workflow.
 
-### Proposed first trial
+### Agreed first trial
 
-- One owner using the terminal, with one active execution per task/thread.
-- Synthetic or explicitly approved inputs; file/code operations in a sandbox.
-- Persistent conversations and task files on the host; tracing enabled.
-- Start with one bounded Excel task, then add Word/PDF deliverables and other selected capabilities as their evaluations pass.
-- Review each deliverable before business use. Exact formats, settings and budgets are decisions D1–D3.
+- One owner using a terminal on their own computer; one active execution per task/thread.
+- Remote sandbox for file/code operations; persistent thread history and task files on the owner's computer; tracing enabled.
+- A fixed, synthetic two-month revenue/expense dataset and selected business notes → one professionally formatted Excel working paper with detailed analysis. See §3.2 for the exact output and acceptance requirements.
+- Only the supplied dataset and notes provide business facts. No web search or external business-data access for this benchmark; approved skills/references provide procedure, not additional facts.
+- Three fresh-thread runs under the same configuration. Each run has a 10-minute work budget and a US$1 model API budget; model and retry choices are in §2.7.
+- Keep history/files within their thread. New threads can use approved shared skills/references, but do not automatically inherit unrelated task facts or modify shared guidance. Reusable guidance remains owner-maintained; automatic learning is deferred.
 
-These are proposed scope choices for a manageable trial, not findings about existing code.
+These are agreed design decisions, not claims that configuration, budget enforcement or evaluation is implemented. Word/PDF, balance sheet, cash flow and bank reconciliation remain later scope. Review each deliverable before business use.
 
 ### Extensions, selected when needed
 
@@ -264,18 +265,27 @@ Follow the work links to record paths, scope, status, gaps and evidence in the t
 
 ### 2.7 Runtime configuration and customization
 
-Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The following choices are **proposed or unresolved**, not observations of the current runtime.
+Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The agreed trial values below are target settings, not observations of the current runtime. Technical values still awaiting verification are identified explicitly.
 
 | Configuration / requirements | Decisions to record | Starting approach |
 |---|---|---|
-| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Exact values unresolved under D1. Choose for the selected task and budget; record how the provider counts reasoning/output tokens. |
+| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Requested baseline: **GPT-6 Luna, high reasoning**, fixed for all three runs. Exact API identifier, availability, reasoning support, pricing and output limit need verification under D1; do not silently substitute another model. |
 | **CFG-2: context** · C1, C2 | Instructions, history/reference/skill loading, retrieval limits and large-result handling. | Use framework facilities and approved sources; record inherited defaults and prompt versions. |
 | **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Evaluate the framework baseline before introducing a custom summary policy. |
-| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | One active execution per task; finite values required under D1. Follow the retry rule in §2.2. |
-| **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Select only what the trial requires; proposed host files and local checkpoints. Resolve versions/limits in D1/D5. |
-| **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Owner-maintained memory if used; tracing on for trials. Resolve retention/access in D4/D7. |
+| **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | One active execution per task; **10 minutes**, **US$1 model API spend**, and **up to five retries per eligible operation**. Enforcement details below; remaining call/token limits under D1. |
+| **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Local computer/terminal host, remote sandbox, durable local thread files/checkpoints. Choose supported packages, recalculation/rendering tools and transfer limits under D1/D5. |
+| **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Thread-local history/files; approved shared references maintained by the owner. No automatic cross-task learning or shared writes. Tracing on; retention/access details remain D4/D7. |
 
 For each selected choice, record **value or asset/module reference → rationale → configuration source and override rules → supporting cases/results**. A pinned framework default can be the selected value; an undocumented default cannot explain a result reliably. Credentials are referenced by name, never stored in the spec or trace.
+
+#### Trial time, cost and retry policy
+
+- **Time:** 10 minutes from run start for setup, model calls, tools, recalculation and validation. At the limit, stop new work/cancel active work where supported. Allow a short bounded preservation/cleanup phase, with its duration configured before the trial; no additional model work in that phase.
+- **Cost:** US$1 in model API usage per run, including retries, summarization and enabled subagents. Sandbox and tracing/service charges are outside this cap. Record input/output tokens, cached-token usage where available, reasoning-token billing semantics and estimated API cost.
+- **Preflight:** use verified pricing and bounded outputs; reserve a conservative maximum cost before each call, including concurrent/automatic calls. Account for outstanding requests and unknown usage conservatively. If the next call cannot fit, stop rather than overspend. Confirm effective API accounting/enforcement before claiming this cap is guaranteed.
+- **Retries:** automatic, at most five retries after an initial failed attempt (six total attempts), for each eligible operation. SDK and application retries share this limit. Use increasing delays with jitter, honor server retry delays and count waiting time against the run budget.
+- **Eligibility:** temporary connection failures, rate limits and eligible transient service errors. Invalid requests, denied permissions and incorrect calculations are not automatic transport retries. Before repeating writes, establish whether they completed or rely on a verified idempotency guarantee (§2.2).
+- **Visibility:** report progress such as “Retry 2 of 5.” Stop when either budget is exhausted; preserve available work and report an incomplete result. Five retries are a ceiling, not an obligation to continue after a non-recoverable failure.
 
 #### Compaction customization
 
@@ -359,27 +369,33 @@ Each criterion defines how to judge the capabilities and assignment behavior abo
 
 ### 3.2 Starter evaluation tasks
 
-Build confidence in small steps. Select the next task by the capability being assessed; these are trial designs, not completed results.
+#### Agreed benchmark: two-month income statement working paper
 
-| Trial | What it establishes | Follow-up coverage |
-|---|---|---|
-| Bounded Excel task with fixed synthetic inputs | Read/create/revise a workbook and preserve it; compare figures with independent expected answers. | Missing inputs, unsupported features, revision feedback, budget limits and restart. |
-| CSV analysis or Word/PDF work, as selected | The specific operations and formats claimed under C8/C10/C11. | Types/encodings, document structure, conversion fidelity and presentation. |
-| Composed financial file package | Excel working paper and Word/PDF analysis agree. | Seed mismatched ratios, wrong cell references and formatting defects; compare all outputs against the independent fixture. |
-| Bank reconciliation, if selected | Matches, exceptions and balance bridges satisfy an independent reference answer. | Duplicates, missing records, ambiguities and finance review. |
+**Inputs:** a small, fixed synthetic dataset with revenue, cost of sales and expense categories for two months. Include business notes explaining selected changes; deliberately leave other changes unexplained. Freeze the fixture, its currency/units and rounding rules before the three runs. Keep independently prepared expected answers with the evaluator, separate from the agent's input.
 
-Define inputs, supported features, required outputs, expected answers/rubric and thresholds before running a case. Include targeted foundation checks alongside work trials. A smoke test demonstrates a connected path; it is not evidence of broad reliability.
+**Required Excel sheets**
 
-**Worked traceability example — Excel liquidity analysis**
-
-| Link | Concrete meaning |
+| Sheet | Required contents |
 |---|---|
-| Requirement | C9 + C1–C7: create a correct, reviewable and preserved working paper. |
-| Design | Model/tool loop + source context + spreadsheet tools + protected workspace and checkpoints. |
-| Configuration | Record model/output settings, libraries, compaction policy and run budget. |
-| Criterion and case | SC-1 / E-ART-1: a fixed fixture distinguishes current liabilities from a non-current loan. Check formulas, independent expected ratios and agreement with any report. |
-| Evidence and release | Save grader results, file versions and human layout review. Resolve material mismatches before accepting this scope; also meet the applicable foundation and release checks. |
-| Monitoring and response | Record discrepancies or reviewer corrections, identify the affected configuration and add the failure as a regression case. |
+| Inputs | Synthetic data and business notes, clearly labeled and traceable to the supplied fixture. |
+| Income Statements | Both months, category amounts, subtotals/totals, month-to-month amount and percentage changes, gross and net profit margins. |
+| Analysis | Detailed commentary on each revenue/expense category, margin movements and main contributors to the profit change. Use supplied notes accurately; distinguish demonstrated changes from unknown causes. |
+| Checks | Reconciliation totals, formula checks and exceptions. The agent's checks supplement the evaluator's independent checks. |
+
+**Acceptance: every run must meet all required checks**
+
+- Totals, changes and margins match the independent expected answers under the fixture's rounding/tolerance rules. Formula cells reference the correct inputs; zero denominators are handled explicitly without misleading percentages.
+- Formula values are recalculated and available in the delivered workbook without a person first opening Excel. The agent inspects those values for its analysis; formulas or a recalculation-on-open flag alone do not satisfy this requirement.
+- Detailed analysis agrees with the figures and supplied notes. It identifies unexplained changes without inventing business causes.
+- Professional formatting: clear title/periods/currency/synthetic label; distinct headings, sections, subtotals and totals; consistent currency/percentage/negative-number formats; readable widths/alignment with no clipping; distinguishable inputs/formulas; sensible print layout and readable analysis.
+- Use code checks for structure, values, formulas and number formats, plus visual review for presentation. Required recalculation and visual inspection must be available; missing tooling is a readiness gap, not a passing result.
+- Preserve the workbook and supporting work after sandbox cleanup; comply with the budgets, source restrictions and memory policy.
+
+**Consistency:** run three times from fresh threads and clean task workspaces using identical inputs and effective configuration. Each must pass; wording and styling may vary. Record failures as well as successes. Three runs are an initial consistency check, not proof of broad reliability; changing configuration starts a new comparison series.
+
+**Traceability:** C9 + C1–C7 → loop, spreadsheet/recalculation tools, workspace and configuration → SC-1/SC-2/SC-3/SC-4/SC-7 → E-ART-1 plus relevant foundation cases → saved grader results, files and human review → scope-specific release decision → monitored defects, corrections and usage.
+
+**Later trials:** add CSV operations, Word/PDF delivery, composed financial packages, balance sheet/cash flow or bank reconciliation only when selected. A later liquidity-analysis fixture should distinguish current liabilities from a non-current loan and check agreement across workbook and reports. Keep supported features and independent answers explicit for each extension.
 
 ### 3.3 Evaluation design
 
@@ -473,7 +489,7 @@ Release only selected capabilities. Bank reconciliation is required evidence for
 
 ### 4.2 Deployment architecture and trust boundaries
 
-The host/sandbox/storage layout is shown in §2.4. Proposed first-trial choices are Deep Agents/LangChain, an OpenAI model, LangSmith sandbox/tracing, local checkpoints (SQLite is a candidate) and durable host task folders. Pin the chosen versions in D1; this is not an implementation audit.
+The host/sandbox/storage layout is shown in §2.4. Agreed first-trial locations are the owner’s computer for the terminal/host and durable files, and a remote execution sandbox. Proposed technologies remain Deep Agents/LangChain, the requested model profile in §2.7, LangSmith sandbox/tracing and local checkpoints (SQLite is a candidate). Pin the chosen versions in D1; this is not an implementation audit.
 
 | Boundary | Required setup |
 |---|---|
@@ -542,21 +558,21 @@ Automatic memory updates are deferred. If later enabled, define who owns each me
 
 ## 6. Decisions to resolve
 
-Owner: Neil Yee, with specialist review where needed. Resolve choices for the next selected scope; do not wait for every optional feature. Record selected values and rationale here or link their versioned configuration; implementation findings remain in the task list.
+Owner: Neil Yee, with specialist review where needed. The trial's product decisions are settled below; technical choices and implementation evidence remain open. Keep selected values in §2.7 and the benchmark contract in §3.2 rather than duplicating live configuration here.
 
-| ID | Decision | Needed when |
+| ID | Agreed direction | Still to resolve before the applicable trial/release |
 |---|---|---|
-| D1 | Exact model/framework/image versions; reasoning/output settings; finite budgets/timeouts/retries; context/middleware baseline; enabled delegation. | Before the first representative run. |
-| D2 | Selected work, formats/features, input/output contract, required recalculation/conversion/rendering and independent expected answers. | Before claiming that work capability; choose one bounded trial first. |
-| D3 | Case thresholds/rubrics, repetitions, critical failures and time/cost/reviewer-effort limits. | Before judging a candidate against acceptance criteria. |
-| D4 | Review owner/cadence, signals, thresholds, trace access and retention. | Basic trace policy before the trial; operational response before real-work use. |
-| D5 | Runtime/storage/identities, transfer limits, backups and stop/recovery; concurrency/isolation if selected. | Trial data/access/storage before execution; deployment-specific details before release. |
-| D6 | Asana eligibility, task/thread identity, publication scope, status/feedback rules and deduplication. | Only when adding Asana. |
-| D7 | Memory sources, ownership/scope, retention/correction/deletion and any later automatic-write policy. | When memory is enabled or its policy changes. |
+| D1 | GPT-6 Luna/high; 10 minutes; US$1 model API usage; at most five automatic retries per eligible operation. | Verify exact API model ID, reasoning support and pricing; pin dependencies/image; configure output/call limits, compaction/delegation baseline, cost reservation, retry accounting and bounded cleanup. |
+| D2 | Two-month Excel income statement, four sheets, detailed analysis, recalculated values and professional formatting. | Create frozen input/notes and independent expected answers; set currency/units and supported features; select and verify recalculation/rendering tools. |
+| D3 | Three fresh-thread runs with identical inputs/configuration; each passes all required checks. | Write numeric tolerances/rounding, zero-denominator cases and the presentation/analysis rubric before execution; record all outcomes. |
+| D4 | Tracing on; owner review. | Trace access/retention and operational review/response cadence. |
+| D5 | Local terminal/host and durable task files; remote sandbox; one active execution per task. | Storage paths/backend, identities/network restrictions, transfer/backup limits, checkpoint/export milestones and recovery/cleanup behavior. |
+| D6 | Asana deferred. | Integration decisions only when selected. |
+| D7 | Preserve thread history/files; owner-maintained approved shared references; no automatic cross-task learning or shared updates. | Source list, access enforcement, retention/deletion and correction procedure. |
 
 **Next practical sequence**
 
-1. Select one bounded task and write its expected result and checks (PLAN-01/02).
+1. Turn the agreed benchmark into a frozen fixture, independent answers and grader/rubric (PLAN-01/02).
 2. Resolve its settings and access/storage choices (PLAN-03/05); use the [inventory](#26-implementation-inventory) to assess existing code before adding work.
 3. Run the selected work cases and targeted foundation cases. Record gaps and results in TEST-01–06.
 4. Review whether the evidence supports the requested scope; use REL-01–03 for real-work release.
@@ -568,6 +584,7 @@ Owner: Neil Yee, with specialist review where needed. Resolve choices for the ne
 
 | Version | Date | Change |
 |---|---|---|
+| v0.23 | 2026-10-25 | Recorded owner decisions for the Excel benchmark, quality/consistency gates, requested model, time/API budgets, retry policy, local deployment and simple thread memory. Implementation remains unassessed. |
 | v0.22 | 2026-10-25 | Consolidated repeated design, separated first-trial scope from optional extensions, clarified delivery/retry rules, added a concrete evidence chain and practical decision sequence. No implementation assessment asserted. |
 | v0.21 | 2026-10-25 | Introduced anatomy-first requirements and layered evaluation with requirement-based grading. |
 | v0.20 | 2026-10-24 | Added runtime settings, middleware customization and subagent definitions. |

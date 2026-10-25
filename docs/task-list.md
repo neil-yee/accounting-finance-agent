@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.17 design draft · October 25, 2026 |
+| Version | v0.18 design draft · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.22 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.23 |
 | Assessment baseline | Every item is **Not assessed**. This does not mean the implementation is absent or needs rebuilding. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and acceptance evidence independently of the repository's implementation. During the later review, inspect existing code, configuration, and results against these items; record evidence and gaps before deciding what to build.
@@ -12,6 +12,8 @@ This plan follows the [ADLC](mental-model/02-adlc.md). It defines work and accep
 **Assessment values:** Not assessed · Missing · Partial · Meets completion criterion. Keep evidence links beside each finding. Code presence can satisfy a build item; evaluation items require results, and release items require the corresponding approval. An unchecked gate is unassessed, not a declaration that it failed.
 
 **Scope first:** select the next trial or release under spec §1. Deferred features stay unassessed and do not block unrelated work. Include finance, Asana, delegation, memory and concurrency checks when the selected scope uses them.
+
+The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). These decisions do not mark the broader work items complete: fixtures, API/tool support, configuration and enforcement still need evidence.
 
 ## 1. Plan
 
@@ -32,13 +34,13 @@ Work may reuse or adapt existing implementation after assessment. Start with fra
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Versioned configuration manifest and effective override rules per §2.7; model/reasoning/output settings, middleware composition and enabled subagent definitions; a runnable minimal task. | Not assessed | — |
+| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Verified API identifier/high-reasoning support/pricing for the requested GPT-6 Luna profile; versioned effective settings and overrides, middleware/subagents and a runnable minimal task. | Not assessed | — |
 | BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state; versioned compaction prompt/trigger, retained history, retrieval and failure behavior per §2.7. | Not assessed | — |
 | BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries) | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Not assessed | — |
-| BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | Selected C8–C11 paths with declared supported features; read/revision/export, independent calculations, formula/recalculation, presentation and cross-file checks. | Not assessed | — |
+| BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | First benchmark: four-sheet Excel creation, actual recalculated saved values, independent figures/formulas and visual presentation checks per §3.2. Extend C8–C11 paths only for selected scope. | Not assessed | — |
 | BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | State/file stores, task ownership, checkpoint/export milestones, acceptable unsaved work, manifests, versions, conflicts and transfer exclusions/limits. | Not assessed | — |
-| BUILD-06 | Implement permissions and budgets — C5; [runtime](agent-spec.md#runtime-and-tool-contracts--c2-c5) and [access design](agent-spec.md#access-and-approval-enforcement--c3-c5-c7) | Checks across model/actions/storage/delivery; bounded calls/time/retries and delegation; enforced reference/source restrictions. | Not assessed | — |
-| BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | Explicit partial/failure/review states, operation records, retry eligibility, reconciliation and cleanup-failure handling. | Not assessed | — |
+| BUILD-06 | Implement permissions and budgets — C5; [runtime](agent-spec.md#runtime-and-tool-contracts--c2-c5) and [access design](agent-spec.md#access-and-approval-enforcement--c3-c5-c7) | Enforced 10-minute/US$1 model-API limits, conservative per-call cost reservation including retries/compaction/delegation, supplied-data-only scope and access restrictions; evidence of budget exhaustion handling. | Not assessed | — |
+| BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | At most five eligible retries including SDK retries; visible attempt counts, backoff and shared budgets; explicit partial/failure states, write reconciliation and bounded preservation/cleanup. | Not assessed | — |
 | BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, effective configuration/overrides and prompt/middleware/subagent versions, source/output identities, actual-check reports and version-specific approvals. | Not assessed | — |
 | BUILD-09 | Create cases and graders — §§3.2–3.3 | Versioned case IDs linked to requirements, criteria, evaluation layers and functions exercised; fixtures/rubrics, expected results, thresholds, repetitions, setup/reset and seeded defects to check graders. | Not assessed | — |
 | BUILD-10 | Configure operational monitoring — §§4–5 | Applicable automatic checks, signal collection, owner review/routing, access/retention and stop/recovery controls; alerts when the operating model requires them. | Not assessed | — |
@@ -52,7 +54,7 @@ Cover shared behavior and operating requirements alongside reusable file work, f
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
 | TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Representative CSV, missing/conflicting-input, repeated compaction, revision-reference and selected delegation cases; compare configuration candidates with independent outputs/rubric and total usage/latency. | Not assessed | — |
-| TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Separate C9–C11 checks and composed packages: reading/revision, supported features, conversion fidelity, seeded defects, correct formulas/figures and presentation. | Not assessed | — |
+| TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Three clean fresh-thread runs of the §3.2 Excel benchmark: fixed inputs/configuration, independent numbers, detailed grounded analysis, saved recalculated values, visual review and preservation. Each passes; later C10–C11/package checks when selected. | Not assessed | — |
 | TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, restart/abrupt-loss recovery under the declared policy, overlap rejection (or coordination if enabled), exclusions, conflicts and transfer failure. | Not assessed | — |
 | TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, actual filesystem/network/identity checks and enforced shared budgets. | Not assessed | — |
 | TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, stale-approval cases, separate approval scopes and complete configuration references. | Not assessed | — |
@@ -128,6 +130,7 @@ Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inve
 
 | Version | Date | Change |
 |---|---|---|
+| v0.18 | 2026-10-25 | Linked agreed benchmark/model/budget/retry/memory decisions to implementation and evaluation evidence; retained unassessed status. |
 | v0.17 | 2026-10-25 | Aligned with pragmatic trial scope: conditional finance/integration gates and owner-led monitoring; preserved unassessed implementation records. |
 | v0.16 | 2026-10-25 | Aligned planning and case records with anatomy-first requirements and layered, requirement-based evaluation grading. |
 | v0.15 | 2026-10-24 | Linked runtime settings, compaction, middleware and subagent configuration to build evidence, evaluation comparisons and change review. |
