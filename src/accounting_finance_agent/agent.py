@@ -1,6 +1,15 @@
 """Build a default Deep Agent with the configured model."""
 
+from hashlib import sha256
+from threading import RLock
+
 from deepagents import create_deep_agent
+from deepagents.middleware.summarization import (
+    DEEPAGENTS_DEFAULT_SUMMARY_PROMPT, compute_summarization_defaults,
+)
+from deepagents.profiles import (
+    GeneralPurposeSubagentProfile, HarnessProfile, register_harness_profile,
+)
 from deepagents.backends.protocol import BackendProtocol
 from deepagents.middleware.memory import MemoryMiddleware
 from langchain.agents.middleware import TodoListMiddleware
@@ -16,6 +25,12 @@ from accounting_finance_agent.knowledge import (
     knowledge_backend,
 )
 from accounting_finance_agent.runtime import RunContext, RunControls
+
+
+# Deep Agents 0.7.23 exposes model-keyed profile registration rather than a
+# per-build profile argument. Serialize registration + assembly so two builds
+# in this application cannot capture each other's delegation setting.
+_HARNESS_BUILD_LOCK = RLock()
 
 
 SANDBOX_INSTRUCTIONS = (
@@ -44,7 +59,7 @@ REFERENCE_INSTRUCTIONS = (
 )
 
 
-def build_agent(
+def _build_agent(
     settings: Settings,
     *,
     backend: BackendProtocol | None = None,
@@ -58,10 +73,17 @@ def build_agent(
         use_responses_api=True,
         reasoning={"effort": settings.reasoning_effort},
         timeout=settings.model_timeout_seconds,
-        max_retries=2,
+        max_retries=settings.sdk_max_retries,
         max_tokens=settings.max_output_tokens,
+        **({"service_tier": settings.service_tier} if settings.service_tier else {}),
     )
-    routed_backend = knowledge_backend(backend)
+    register_harness_profile(
+        f"openai:{settings.model}",
+        HarnessProfile(general_purpose_subagent=GeneralPurposeSubagentProfile(
+            enabled=settings.delegation_enabled,
+        )),
+    )
+    routed_backend = knowledge_backend(backend, settings=settings)
     middleware = [
         FileMetadataFilesystemMiddleware(backend=routed_backend, controls=controls),
         TodoListMiddleware(),
@@ -72,7 +94,7 @@ def build_agent(
             add_cache_control=True,
         ),
     ]
-    return create_deep_agent(
+    graph = create_deep_agent(
         model=model,
         middleware=middleware,
         backend=routed_backend,
@@ -85,3 +107,33 @@ def build_agent(
         checkpointer=checkpointer,
         context_schema=RunContext,
     )
+
+    if controls is not None:
+        controls.log.event(
+            controls.context.run_id, "harness_configuration",
+            delegation_enabled=settings.delegation_enabled,
+            explicit_subagents=[],
+            compaction={
+                "implementation": "deepagents.middleware.summarization.create_summarization_middleware",
+                "defaults": compute_summarization_defaults(model),
+                "summary_prompt_sha256": sha256(DEEPAGENTS_DEFAULT_SUMMARY_PROMPT.encode()).hexdigest(),
+                "summarizer_model": settings.model,
+                "model_max_input_tokens": (model.profile or {}).get("max_input_tokens"),
+                "trim_tokens_to_summarize": None,
+                "custom_summary_prompt": False,
+                "usage_accounting": "not yet included in RunControls counters",
+            },
+        )
+    return graph
+
+
+def build_agent(
+    settings: Settings,
+    *,
+    backend: BackendProtocol | None = None,
+    checkpointer: BaseCheckpointSaver | None = None,
+    controls: RunControls | None = None,
+):
+    """Compile one graph using an explicit, serialized delegation policy."""
+    with _HARNESS_BUILD_LOCK:
+        return _build_agent(settings, backend=backend, checkpointer=checkpointer, controls=controls)

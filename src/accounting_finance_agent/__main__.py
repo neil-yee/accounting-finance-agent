@@ -3,10 +3,14 @@
 import argparse
 from contextlib import closing, nullcontext
 import getpass
+import json
 from uuid import uuid4
 
 from accounting_finance_agent.agent import build_agent
-from accounting_finance_agent.config import ConfigurationError, Settings, load_settings
+from accounting_finance_agent.config import (
+    EXCEL_PROFILE, ConfigurationError, Settings, load_settings, require_runnable_profile,
+)
+from accounting_finance_agent.provenance import effective_configuration
 from accounting_finance_agent.persistence import CHECKPOINT_DATABASE, ThreadHistory, open_history
 from accounting_finance_agent.runtime import RunContext, RunControls, RunLimitExceeded
 from accounting_finance_agent.sandbox import sandbox_backend
@@ -32,6 +36,7 @@ def show_state(settings, history, thread_id):
 
 
 def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
+    require_runnable_profile(settings)
     run_id = str(uuid4())
     path = thread_workspace(thread_id) if sandbox else None
     context = RunContext(run_id, thread_id, settings.timezone, str(path) if path else "virtual thread files")
@@ -43,7 +48,8 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
     with thread_lease(thread_id), (use_workspace(path) if path else nullcontext()):
         before = workspace_manifest() if sandbox else {}
         log.start(run_id, thread_id, {"workspace": str(path), "snapshot": settings.sandbox_snapshot_id,
-                  "timezone": settings.timezone, "model": settings.model}, before)
+                  "timezone": settings.timezone, "model": settings.model,
+                  "configuration": effective_configuration(settings)}, before)
         status, error_type = "failed", None
         try:
             scope = sandbox_backend(
@@ -158,13 +164,22 @@ def chat(settings: Settings, history: ThreadHistory, *, sandbox: bool, thread_id
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the accounting and finance agent.")
     parser.add_argument("--sandbox", action="store_true", help="Use one temporary sandbox per prompt.")
+    parser.add_argument("--profile", choices=["local", EXCEL_PROFILE], default="local",
+                        help="Select local settings or the staged, fixed Excel benchmark baseline.")
+    parser.add_argument("--show-config", action="store_true",
+                        help="Print secret-free configuration without running a model or sandbox.")
     parser.add_argument("--thread", metavar="ID", help="Resume an existing conversation.")
     args = parser.parse_args()
     try:
-        settings = load_settings(require_sandbox=args.sandbox)
+        settings = load_settings(require_sandbox=args.sandbox, profile=args.profile,
+                                 validate_credentials=not args.show_config)
+        if args.show_config:
+            print(json.dumps(effective_configuration(settings), indent=2, sort_keys=True))
+            return
+        require_runnable_profile(settings)
     except ConfigurationError as exc:
         parser.error(str(exc))
-    print(f"Deep Agent | Model: {settings.model} | Timezone: {settings.timezone}")
+    print(f"Deep Agent | Profile: {settings.profile} | Model: {settings.model} | Timezone: {settings.timezone}")
     print(f"Conversation state: {CHECKPOINT_DATABASE}")
     print(f"Limits per run: {settings.max_model_calls} model calls, {settings.max_tool_calls} tool calls, {settings.run_seconds}s admission deadline")
     if args.sandbox:

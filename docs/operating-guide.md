@@ -6,6 +6,76 @@ replies. A user-run CSV/JSON smoke task also passed; finance-quality evaluation
 and broader live checks remain pending. See
 [engineering results](engineering-checks.md) for the distinction and coverage.
 
+## Versioned Excel trial profile
+
+The first build increment adds `excel-benchmark-v1` alongside the existing
+`local` profile. Its run safeguards are still under construction; the CLI and
+`run_prompt` reject benchmark execution before allocating a sandbox or calling
+an API. Direct graph construction is available for later offline checks.
+
+Inspect the selected configuration without a model call, sandbox or API key:
+
+```powershell
+uv run --locked finance-agent --profile excel-benchmark-v1 --show-config
+```
+
+Use `--show-config` without a profile to inspect the existing local settings.
+The command prints explicit settings, dependency versions, selected reference
+routes, source/reference hashes and outstanding execution blockers. It excludes
+API keys, environment dumps and document contents. It does not verify provider
+access or sandbox packages.
+
+| Setting | Excel profile |
+|---|---|
+| Model / reasoning / API tier | gpt-6-luna / high / Standard (`default` in the API) |
+| Tracing | On |
+| Delegation | Default general-purpose subagent disabled; no explicit subagents |
+| Model/tool counts | 20 / 40 configured ceilings; complete attempt accounting pending |
+| Work deadline / per-attempt timeouts | 600 seconds / 180 model / 120 tool; hard deadline enforcement pending |
+| Output ceiling | 32,000 tokens; spend-based reduction pending |
+| SDK retries | Disabled; the shared five-retry controller is still to build |
+| Task network destinations | None intended; provider enforcement pending |
+
+**Configuration precedence**
+
+- The versioned Excel profile wins over model, reasoning, tracing, limit and
+  destination settings in the environment or `.env`.
+- Credentials, trace project, timezone and snapshot ID still come from the usual
+  process environment, then `.env`, then applicable defaults.
+- The `local` profile retains its existing defaults and environment behavior.
+- Change the profile version when changing the trial baseline. Freeze the actual
+  image and effective settings before comparing the three benchmark runs.
+- An empty destination tuple is not proof of blocked network access. The benchmark
+  execution gate stays closed until its required safeguards are implemented.
+
+**Run evidence**
+
+Each runner invocation stores a secret-free configuration manifest in
+`.state/worklog.sqlite`, under the run's `details.configuration`. Once the graph
+is built, a `harness_configuration` event records delegation policy, the computed
+framework compaction defaults, summary-prompt hash and summarizer model. These
+records describe configuration; they do not establish successful execution or
+complete API cost accounting. Historical runs keep their original records.
+
+**Benchmark reference scope and owner maintenance**
+
+- `/memories/` maps to `references/excel-benchmark/memory/`, with procedural
+  guidance only. The older company profile is not mounted in this scope.
+- `/skills/` exposes only `file-delivery-validation` and `csv-analysis` from the
+  existing approved skill folders. No duplicate skill implementations are needed.
+- Keep business facts in the task inputs. Keep evaluator answers outside all
+  agent-readable reference routes and task folders.
+- To correct shared guidance, edit the selected Markdown source as the owner,
+  review/commit the change, restart the runner and use a fresh benchmark thread.
+  Record the new reference hashes and re-evaluate affected behavior.
+- To remove guidance, remove its source/route as the owner and start a fresh thread.
+  Existing checkpoints and traces may still contain the old content; removing a
+  reference does not erase those records. The retention/deletion procedure for
+  those records remains BUILD-05 work.
+
+No tests or paid runs have been performed for this increment. Graph tool absence,
+reference isolation and configuration recording still need evaluation.
+
 ## Local trace copies
 
 Sync this repository's **accounting-finance-agent** LangSmith project into `traces/`:

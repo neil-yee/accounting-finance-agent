@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.21 stage-specific assessment · October 25, 2026 |
+| Version | v0.22 first build increment · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
 | Specification and design | [Agent specification and design](agent-spec.md) v0.25 |
 | Assessment baseline | Source/document review on October 25, 2026 against spec v0.24 and the selected Excel benchmark. Historical evidence is labeled; no new tests or paid runs. |
 
-This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below distinguish existing implementation, historical evidence and remaining gaps against the selected requirements. Detailed findings are in [§10](#10-repository-assessment--october-25-2026). Reuse the foundation before adding missing behavior.
+This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below distinguish existing implementation, historical evidence and remaining gaps against the selected requirements. The initial review is in [§10](#10-repository-assessment--october-25-2026); subsequent build changes are in [§11](#11-build-progress). Reuse the foundation before adding missing behavior.
 
 **Assessment values:** Not assessed · Missing · Partial · Meets completion criterion. Keep evidence links beside each finding. **Meets completion criterion** is the equivalent of checking off that row, for its stated scope. **Partial** means useful work exists but the full criterion is unmet. **Missing** means required implementation or evidence was not found in the inspected repository. Assess each item against its stage: planning requires documented decisions and an actionable design; build requires configured or implemented components; evaluation requires results; release requires readiness evidence and the corresponding approval. A gate is met only when its required evidence is complete. “Not met” can mean evidence is missing; it does not necessarily mean a test failed.
 
@@ -36,14 +36,14 @@ Work may reuse or adapt existing implementation after assessment. Start with fra
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Verify account access and freeze the documented gpt-6-luna/high Standard rate card/profile; verify effective secondary limits, framework compaction and absence of delegation; retain versioned settings/overrides. | Partial | Model/Responses API, locked dependencies and framework runtime exist; benchmark limits/profile, no-delegation setting and full accounting are incomplete. [§10.1](#101-runtime-and-model). |
-| BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state; versioned compaction prompt/trigger, retained history, retrieval and failure behavior per §2.7; isolate benchmark facts from unrelated company references and document owner updates/corrections to shared guidance. | Partial | Context injection, todos, skills, read-only memory and built-in compaction exist. Benchmark reference isolation and recorded effective compaction settings remain. [§10.2](#102-context-skills-and-planning). |
+| BUILD-01 | Configure reproducible runtime and model — C2, C5–C6; [runtime design](agent-spec.md#runtime-and-tool-contracts--c2-c5); D1 | Verify account access and freeze the documented gpt-6-luna/high Standard rate card/profile; verify effective secondary limits, framework compaction and absence of delegation; retain versioned settings/overrides. | Partial | Added a named fixed benchmark profile, explicit Standard tier, framework delegation switch and configuration inspection. Runtime verification, image/rate-card freeze and full accounting remain. [§11](#11-build-progress). |
+| BUILD-02 | Configure context, skills and planning — C1–C2; [context design](agent-spec.md#context-assembly--c1-c2) | Request/history/reference selection, source IDs, approved skills, todo state; versioned compaction prompt/trigger, retained history, retrieval and failure behavior per §2.7; isolate benchmark facts from unrelated company references and document owner updates/corrections to shared guidance. | Partial | Added benchmark-only procedural reference routes, a two-skill scope, compaction configuration records and owner correction instructions. Isolation/tool visibility and semantic retention remain unverified. [§11](#11-build-progress). |
 | BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; [deployment design](agent-spec.md#42-deployment-architecture-and-trust-boundaries) | Tool contracts, working-copy boundary, package/image configuration, host/sandbox credentials and scoped access. | Partial | Remote sandbox, snapshot recipe, execution tools and copy-in/out exist; verify scoped network/image and immutable benchmark inputs. [§10.3](#103-sandbox-and-file-tools). |
 | BUILD-04 | Implement artifact creation and validation — C3, C8–C11; §2.3 | First benchmark: openpyxl + selected LibreOffice image, saved recalculated formula values, independent figures and rendered visual review per §3.2 and its fixture/rubric; no final rewrite that discards caches. | Partial | openpyxl is owner-confirmed available; validation skill and structural checks exist. No selected LibreOffice recalculation/rendering pipeline or independent Excel grader found. [§10.4](#104-artifacts-and-spreadsheet-tooling). |
 | BUILD-05 | Implement persistent threads and file transfer — C4, C7; [persistence design](agent-spec.md#state-files-and-recovery--c4-c7) | Verify selected SQLite/thread folders, application-driven export milestones, local archive/retention and transfer limits (§4.2); record any work lost after the last confirmed durable export; document owner deletion steps for retained thread data and archives. | Partial | SQLite threads, local task folders, locks, manifests and exit-time export exist; milestone export, archive/retention and transfer caps remain. [§10.5](#105-persistence-and-transfer). |
 | BUILD-06 | Implement permissions and budgets — C5; [runtime](agent-spec.md#runtime-and-tool-contracts--c2-c5) and [access design](agent-spec.md#access-and-approval-enforcement--c3-c5-c7) | Enforced 10-minute/US$1 model-API limits, conservative per-call cost reservation including retries/compaction/delegation, supplied-data-only scope and access restrictions; evidence of budget exhaustion handling. | Partial | Admission/call limits and reference protections exist; no dollar reservation, complete attempt accounting or hard remaining-time enforcement. Benchmark network/source restrictions need alignment. [§10.6](#106-permissions-and-budgets). |
 | BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | At most five eligible retries including SDK retries; visible attempt counts, backoff and shared budgets; explicit partial/failure states, write reconciliation and bounded preservation/cleanup. | Partial | Failure logging, retained-sandbox recovery and SDK retries exist; five-retry policy, deadline-aware backoff, output completeness and bounded cleanup remain. [§10.7](#107-outcomes-and-recovery). |
-| BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, effective configuration/overrides and prompt/middleware/subagent versions, source/output identities, actual-check reports and version-specific approvals. | Partial | Tracing/export, run logs, file hashes and approval commands exist; complete effective configuration/usage manifests and policy enforcement remain. [§10.8](#108-provenance-and-review). |
+| BUILD-08 | Implement provenance and review — C3, C6; [evidence design](agent-spec.md#evidence-and-configuration--c6) | Traces, work log, effective configuration/overrides and prompt/middleware/subagent versions, source/output identities, actual-check reports and version-specific approvals. | Partial | Added per-run settings/dependency/source/reference manifests and harness configuration events. Complete provider usage/rate accounting, sandbox package identity and evaluated provenance remain. [§11](#11-build-progress). |
 | BUILD-09 | Create cases and graders — §§3.2–3.3 | Versioned case IDs linked to requirements, criteria, evaluation layers and functions exercised; fixtures/rubrics, expected results, thresholds, repetitions, setup/reset and seeded defects to check graders. | Partial | Two CSV cases/runner, engineering tests and Excel design fixture exist; Excel input/oracle separation, graders and current case records are incomplete. [§10.9](#109-cases-and-evaluation-evidence). |
 | BUILD-10 | Configure operational monitoring — §§4–5 | Applicable automatic checks, signal collection, owner review/routing, access/retention and stop/recovery controls; alerts when the operating model requires them. | Partial | CLI progress, structural checks, work logs and trace exports provide monitoring foundations; current cost/retention/review operations remain. [§10.10](#1010-monitoring-and-release). |
 
@@ -130,6 +130,8 @@ Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inve
 
 ## 10. Repository assessment — October 25, 2026
 
+This is the initial source-review snapshot. See [§11](#11-build-progress) for later changes; the task rows above reflect both.
+
 **Basis:** reviewed source at local commit `e1729a8`, locked dependency declarations, installed harness source, skills, environment recipes and existing reports against spec v0.24. No new tests, model calls, sandbox allocations or provider-state checks were run. Private environment overrides were not inspected; coded defaults below are not assertions about an active process.
 
 **Existing evidence:** the saved, ignored `.state/engineering-checks-latest.txt` is dated October 22, 2026 and records 58 passing tests with zero network attempts. The tracked [engineering report](engineering-checks.md) describes coverage and one earlier CSV/JSON smoke run. These are historical plumbing/limited task evidence, not a current Excel benchmark pass. No reports were found in `.state/evaluations/` during this review.
@@ -215,10 +217,34 @@ Use the spec’s [implementation inventory](agent-spec.md#26-implementation-inve
 4. Add milestone preservation, transfer caps, backup/retention and complete configuration records.
 5. Run the relevant engineering/foundation checks when requested, then the three paid benchmark runs under the agreed caps. Record results and owner review before checking off evaluation/release items.
 
+## 11. Build progress
+
+### Increment 1 — trial configuration, reference scope and provenance
+
+Implemented in source on October 25, 2026; **not executed or tested**.
+
+| Work | Code / documentation | Remaining completion evidence |
+|---|---|---|
+| BUILD-01: fixed trial profile | [config.py](../src/accounting_finance_agent/config.py) defines `excel-benchmark-v1`; [agent.py](../src/accounting_finance_agent/agent.py) configures the API tier, SDK retry setting and default-subagent switch. | Verify effective model/tier, absence of delegation tools/child calls and account access; freeze runtime/image/rates. |
+| BUILD-02: selected context | [knowledge.py](../src/accounting_finance_agent/knowledge.py) routes benchmark memory and only two procedural skills; [guidance](../references/excel-benchmark/memory/AGENTS.md) contains no company defaults; agent construction records computed framework compaction defaults. | Exercise listing/read/search isolation, long-context retention and profile switching. |
+| BUILD-08: configuration evidence | [provenance.py](../src/accounting_finance_agent/provenance.py) records settings, source/reference hashes and dependency versions; [runner](../src/accounting_finance_agent/__main__.py) stores the manifest and offers `--show-config`. | Verify saved manifests and effective provider/sandbox identity; implement complete usage/rate accounting. |
+| BUILD-02: owner reference maintenance | [Operating guide](operating-guide.md#versioned-excel-trial-profile) documents correction/removal and fresh-thread handling. | Evaluate stale-context handling; thread/trace/archive deletion remains BUILD-05. |
+
+The named benchmark profile is staged. The CLI and `run_prompt` reject execution
+before remote work while cost/retry/deadline enforcement, sandbox network/image
+setup, required artifact checks and preservation safeguards are unfinished. This
+is a temporary implementation gate, not evidence that those safeguards exist.
+The existing local profile remains available with its documented limitations.
+
+All affected Build tasks stay **Partial**. No Test or Release item is checked off.
+The historical 58-check report does not cover this increment. Next: BUILD-06/07
+shared API-attempt accounting, dollar reservation, retry controller and deadlines.
+
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.22 | 2026-10-25 | Recorded the first source build increment: staged benchmark profile, scoped guidance and configuration provenance; retained Partial statuses and explicit verification gaps. |
 | v0.21 | 2026-10-25 | Corrected stage boundaries: planning judges decisions/design; all six selected-trial planning items meet that criterion. Preserved build, evaluation and release gaps and assigned memory procedures explicitly. |
 | v0.20 | 2026-10-25 | Assessed the selected trial against source and historical evidence; recorded existing components, specific gaps and conditional gates without new tests or paid runs. |
 | v0.19 | 2026-10-25 | Connected selected design defaults and benchmark fixture/rubric to implementation evidence; preserved unassessed statuses. |
