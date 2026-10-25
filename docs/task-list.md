@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.25 demonstration fixes · October 25, 2026 |
+| Version | v0.26 image input enabled · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
-| Specification and design | [Agent specification and design](agent-spec.md) v0.25 |
+| Specification and design | [Agent specification and design](agent-spec.md) v0.26 |
 | Assessment baseline | Initial review against spec v0.24; first build increment at `8eb7d90` reviewed against unchanged requirements in spec v0.25. Historical evidence is labeled; no new tests or paid runs. |
 
 This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below distinguish existing implementation, historical evidence and remaining gaps against the selected requirements. The initial review is in [§10](#10-repository-assessment--october-25-2026); subsequent build changes are in [§11](#11-build-progress). Reuse the foundation before adding missing behavior.
@@ -48,7 +48,7 @@ Reuse framework features and the shared model/tool loop. Introduce specialized h
 | BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; §4.2 | Sandbox/tool contracts, immutable image/package definition, credential wiring, source protection and filesystem/network restrictions configured. | Meets completion criterion | [sandbox.py](../src/accounting_finance_agent/sandbox.py), [provider.py](../src/accounting_finance_agent/provider.py), [workspace.py](../src/accounting_finance_agent/workspace.py) and [image release](../environments/finance/excel-v1-release.json) configure the frozen environment, namespace-enforced network boundary and protected input detection. Live probes passed; provider proxy alone was insufficient. [§11](#11-build-progress). |
 | BUILD-04 | Implement artifact creation and validation — C3, C9; §2.3 | Workbook creation, LibreOffice recalculation, saved formula caches, preview generation and required-artifact/check gates integrated. Independent graders are BUILD-09. | Meets completion criterion | [recalculate.py](../skills/file-delivery-validation/recalculate.py), [spreadsheets.py](../src/accounting_finance_agent/spreadsheets.py) and runner gates provide final XLSX conversion/caches, PDF/PNG evidence and required-output checks. Live conversion returned cached value 5 for =2+3. Financial/visual benchmark evaluation remains TEST-02. |
 | BUILD-05 | Implement persistence and transfer — C4, C7; §4.2 | Thread state/files, intermediate exports, loss/conflict reporting, transfer caps, backup/retention and owner deletion procedures implemented. | Meets completion criterion | [workspace.py](../src/accounting_finance_agent/workspace.py), [lifecycle.py](../src/accounting_finance_agent/lifecycle.py), sandbox/tool hooks and [retention command](../scripts/manage_retention.py) implement checkpoints, caps, consistent backup, closure/retention/deletion and explicit loss/failure reporting. Backup/retention engineering checks pass; no real retention deletion was executed. |
-| BUILD-06 | Implement permissions and budgets — C5; §§2.2, 2.7 | Versioned rate card, conservative dollar reservations, complete API-attempt accounting, remaining-time enforcement and access/budget stop paths connected. Include retries and compaction. | Meets completion criterion | [budget.py](../src/accounting_finance_agent/budget.py), [rate card](../config/model-pricing.json), hard phase deadlines and namespace execution connect cost/time/access enforcement. Every synchronous HTTP attempt, including compaction, is metered; unknown usage retains reservations. Unpriced/binary/hidden-history/async requests fail closed. Pricing was checked against provider documentation; actual billing reconciliation remains Test/Release work. |
+| BUILD-06 | Implement permissions and budgets — C5; §§2.2, 2.7 | Versioned rate card, conservative dollar reservations, complete API-attempt accounting, remaining-time enforcement and access/budget stop paths connected. Include retries and compaction. | Meets completion criterion | [budget.py](../src/accounting_finance_agent/budget.py), [rate card](../config/model-pricing.json), hard phase deadlines and namespace execution connect cost/time/access enforcement. Every synchronous HTTP attempt, including compaction, is metered; unknown usage retains reservations. Unpriced/direct non-image/hidden-history/async requests fail closed; embedded images use provider token preflight. Pricing was checked against provider documentation; actual billing reconciliation remains Test/Release work. |
 | BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | Unified five-retry ceiling, eligible-error handling, visible backoff, shared deadlines/budgets, accurate partial/failure outcomes and bounded preservation/cleanup. | Meets completion criterion | HTTP and safe-read retry controllers, SDK retry disabling, outcome checks and shared work/cleanup deadlines are connected in [budget.py](../src/accounting_finance_agent/budget.py), [file_metadata.py](../src/accounting_finance_agent/file_metadata.py), [runner](../src/accounting_finance_agent/__main__.py) and sandbox lifecycle. Unsafe/uncertain writes are not replayed. Targeted retry/deadline tests pass. |
 | BUILD-08 | Implement evidence and review — C3, C6; §§2.4, 2.7 | Persist source/output/configuration identities, prompt/middleware/dependency versions, provider usage/pricing, sandbox package identity, actual-check records and version-specific approvals. | Meets completion criterion | [provenance.py](../src/accounting_finance_agent/provenance.py), HTTP usage/rate/provider records, sandbox inventory events, existing hashes/check logs and approvals implement the evidence chain. Manifests include pricing/image-release identities. Full benchmark walkthrough remains TEST-05. |
 | BUILD-09 | Create cases and graders — §§3.2–3.3 | Separate agent inputs and evaluator answers; executable independent graders, human rubrics, requirement/case links, reset/repetition controls and seeded-defect fixtures. | Meets completion criterion | [versioned inputs/oracle/rubric](../evaluations/excel-v1/), [preparer](../scripts/prepare_excel_benchmark.py), [grader](../scripts/grade_excel_benchmark.py), [defect seeder](../scripts/seed_excel_defects.py) and [series runner](../scripts/run_excel_series.py) are implemented. Four seeded defect paths are detected. Series records fixture/configuration hashes and every outcome; three paid trials remain TEST-02. |
@@ -282,8 +282,9 @@ suite passes **78 tests with zero network attempts**.
 | Retention | Plan command runs; no eligible closed threads and no destructive deletion executed. Hosted delete requests are asynchronous and must be rechecked. |
 
 **Operating limits:** the selected runner is synchronous and requires a POSIX
-host. It rejects binary provider attachments and hidden server-side history; use
-sandbox libraries to inspect files. Reservation prices deliberately exceed the
+host. It rejects direct non-image provider attachments and hidden server-side history;
+use sandbox libraries to inspect documents. Embedded image input is now enabled
+with provider token preflight, as recorded below. Reservation prices deliberately exceed the
 published Standard cache/long-context/regional rates, so logged estimates can be
 higher than invoiced cost. Unknown usage stays reserved. The frozen image and
 reference/prompt/configuration hashes must remain fixed during a three-run series.
@@ -306,10 +307,27 @@ calculations/caches and PDF layout were checked independently. This is ad hoc
 demonstration evidence, not the fixed three-run benchmark. No Test/Release status
 is promoted on that basis. See the [engineering report](engineering-checks.md).
 
+### Image input enabled
+
+The owner requested image input after the demonstration. Embedded images now pass
+through to the model; direct non-image document/audio/video inputs still receive
+a supported-format explanation. `BudgetClient` preflights each immutable image
+with the provider token-count endpoint and caches the result within a run. Image
+tokens share the dollar reservation, request ceiling and deadline. Remote image
+URLs/file IDs and invalid/unaffordable counts stop before generation.
+
+The full suite passes **85 offline tests with zero network attempts**. A fresh
+sandbox run read only the report-preview image and correctly returned its title,
+January/February net income and layout observations. Its status is `needs_review`;
+this is visual-input evidence, not owner approval or a formal benchmark pass.
+The settings manifest records the supported input policy and the versioned rate
+card records the counting contract. [Operating instructions](operating-guide.md#versioned-excel-trial-profile).
+
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.26 | 2026-10-25 | Enabled image input with token preflight/shared budgets, recorded 85 offline checks and successful live image inspection; no formal evaluation/release promotion. |
 | v0.25 | 2026-10-25 | Recorded the ad hoc Excel/PDF demonstration, checkpoint/media fixes and 80 passing offline checks; preserved formal evaluation/release gates. |
 | v0.24 | 2026-10-25 | Completed BUILD-03–10 implementation, captured and probed a frozen image, recorded 78 passing offline checks and compiled tool inspection; kept benchmark/release evidence separate. |
 | v0.23 | 2026-10-25 | Separated implementation from verification/evaluation; marked BUILD-01/02 source-complete, assigned image/pricing to their owning Build tasks, and retained all checks under linked Test/Monitor tasks. |

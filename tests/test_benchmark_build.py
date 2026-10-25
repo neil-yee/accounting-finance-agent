@@ -200,16 +200,69 @@ class SafeRecoveryChecks(unittest.TestCase):
             with self.assertRaises(TimeoutError):middleware.wrap_tool_call(request,Mock())
             self.assertEqual(call.call_count,1)
 
-class TextOnlyMediaChecks(unittest.TestCase):
+class SupportedMediaChecks(unittest.TestCase):
     def test_media_is_explained_without_changing_saved_tool_messages(self):
         from langchain_core.messages import ToolMessage
-        from accounting_finance_agent.file_metadata import text_only_messages
-        original=ToolMessage(content=[{'type':'image','base64':'private-bytes'},
+        from accounting_finance_agent.file_metadata import supported_media_messages
+        original=ToolMessage(content=[{'type':'file','base64':'private-bytes'},
                                       {'type':'text','text':'existing tool output'}],tool_call_id='read-1')
-        adapted=text_only_messages([original])[0]
+        adapted=supported_media_messages([original])[0]
         self.assertEqual(original.content[0]['base64'],'private-bytes')
         self.assertNotIn('private-bytes',str(adapted.content))
         self.assertIn('not supported',str(adapted.content))
         self.assertEqual(adapted.content[1]['text'],'existing tool output')
+
+class ImageInputChecks(unittest.TestCase):
+    def setUp(self):
+        self.settings=replace(Settings('gpt-6-luna','high',False,'offline'),profile=EXCEL_PROFILE)
+        self.controls=RunControls(self.settings,RunContext('image-run','thread','UTC','virtual'),Mock())
+        self.image={'type':'input_image','image_url':'data:image/png;base64,aW1hZ2U='}
+        self.body={'model':'gpt-6-luna','input':[{'role':'user','content':[self.image]}],'max_output_tokens':100}
+
+    def test_image_passes_through_and_count_is_cached_across_calls(self):
+        calls=[]
+        def handle(request):
+            calls.append((request.url.path,json.loads(request.content)))
+            if request.url.path.endswith('/input_tokens'):
+                return httpx.Response(200,json={'input_tokens':4000})
+            return httpx.Response(200,json={'usage':{'input_tokens':4001,'output_tokens':5}})
+        with BudgetClient(self.controls,transport=httpx.MockTransport(handle)) as client:
+            for _ in range(2):client.post('https://api.openai.com/v1/responses',json=self.body)
+        self.assertEqual([path for path,_ in calls].count('/v1/responses/input_tokens'),1)
+        self.assertEqual(self.controls.counts['model'],3)
+        self.assertEqual(calls[-1][1]['input'][0]['content'][0],self.image)
+
+    def test_invalid_count_blocks_generation(self):
+        calls=[]
+        def handle(request):
+            calls.append(request.url.path);return httpx.Response(200,json={'input_tokens':None})
+        with BudgetClient(self.controls,transport=httpx.MockTransport(handle)) as client:
+            with self.assertRaises(RunLimitExceeded):client.post('https://api.openai.com/v1/responses',json=self.body)
+        self.assertEqual(calls,['/v1/responses/input_tokens'])
+
+    def test_remote_images_are_rejected_before_network_access(self):
+        self.image['image_url']='https://example.com/changing.png'
+        handler=Mock()
+        with BudgetClient(self.controls,transport=httpx.MockTransport(handler)) as client:
+            with self.assertRaises(RunLimitExceeded):client.post('https://api.openai.com/v1/responses',json=self.body)
+        handler.assert_not_called()
+
+    def test_large_provider_count_blocks_unaffordable_generation(self):
+        calls=[]
+        def handle(request):
+            calls.append(request.url.path);return httpx.Response(200,json={'input_tokens':2_000_000})
+        with BudgetClient(self.controls,transport=httpx.MockTransport(handle)) as client:
+            with self.assertRaises(RunLimitExceeded):client.post('https://api.openai.com/v1/responses',json=self.body)
+        self.assertEqual(calls,['/v1/responses/input_tokens'])
+
+    def test_framework_image_blocks_remain_visible_and_files_are_explained(self):
+        from langchain_core.messages import ToolMessage
+        from accounting_finance_agent.file_metadata import supported_media_messages
+        image={'type':'image','base64':'image-data','mime_type':'image/png'}
+        original=ToolMessage(content=[image,{'type':'file','base64':'document-data'}],tool_call_id='read')
+        result=supported_media_messages([original])[0]
+        self.assertEqual(result.content[0],image)
+        self.assertEqual(result.content[1]['type'],'text')
+        self.assertEqual(original.content[1]['base64'],'document-data')
 
 if __name__=='__main__':unittest.main()

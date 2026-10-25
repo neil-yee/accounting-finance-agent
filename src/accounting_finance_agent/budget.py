@@ -4,6 +4,8 @@ from decimal import Decimal
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
 import json
+import base64
+from hashlib import sha256
 import random
 import time
 import httpx
@@ -19,6 +21,68 @@ class BudgetClient(httpx.Client):
         self.card = json.loads((PROJECT_ROOT / 'config/model-pricing.json').read_text())
         self.spent = Decimal(0)
         self.limit = Decimal(self.card['budget_usd'])
+        self.image_token_counts = {}
+
+    def image_input_bound(self, body, request):
+        """Count immutable embedded images once; keep bytes out of the text bound.
+
+        The provider token-count endpoint does not generate model output. Its
+        HTTP requests consume the shared request/time ceilings and are logged.
+        Unavailable/invalid counts stop before any generation request is sent.
+        """
+        image_tokens = 0
+
+        def convert(value):
+            nonlocal image_tokens
+            if isinstance(value, list):
+                return [convert(item) for item in value]
+            if not isinstance(value, dict):
+                return value
+            kind = value.get('type')
+            if kind in {'input_file', 'input_audio', 'input_video'}:
+                raise RunLimitExceeded('Unsupported direct file/audio/video input; use sandbox libraries.')
+            if kind != 'input_image':
+                return {key: convert(item) for key, item in value.items()}
+            url = value.get('image_url', '')
+            allowed = ('data:image/png;base64,', 'data:image/jpeg;base64,',
+                       'data:image/webp;base64,', 'data:image/gif;base64,')
+            if not isinstance(url, str) or not url.startswith(allowed):
+                raise RunLimitExceeded('Image inputs must be embedded PNG/JPEG/WebP/GIF data; remote URLs/file IDs are not budgeted.')
+            encoded = url.split(',', 1)[1]
+            if len(encoded) > 14 * 1024**2:
+                raise RunLimitExceeded('Image exceeds the 10 MiB input limit.')
+            try:
+                raw = base64.b64decode(encoded, validate=True)
+            except ValueError as exc:
+                raise RunLimitExceeded('Invalid image encoding.') from exc
+            if len(raw) > 10 * 1024**2:
+                raise RunLimitExceeded('Image exceeds the 10 MiB input limit.')
+            identity = sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+            if identity not in self.image_token_counts:
+                self.controls.reserve('model', image_token_preflight=True)
+                count_body = {'model': body['model'], 'input': [
+                    {'role': 'user', 'content': [value]}]}
+                headers = dict(request.headers)
+                headers.pop('content-length', None)
+                endpoint = request.url.copy_with(path=request.url.path.rstrip('/') + '/input_tokens')
+                count_request = self.build_request('POST', endpoint, headers=headers, json=count_body,
+                    timeout=min(self.controls.remaining(), self.controls.settings.model_timeout_seconds))
+                response = super(BudgetClient, self).send(count_request, stream=False, follow_redirects=False)
+                try:
+                    response.raise_for_status()
+                    count = response.json().get('input_tokens')
+                    if type(count) is not int or count <= 0:
+                        raise RunLimitExceeded('Provider did not return a valid image token count.')
+                finally:
+                    response.close()
+                self.image_token_counts[identity] = count
+                self.controls.log.event(self.controls.context.run_id, 'image_token_count',
+                                        image_sha256=identity, input_tokens=count)
+            image_tokens += self.image_token_counts[identity]
+            return {**value, 'image_url': '[embedded image counted separately]'}
+
+        text_body = convert(body)
+        return len(json.dumps(text_body).encode()) + 8192 + image_tokens
 
     def send(self, request, **kwargs):
         body = json.loads(request.content)
@@ -32,9 +96,10 @@ class BudgetClient(httpx.Client):
         # UTF-8 bytes bound text tokens; overhead covers framing/tool wrappers.
         if body.get('previous_response_id') or body.get('conversation'):
             raise RunLimitExceeded('Server-side hidden history is outside the reservation contract.')
-        if any(kind in request.content for kind in (b'"input_image"', b'"input_file"', b'"input_audio"')):
-            raise RunLimitExceeded('Binary provider inputs are unsupported in the text-only benchmark; use sandbox libraries.')
-        input_bound = len(request.content) + 8192
+        with self.controls.lock:
+            if self.spent >= self.limit:
+                raise RunLimitExceeded('API budget exhausted before input inspection.')
+        input_bound = self.image_input_bound(body, request)
         with self.controls.lock:
             available = self.limit - self.spent - input_bound * input_rate
             cap = min(body.get('max_output_tokens', 32000), int(available / output_rate))

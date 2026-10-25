@@ -113,3 +113,15 @@ adaptation without modifying stored messages. Main income-statement arithmetic
 and formula caches were independently checked; the PDF pages were inspected.
 This demonstration does not establish the formal three-run benchmark or release
 readiness. Private outputs, run records and traces remain Git-ignored.
+
+## Image-input extension
+
+The owner enabled image input. Five additional offline checks cover image
+pass-through, cached token preflight, invalid/unaffordable counts, remote URL
+rejection and preservation of original tool messages. The full suite passes
+**85 tests with zero network attempts**. A separate live sandbox run used
+`read_file` on a report-preview image, correctly identified its title and monthly
+net income, and reported layout observations. No spreadsheet/text extraction was
+requested for that check. Provider preflight/image usage is recorded in the work
+log; tracing remained enabled. This is a capability check rather than the formal
+three-run benchmark or human approval.

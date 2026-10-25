@@ -50,15 +50,14 @@ def add_file_names(messages: list[BaseMessage]) -> list[BaseMessage]:
     return result
 
 
-def text_only_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
-    """Keep unsupported media out of priced text-only requests, with an explanation.
+def supported_media_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
+    """Pass image inputs through and explain unsupported non-image media.
 
     Saved tool results stay intact for the human reviewer; only the outgoing
-    request is adapted. The model must not claim it visually inspected previews.
+    request is adapted. Images pass through; unavailable documents are explained.
     """
     result = []
-    media = {"image", "image_url", "input_image", "file", "input_file",
-             "audio", "input_audio", "video"}
+    media = {"file", "input_file", "audio", "input_audio", "video"}
     for message in messages:
         if not isinstance(message.content, list):
             result.append(message)
@@ -70,9 +69,9 @@ def text_only_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
                 name = block.get("filename", "binary attachment")
                 content.append({"type": "text", "text": (
                     f"{name}: binary content is available to the reviewer but is not "
-                    "supported by this text-only run. Inspect file structure/text using "
-                    "sandbox libraries. Report visual inspection as unavailable to you; "
-                    "do not retry reading image previews or claim you saw them."
+                    "supported as a direct attachment in this run. Inspect file structure/text using "
+                    "sandbox libraries. Render document pages as PNG/JPEG and read those for visual review; "
+                    "do not claim to have inspected an attachment that was not supplied."
                 )})
                 changed = True
             else:
@@ -106,7 +105,7 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
             messages = add_file_names(list(prepared.messages))
             from accounting_finance_agent.config import EXCEL_PROFILE
             if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
-                messages = text_only_messages(messages)
+                messages = supported_media_messages(messages)
             return handler(prepared.override(messages=messages))
 
         return super().wrap_model_call(request, with_filenames)
@@ -122,7 +121,7 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
             messages = add_file_names(list(prepared.messages))
             from accounting_finance_agent.config import EXCEL_PROFILE
             if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
-                messages = text_only_messages(messages)
+                messages = supported_media_messages(messages)
             return await handler(prepared.override(messages=messages))
 
         return await super().awrap_model_call(request, with_filenames)

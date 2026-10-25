@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-25-conservative-trial-v1",
+  "version": "2026-10-25-conservative-trial-v2",
   "model": "gpt-6-luna",
   "service_tier": "default",
   "input_usd_per_million": "0.75",
@@ -18,5 +18,18 @@
     "long_input_multiplier": 2,
     "long_output_multiplier": 1.5,
     "regional_multiplier": 1.1
+  },
+  "image_input": {
+    "formats": [
+      "png",
+      "jpeg",
+      "webp",
+      "gif"
+    ],
+    "max_bytes": 10485760,
+    "source": "embedded data URLs only",
+    "counting": "POST /v1/responses/input_tokens per immutable image/model/detail; cached within a run",
+    "documentation": "https://developers.openai.com/api/docs/guides/token-counting",
+    "preflight_counts_against_request_limit": true
   }
 }

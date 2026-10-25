@@ -40,8 +40,17 @@ The rate card in `config/model-pricing.json` records published pricing and highe
 reservation rates covering documented cache writes, long context and regional
 premiums. Cache discounts are ignored conservatively; the ledger is an upper-bound
 estimate, not a provider invoice. Raw usage is retained for reconciliation.
-Binary provider inputs and hidden server-side history are rejected; inspect Excel
-through sandbox libraries. Only the synchronous benchmark runner is metered.
+Embedded PNG/JPEG/WebP/GIF images can be sent to the model, including rendered
+page previews opened through `read_file`. Each image is limited to 10 MiB.
+Before generation, the provider's input-token counting endpoint counts the
+immutable image for the selected model/detail. Counts are cached within the run;
+image tokens enter the same conservative dollar reservation as text. Preflight
+requests consume the existing request/time limits. A failed preflight stops
+before generation; remote image URLs/file IDs are excluded from this counting
+contract. Direct document/audio/video attachments still receive an explanation;
+use sandbox libraries for their content, or render pages to supported images.
+Only the synchronous benchmark runner is metered. Model visual inspection must
+be distinguished from the owner's approval.
 
 **Network and files.** Organization-level egress overrides the provider's requested
 deny rule. The benchmark therefore runs every execution command in a fresh Linux

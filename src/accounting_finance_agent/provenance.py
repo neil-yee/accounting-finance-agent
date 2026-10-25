@@ -68,6 +68,10 @@ def effective_configuration(settings: Settings) -> dict:
         "asset_sha256": hashes,
         "reference_routes": {route: root.relative_to(PROJECT_ROOT).as_posix()
                              for route, root in reference_roots(settings).items()},
+        "model_input_policy": ({"modalities": ["text", "image"],
+                                "image_counting": "provider preflight per embedded image",
+                                "direct_document_audio_video": False}
+                               if benchmark else "provider defaults"),
         "execution_blockers": list(EXCEL_RUN_BLOCKERS) if benchmark else [],
         "verification": "Configured values and local asset identities; not a provider or behavior check.",
     }
