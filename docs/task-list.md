@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.28 work deadline revised · October 25, 2026 |
+| Version | v0.29 first Test pass recorded · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
 | Specification and design | [Agent specification and design](agent-spec.md) v0.28 |
 | Assessment baseline | Initial review against spec v0.24; first build increment at `8eb7d90` reviewed against unchanged requirements in spec v0.25. Historical evidence is labeled; no new tests or paid runs. |
@@ -13,7 +13,7 @@ This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below disting
 
 **Scope first:** select the next trial or release under spec §1. Deferred features stay unassessed and do not block unrelated work. Include finance, Asana, delegation, memory and concurrency checks when the selected scope uses them.
 
-The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). The [fixture and rubric](evaluations/excel-benchmark.md) and labeled defaults now settle the design choices. All selected Build components are now implemented and connected. Their current evidence is in §11; benchmark evaluation and release approval remain outstanding.
+The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). The [fixture and rubric](evaluations/excel-benchmark.md) and labeled defaults now settle the design choices. All selected Build components are now implemented and connected. Their current evidence is in §11; a benchmark pass and release approval remain outstanding. The first Test pass and its failures are recorded in the [Test report](evaluations/test-phase-2026-10-25.md).
 
 ## 1. Plan
 
@@ -79,14 +79,14 @@ Cover shared behavior and operating requirements alongside reusable file work, f
 
 | ID | Work / spec reference | Completion evidence required | Assessment | Evidence |
 |---|---|---|---|---|
-| TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Profile/override and context/skill/todo wiring checks; representative CSV, missing/conflicting-input, repeated compaction, revision-reference and selected delegation cases; compare configuration candidates with independent outputs/rubric and total usage/latency. | Partial | Historical CSV smoke and fake-model context/skill checks exist; no current-profile long-context/correction/three-run evidence. [§10.9](#109-cases-and-evaluation-evidence). |
-| TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Check the graders against seeded defects, then three clean fresh-thread runs of the §3.2 Excel benchmark: fixed inputs/configuration, independent numbers, detailed grounded analysis, saved recalculated values, visual review and preservation. Each passes; later C10–C11/package checks when selected. | Missing | No completed three-run series for the agreed Excel fixture/profile found. Earlier workbook demonstrations do not meet this criterion. [§10.9](#109-cases-and-evaluation-evidence). |
-| TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, restart/abrupt-loss recovery under the declared policy, overlap rejection (or coordination if enabled), exclusions, conflicts and transfer failure. | Partial | Historical transfer, locks, checkpoint and conflict tests in [engineering results](engineering-checks.md); new export/retention/limits and abrupt-loss contract remain unevaluated. |
-| TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, reference-route isolation, absence of delegation when disabled, provider access, actual filesystem/network/identity checks and enforced shared budgets. | Partial | Reference-denial, HTTP reservation/retry and namespace checks now pass; live sandbox DNS/direct-IP/re-entry probes also pass. Complete adversarial/current-profile evaluation remains. [Build evidence](build-evidence.json). |
-| TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, saved effective settings/provider/sandbox identities and usage records, stale-approval cases, separate approval scopes and complete configuration references. | Partial | Historical approval/hash and persistence checks in [engineering results](engineering-checks.md); full effective-profile/input-to-output walkthrough for the benchmark remains. |
-| TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup or summarizer failure and safe resume/retry. | Partial | Lifecycle/runner, five-retry, spend-reservation and hard-deadline checks pass offline; full task-level timeout/uncertain-write/lost-provider recovery scenarios remain. |
+| TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Profile/override and context/skill/todo wiring checks; representative CSV, missing/conflicting-input, repeated compaction, revision-reference and selected delegation cases; compare configuration candidates with independent outputs/rubric and total usage/latency. | Partial | Selected-profile/override, skills/todo, correction persistence and two forced fake-summary cycles pass. Live missing/conflicting-input and repeated-compaction meaning remain. [Test report](evaluations/test-phase-2026-10-25.md). |
+| TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Check the graders against seeded defects, then three clean fresh-thread runs of the §3.2 Excel benchmark: fixed inputs/configuration, independent numbers, detailed grounded analysis, saved recalculated values, visual review and preservation. Each passes; later C10–C11/package checks when selected. | Partial | Three frozen fresh-thread runs collected: 0/3 complete passes (two API reservation stops, one tool ceiling). Independent recalculation and corrected regrades, seeded defects and assistant review recorded. New fixed-baseline series and owner review remain. [Test report](evaluations/test-phase-2026-10-25.md). |
+| TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, restart/abrupt-loss recovery under the declared policy, overlap rejection (or coordination if enabled), exclusions, conflicts and transfer failure. | Meets completion criterion | Selected file/recovery contract covered by offline transfer/isolation/conflict/failure checks plus live protected-source, abrupt-exit recovery, overlap and corrected delete/recreate probes. Unknown external business effects are outside this result. [Test report](evaluations/test-phase-2026-10-25.md). |
+| TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, reference-route isolation, absence of delegation when disabled, provider access, actual filesystem/network/identity checks and enforced shared budgets. | Partial | Current-profile/provider/tier, no delegation, shared limits, reference routes and live namespace/credential boundaries checked. Complete model-dependent injected/conflicting-instruction cases remain. [Test report](evaluations/test-phase-2026-10-25.md). |
+| TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, saved effective settings/provider/sandbox identities and usage records, stale-approval cases, separate approval scopes and complete configuration references. | Meets completion criterion | All three source/configuration/provider/image/output/hash/backup/trace walks agree; stale-approval probe passes in disposable records. No real output approved; reusable-asset promotion deferred. [Test report](evaluations/test-phase-2026-10-25.md). |
+| TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup or summarizer failure and safe resume/retry. | Partial | Offline failure paths plus live API-budget/tool stops and known-write abrupt recovery recorded. Integrated lost-provider-response recovery and layered summarizer/transport retry behavior remain. [Test report](evaluations/test-phase-2026-10-25.md). |
 
-**Foundation gate — not met:** required current-profile evidence is incomplete. Mandatory criteria pass for the defined cases and repetitions, with case/grader/configuration versions, limitations, and a recorded decision. Preserve passing capability cases as regressions.
+**Foundation gate — not met:** the first series has 0/3 complete passes. TEST-03/05 meet their selected contract; TEST-01/02/04/06 retain explicit gaps. Passing numerical checks and 128 offline tests do not override the end-to-end failures or pending owner review. See the [Test report](evaluations/test-phase-2026-10-25.md).
 
 ## 4. Define and evaluate the first finance workflow
 
@@ -354,10 +354,21 @@ phase are unchanged. Earlier attempts retain their recorded limits and outcomes.
 The existing profile assertion now expects v3 and 1,800 seconds; tests were not
 rerun for this configuration change.
 
+### First Test pass
+
+Collected all three formal Excel trials under profile v3 before applying fixes.
+Two stopped at API reservation and one at the tool ceiling; 0/3 pass. Corrected
+grader results, independent recalculation, live boundary/recovery probes and
+128 passing offline tests are recorded in the [Test report](evaluations/test-phase-2026-10-25.md).
+Checkpoint, delivery selection and evaluation-harness defects were fixed after
+collection. A new source-baseline series and remaining Test cases are still needed.
+No release or monitoring gate is promoted.
+
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.29 | 2026-10-25 | Recorded the first Test pass, three limited trials, independent regrades, live probes, repaired regressions and remaining gates. |
 | v0.28 | 2026-10-25 | Extended the owner-requested work deadline to 30 minutes in profile v3; retained other limits and historical evidence. |
 | v0.27 | 2026-10-25 | Versioned the larger 40-request ceiling as profile v2; kept other limits and prior run evidence intact. |
 | v0.26 | 2026-10-25 | Enabled image input with token preflight/shared budgets, recorded 85 offline checks and successful live image inspection; no formal evaluation/release promotion. |

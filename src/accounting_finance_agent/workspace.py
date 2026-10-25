@@ -63,6 +63,15 @@ def workspace_manifest() -> dict[str, str]:
     return result
 
 
+def advance_baseline(previous: dict[str, str], remote_files: dict[str, str]) -> dict[str, str]:
+    """Keep last-known hashes for remote deletions whose local copies survive.
+
+    A later recreation can then replace an untouched host copy. Genuine host
+    edits still differ from the last-known hash and follow the conflict path.
+    """
+    return {**previous, **remote_files}
+
+
 def prepare_workspace() -> None:
     """Create the selected local folder without following a directory link."""
     root = workspace_root()

@@ -2,7 +2,7 @@
 
 > A general, human-supervised agent for accounting and finance work, with Asana as the planned work interface and sandboxed code execution for file processing.
 
-**Status:** Selected Excel trial build complete; financial benchmark evaluation and release approval pending. The current implementation is a Deep Agent with persistent conversation threads, a terminal interface, and optional LangSmith sandbox execution. The complete Asana-to-sandbox-to-review workflow is planned. Agent capabilities are being established before adding Asana.
+**Status:** Selected Excel trial build complete; first formal evaluation recorded 0/3 complete passes. Reliability improvements and release approval remain pending. The current implementation is a Deep Agent with persistent conversation threads, a terminal interface, and optional LangSmith sandbox execution. The complete Asana-to-sandbox-to-review workflow is planned. Agent capabilities are being established before adding Asana.
 
 ## Demo
 
@@ -14,7 +14,7 @@ Build a reusable system that accepts different accounting and finance requests, 
 
 Asana will be the main place to assign work, review outputs, and request revisions. The agent loop will run outside a temporary sandbox, using general execution and file capabilities inside the sandbox. Approved business knowledge and reusable assets will guide the work.
 
-The selected trial creates a two-month Excel working paper from fixed synthetic inputs. All BUILD-01–10 implementation items meet their completion criteria; three fresh-thread financial evaluations and human reviews remain pending. Earlier CSV cases remain available. Bank reconciliation and Asana are later scope. See the [task list](docs/task-list.md) and [benchmark operating guide](docs/operating-guide.md#versioned-excel-trial-profile).
+The selected trial creates a two-month Excel working paper from fixed synthetic inputs. All BUILD-01–10 implementation items meet their completion criteria; the first three fresh-thread financial evaluations stopped at operating limits. A new fixed-baseline series and human review remain pending. See the [Test results](docs/evaluations/test-phase-2026-10-25.md). Earlier CSV cases remain available. Bank reconciliation and Asana are later scope. See the [task list](docs/task-list.md) and [benchmark operating guide](docs/operating-guide.md#versioned-excel-trial-profile).
 
 ## Target workflow
 

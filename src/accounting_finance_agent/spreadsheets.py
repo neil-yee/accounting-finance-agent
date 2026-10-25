@@ -8,7 +8,9 @@ import openpyxl
 def validate_delivery(folder):
     folder = Path(folder)
     errors = []
-    workbooks = list(folder.rglob('working-paper.xlsx'))
+    workbooks = [p for p in folder.rglob('working-paper.xlsx')
+                 if not any(part.startswith('.') or part == '__pycache__'
+                            for part in p.relative_to(folder).parts)]
     finals = [p for p in workbooks if (p.parent / 'recalculation.json').is_file()]
     candidates = finals or workbooks
     if len(candidates) != 1:

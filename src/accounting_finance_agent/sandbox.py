@@ -12,7 +12,7 @@ from deepagents.backends.langsmith import LangSmithSandbox
 from langsmith.sandbox import ResourceNotFoundError, SandboxClient
 
 from accounting_finance_agent.provider import sandbox_client
-from accounting_finance_agent.workspace import download_workspace, upload_workspace, workspace_root
+from accounting_finance_agent.workspace import advance_baseline, download_workspace, upload_workspace, workspace_root
 
 # Explicit small allocation, not a claim about the provider's minimum size.
 SANDBOX_VCPUS = 1
@@ -94,7 +94,7 @@ def sandbox_backend(*, snapshot_id: str | None = None, allowed_hosts: tuple[str,
                     transferred_bytes += sum((workspace_root()/name).stat().st_size for name in summary['changed_files'])
                     if transferred_bytes > 50 * 1024**2:
                         raise RuntimeError('Run export allowance exhausted; inspect preserved local files.')
-                    baseline = summary['remote_files']
+                    baseline = advance_baseline(baseline, summary['remote_files'])
                     record('workspace_checkpoint', transfers=summary)
             if controls:
                 controls.preserve = preserve

@@ -1,6 +1,6 @@
 # Excel benchmark — synthetic two-month working paper
 
-**Version:** 1 · October 25, 2026 · **Status:** selected design defaults; not executed.
+**Version:** 1 · October 25, 2026 · **Status:** first three-run evaluation collected; 0/3 complete passes. See the [Test results](test-phase-2026-10-25.md).
 
 Supports [spec §3.2](../agent-spec.md#32-starter-evaluation-tasks), C9 + C1–C7, SC-1–SC-4/SC-7 and E-ART-1 with applicable foundation checks.
 
