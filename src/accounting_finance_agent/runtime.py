@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from langchain_core.messages import SystemMessage
 
-from accounting_finance_agent.config import Settings
+from accounting_finance_agent.config import EXCEL_PROFILE, Settings
 
 
 class RunLimitExceeded(RuntimeError):
@@ -32,6 +32,12 @@ class RunControls:
         self.counts = {"model": 0, "tool": 0}
         self.lock = RLock()
 
+    def remaining(self):
+        remaining = self.settings.run_seconds - (monotonic() - self.started)
+        if remaining <= 0:
+            raise RunLimitExceeded("Work deadline exhausted.")
+        return remaining
+
     def reserve(self, kind: str, **details):
         with self.lock:
             limit = self.settings.max_model_calls if kind == "model" else self.settings.max_tool_calls
@@ -43,7 +49,8 @@ class RunControls:
             self.log.event(self.context.run_id, kind + "_started", number=self.counts[kind], **details)
 
     def model_request(self, request):
-        self.reserve("model")
+        if self.settings.profile != EXCEL_PROFILE:
+            self.reserve("model")
         now = datetime.now(ZoneInfo(self.context.timezone))
         text = (
             f"Current local time: {now.isoformat()} ({now:%A}); timezone: {self.context.timezone}. "
@@ -75,7 +82,7 @@ class RunControls:
             return request
         args = call.get("args", {})
         timeout = args.get("timeout")
-        cap = self.settings.tool_timeout_seconds
+        cap = min(self.settings.tool_timeout_seconds, max(1, int(self.remaining()))) if self.settings.profile == EXCEL_PROFILE else self.settings.tool_timeout_seconds
         if type(timeout) is int and (timeout <= 0 or timeout > cap):
             self.log.event(self.context.run_id, "tool_timeout_capped",
                            call_id=call.get("id"), requested_seconds=timeout,
@@ -90,6 +97,8 @@ class RunControls:
             print(f"[Tool] {name}", flush=True)
 
     def tool_finished(self, request, result=None, error=None):
+        if error is None and hasattr(self, "preserve"):
+            self.preserve()
         name = request.tool_call["name"]
         status = type(error).__name__ if error else getattr(result, "status", "completed")
         self.log.event(self.context.run_id, "tool_finished", name=name, status=status)

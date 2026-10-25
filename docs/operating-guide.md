@@ -8,73 +8,107 @@ and broader live checks remain pending. See
 
 ## Versioned Excel trial profile
 
-The first build increment adds `excel-benchmark-v1` alongside the existing
-`local` profile. Its run safeguards are still under construction; the CLI and
-`run_prompt` reject benchmark execution before allocating a sandbox or calling
-an API. Direct graph construction is available for later offline checks.
-
-Inspect the selected configuration without a model call, sandbox or API key:
+`excel-benchmark-v1` configures the first trial. Its strict runner requires a
+POSIX host (Linux/macOS) and a sandbox supporting unprivileged network namespaces.
+The current cloud host and frozen snapshot passed the build checks. The existing
+`local` profile retains its earlier behavior and limitations.
 
 ```powershell
 uv run --locked finance-agent --profile excel-benchmark-v1 --show-config
+uv run --locked finance-agent --profile excel-benchmark-v1 --sandbox
 ```
 
-Use `--show-config` without a profile to inspect the existing local settings.
-The command prints explicit settings, dependency versions, selected reference
-routes, source/reference hashes and outstanding execution blockers. It excludes
-API keys, environment dumps and document contents. It does not verify provider
-access or sandbox packages.
+The first command prints settings, dependency/source/reference hashes and snapshot
+identity without model calls. The second starts an interactive session. The
+benchmark profile overrides model, reasoning, tracing, limits and snapshot values
+in `.env`; credentials, trace project and timezone use the normal environment.
+Do not change settings during a three-run series.
 
 | Setting | Excel profile |
 |---|---|
-| Model / reasoning / API tier | gpt-6-luna / high / Standard (`default` in the API) |
-| Tracing | On |
-| Delegation | Default general-purpose subagent disabled; no explicit subagents |
-| Model/tool counts | 20 / 40 configured ceilings; complete attempt accounting pending |
-| Work deadline / per-attempt timeouts | 600 seconds / 180 model / 120 tool; hard deadline enforcement pending |
-| Output ceiling | 32,000 tokens; spend-based reduction pending |
-| SDK retries | Disabled; the shared five-retry controller is still to build |
-| Task network destinations | None intended; provider enforcement pending |
+| Model/reasoning/API tier | gpt-6-luna / high / Standard (`default`) |
+| Tracing/delegation | Tracing on; delegation disabled |
+| Requests/tools | At most 20 provider attempts including compaction/retries; 40 tool attempts |
+| Time | 600-second work deadline; shared 60-second preservation/cleanup phase |
+| API budget | US$1, conservative preflight reservations; unknown usage keeps its reservation |
+| Output | At most 32,000 tokens, reduced to fit remaining spend |
+| Retry policy | Up to five eligible retries; SDK retries disabled; read-only tool retries only |
+| Sandbox | `3dce6ed0-f050-432a-bc9a-79a7b960972f`; openpyxl, LibreOffice, Poppler/fonts |
+| Transfer | 10 MiB/file and 50 MiB per transfer; cumulative checkpoint export ceiling 50 MiB |
 
-**Configuration precedence**
+The rate card in `config/model-pricing.json` records published pricing and higher
+reservation rates covering documented cache writes, long context and regional
+premiums. Cache discounts are ignored conservatively; the ledger is an upper-bound
+estimate, not a provider invoice. Raw usage is retained for reconciliation.
+Binary provider inputs and hidden server-side history are rejected; inspect Excel
+through sandbox libraries. Only the synchronous benchmark runner is metered.
 
-- The versioned Excel profile wins over model, reasoning, tracing, limit and
-  destination settings in the environment or `.env`.
-- Credentials, trace project, timezone and snapshot ID still come from the usual
-  process environment, then `.env`, then applicable defaults.
-- The `local` profile retains its existing defaults and environment behavior.
-- Change the profile version when changing the trial baseline. Freeze the actual
-  image and effective settings before comparing the three benchmark runs.
-- An empty destination tuple is not proof of blocked network access. The benchmark
-  execution gate stays closed until its required safeguards are implemented.
+**Network and files.** Organization-level egress overrides the provider's requested
+deny rule. The benchmark therefore runs every execution command in a fresh Linux
+user/network namespace with no external interfaces. Live checks blocked DNS,
+direct-IP connection and namespace re-entry. Failure to create the namespace fails
+the command. The host still reaches model, tracing and sandbox-control APIs.
+Source CSV/notes/task files are checked against hashes and never replaced on export.
+The same per-thread file scope, read-only approved routes and credential boundary
+apply throughout. Export checkpoints run after successful tool operations and at
+exit; abrupt remote loss can lose changes since the last confirmed export.
 
-**Run evidence**
+**Artifacts and evaluation.** Read the approved `recalculate.py` helper through the
+file tool and copy it to the sandbox. Build in a staging directory and convert in a
+separate invocation to a final directory. The helper saves recalculated XLSX,
+PDF/page previews and a check record; never resave the final XLSX through openpyxl.
+The runner blocks missing workbooks, missing formula caches and missing rendered
+evidence. Human narrative/layout approval is still required.
 
-Each runner invocation stores a secret-free configuration manifest in
-`.state/worklog.sqlite`, under the run's `details.configuration`. Once the graph
-is built, a `harness_configuration` event records delegation policy, the computed
-framework compaction defaults, summary-prompt hash and summarizer model. These
-records describe configuration; they do not establish successful execution or
-complete API cost accounting. Historical runs keep their original records.
+```powershell
+uv run --locked python scripts/run_excel_series.py --run
+uv run --locked python scripts/grade_excel_benchmark.py workspace/threads/THREAD_ID
+uv run --locked python scripts/seed_excel_defects.py PATH_TO_CANDIDATE PATH_TO_MUTANTS
+```
 
-**Benchmark reference scope and owner maintenance**
+The series command is explicitly paid: three fresh threads, fixed agent-only
+inputs, independent graders and a saved outcome for every attempt. It does not
+approve outputs automatically. Evaluator answers stay outside agent references
+and workspaces. Code graders check the specified labels/layout contract; human
+review covers meaning, grounding, formula dependency interpretation and appearance.
 
-- `/memories/` maps to `references/excel-benchmark/memory/`, with procedural
-  guidance only. The older company profile is not mounted in this scope.
-- `/skills/` exposes only `file-delivery-validation` and `csv-analysis` from the
-  existing approved skill folders. No duplicate skill implementations are needed.
-- Keep business facts in the task inputs. Keep evaluator answers outside all
-  agent-readable reference routes and task folders.
-- To correct shared guidance, edit the selected Markdown source as the owner,
-  review/commit the change, restart the runner and use a fresh benchmark thread.
-  Record the new reference hashes and re-evaluate affected behavior.
-- To remove guidance, remove its source/route as the owner and start a fresh thread.
-  Existing checkpoints and traces may still contain the old content; removing a
-  reference does not erase those records. The retention/deletion procedure for
-  those records remains BUILD-05 work.
+**Evidence, backup and monitoring.** Work-log run details contain a secret-free
+configuration manifest; events contain compaction settings, provider attempts,
+reservations/usage, transfers, sandbox inventory and checks. After each benchmark
+run, consistent SQLite backups and task files are copied to the owner-only
+`accounting-finance-agent-archives` folder beside the repository. Back up that
+folder separately for device-loss protection. Failed backup prevents completion.
 
-No tests or paid runs have been performed for this increment. Graph tool absence,
-reference isolation and configuration recording still need evaluation.
+```powershell
+uv run --locked python scripts/monitor_runs.py
+uv run --locked python scripts/manage_retention.py --close THREAD_ID
+uv run --locked python scripts/manage_retention.py
+uv run --locked python scripts/manage_retention.py --apply --hosted
+```
+
+Review every result and the three-run series; investigate financial errors, missing
+outputs, unauthorized effects and budget failures before using results. Review
+recurring defects/cost and retention weekly. Stop with Ctrl+C, inspect `:state`,
+`:runs` and files, and reconcile effects before retrying. Approved outputs are bound
+to exact file hashes; changed versions require new review.
+
+Closure starts the 30-day raw-state retention clock. Retention defaults to a plan;
+`--apply` archives final files/inputs/supporting code and removes eligible raw state
+and scratch data, including closed-thread checkpoints in backups. `--hosted` also
+queues deletion of exact recorded root trace IDs and later verifies absence.
+Provider deletion is asynchronous; closure markers remain until verified. No
+retention deletion was executed during this build. Final deliverables, reference
+fixtures, reviews and configuration records remain until owner deletion.
+
+**Reference maintenance.** Benchmark memory comes from
+`references/excel-benchmark/memory/AGENTS.md`, with only `csv-analysis` and
+`file-delivery-validation` skills. The legacy company profile is outside these
+routes. The owner corrects/removes guidance in its source file, reviews/commits the
+change, restarts and uses a fresh thread. Existing checkpoints/traces can retain
+old content until their own retention/deletion process completes.
+
+Build evidence is recorded in [the task list](task-list.md#11-build-progress).
+Build completion does not establish benchmark quality or authorize business use.
 
 ## Local trace copies
 

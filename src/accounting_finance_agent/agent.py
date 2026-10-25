@@ -16,7 +16,7 @@ from langchain.agents.middleware import TodoListMiddleware
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.base import BaseCheckpointSaver
 
-from accounting_finance_agent.config import Settings
+from accounting_finance_agent.config import EXCEL_PROFILE, Settings
 from accounting_finance_agent.file_metadata import FileMetadataFilesystemMiddleware
 from accounting_finance_agent.knowledge import (
     APPROVED_MEMORY_PROMPT,
@@ -67,6 +67,15 @@ def _build_agent(
     controls: RunControls | None = None,
 ):
     """Build the harness with persistent approved guidance and optional sandbox execution."""
+    model_options = {}
+    if settings.profile == EXCEL_PROFILE:
+        if controls is None:
+            raise ValueError("The benchmark requires shared run controls.")
+        from accounting_finance_agent.budget import BudgetClient, DisabledAsyncClient
+        client = BudgetClient(controls)
+        controls.api_client = client
+        model_options = {"http_client": client, "http_async_client": DisabledAsyncClient(), "disable_streaming": True,
+                         "store": False, "http_socket_options": ()}
     model = init_chat_model(
         settings.model,
         model_provider="openai",
@@ -75,6 +84,7 @@ def _build_agent(
         timeout=settings.model_timeout_seconds,
         max_retries=settings.sdk_max_retries,
         max_tokens=settings.max_output_tokens,
+        **model_options,
         **({"service_tier": settings.service_tier} if settings.service_tier else {}),
     )
     register_harness_profile(
@@ -121,7 +131,7 @@ def _build_agent(
                 "model_max_input_tokens": (model.profile or {}).get("max_input_tokens"),
                 "trim_tokens_to_summarize": None,
                 "custom_summary_prompt": False,
-                "usage_accounting": "not yet included in RunControls counters",
+                "usage_accounting": "HTTP attempt ledger" if settings.profile == EXCEL_PROFILE else "logical calls only",
             },
         )
     return graph

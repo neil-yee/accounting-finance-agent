@@ -34,7 +34,7 @@ def effective_configuration(settings: Settings) -> dict:
             dependencies[name] = "not installed"
 
     assets = set((PROJECT_ROOT / "src" / "accounting_finance_agent").glob("*.py"))
-    assets.update(PROJECT_ROOT / name for name in ("pyproject.toml", "uv.lock"))
+    assets.update(PROJECT_ROOT / name for name in ("pyproject.toml", "uv.lock", "config/model-pricing.json", "environments/finance/excel-v1-release.json"))
     for root in reference_roots(settings).values():
         assets.update(root.rglob("*.md"))
         assets.update(root.rglob("*.py"))
@@ -54,7 +54,7 @@ def effective_configuration(settings: Settings) -> dict:
     }
     for field, name in (("sandbox_snapshot_id", "SANDBOX_SNAPSHOT_ID"),
                         ("timezone", "AGENT_TIMEZONE"), ("langsmith_project", "LANGSMITH_PROJECT")):
-        sources[field] = f"{name} (environment/.env or default)"
+        sources[field] = settings.profile if benchmark and field in EXCEL_SETTINGS else f"{name} (environment/.env or default)"
     record = {
         "schema_version": 1,
         "settings": asdict(settings),

@@ -80,3 +80,18 @@ Bank-reconciliation arithmetic, matching decisions, financial conclusions, Excel
 recalculation and rendered document layout still require independent task-quality
 evaluations. The next step is a review/revision check, then representative finance
 cases with known answers. No finance-quality evaluation was run during these checks.
+
+## October 25 build extension
+
+The expanded suite passes 75 offline tests with zero network attempts. New checks
+exercise HTTP-level reservations/retries, deadline interruption, reference scope,
+missing formula caches, consistent backups, retention eligibility, namespace
+wrapping and four seeded grader defects. Run `uv run --locked python
+scripts/check_engineering.py` to reproduce. The ignored current report is in
+`.state/engineering-checks-latest.txt`.
+
+Separate live sandbox build checks captured LibreOffice in an immutable snapshot,
+blocked DNS/direct IP and network-namespace re-entry, and recalculated/rendered a
+small workbook inside that boundary. See [build evidence](build-evidence.json) and
+[task progress](task-list.md#11-build-progress). These checks made no model calls
+and do not substitute for the three financial benchmark runs or human review.

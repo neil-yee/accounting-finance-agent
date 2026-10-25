@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from dotenv import load_dotenv, set_key
 from langsmith.sandbox import ResourceNotFoundError, SandboxClient
+from accounting_finance_agent.provider import sandbox_client
 
 from accounting_finance_agent.config import PROJECT_ROOT
 from accounting_finance_agent.sandbox import (
@@ -82,7 +83,7 @@ def main() -> None:
     name = f"finance-env-build-{uuid4().hex[:12]}"
     print("Creates one temporary builder; no model calls or task-file uploads.", flush=True)
     print(f"Builder: {name} | {SANDBOX_VCPUS} vCPU | {SANDBOX_MEMORY_BYTES / 1024**3:g} GiB RAM", flush=True)
-    with SandboxClient() as client:
+    with sandbox_client() as client:
         base = client.get_snapshot(args.base_snapshot or recipe["base_snapshot"])
         if base.status != "ready":
             raise RuntimeError(f"Base snapshot is not ready: {base.id} ({base.status})")
@@ -95,6 +96,8 @@ def main() -> None:
                 delete_after_stop_seconds=SANDBOX_DELETE_AFTER_STOP_SECONDS,
             )
             sandbox = client.wait_for_sandbox(name, timeout=60)
+            for command in recipe.get("prepare_commands", []):
+                print(run(sandbox, command, timeout=240), flush=True)
             capture_config = {}
             if has_extras:
                 # Keep the base's system packages; install extras in a separate venv.
@@ -123,6 +126,7 @@ def main() -> None:
                 "recipe_sha256": sha256(recipe_bytes).hexdigest(),
                 "requirements_sha256": sha256(requirements).hexdigest(),
                 "inventory": inventory,
+                "system_packages": run(sandbox, "dpkg-query -W libreoffice-calc poppler-utils fonts-liberation"),
                 "compute": {"vcpus": SANDBOX_VCPUS, "memory_bytes": SANDBOX_MEMORY_BYTES},
             }
             manifest_path = PROJECT_ROOT / ".state" / "snapshots" / f"{snapshot.id}.json"

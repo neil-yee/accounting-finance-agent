@@ -10,6 +10,7 @@ from accounting_finance_agent.agent import build_agent
 from accounting_finance_agent.config import (
     EXCEL_PROFILE, ConfigurationError, Settings, load_settings, require_runnable_profile,
 )
+from accounting_finance_agent.lifecycle import deadline, archive_run, mark_active
 from accounting_finance_agent.provenance import effective_configuration
 from accounting_finance_agent.persistence import CHECKPOINT_DATABASE, ThreadHistory, open_history
 from accounting_finance_agent.runtime import RunContext, RunControls, RunLimitExceeded
@@ -37,6 +38,8 @@ def show_state(settings, history, thread_id):
 
 def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
     require_runnable_profile(settings)
+    if settings.profile == EXCEL_PROFILE and not sandbox:
+        raise ConfigurationError("The Excel benchmark profile requires sandbox mode.")
     run_id = str(uuid4())
     path = thread_workspace(thread_id) if sandbox else None
     context = RunContext(run_id, thread_id, settings.timezone, str(path) if path else "virtual thread files")
@@ -46,6 +49,7 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
     inputs = {"messages": [{"role": "user", "content": prompt}]}
     print(f"Run: {run_id}")
     with thread_lease(thread_id), (use_workspace(path) if path else nullcontext()):
+        mark_active(thread_id)
         before = workspace_manifest() if sandbox else {}
         log.start(run_id, thread_id, {"workspace": str(path), "snapshot": settings.sandbox_snapshot_id,
                   "timezone": settings.timezone, "model": settings.model,
@@ -57,8 +61,9 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 allowed_hosts=settings.sandbox_allowed_hosts,
                 command_timeout=settings.tool_timeout_seconds,
                 event=lambda kind, **details: log.event(run_id, kind, **details),
+                **({"controls": controls} if settings.profile == EXCEL_PROFILE else {}),
             ) if sandbox else nullcontext(None)
-            with scope as backend:
+            with (deadline(controls.remaining()) if settings.profile == EXCEL_PROFILE else nullcontext()), scope as backend:
                 agent = build_agent(settings, backend=backend, checkpointer=history.checkpointer, controls=controls)
                 latest = None
                 for event_type, payload in agent.stream(
@@ -78,6 +83,8 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 if final.type != "ai" or getattr(final, "tool_calls", None):
                     raise RuntimeError("Run has unfinished tool work; inspect :state before continuing.")
                 answer = final.text
+                if not answer.strip():
+                    raise RuntimeError("Model returned no visible answer; assignment is incomplete.")
             if sandbox:
                 after_transfer = workspace_manifest()
                 reports = [validate_artifact(path / relative) for relative, digest in after_transfer.items()
@@ -87,11 +94,23 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 print(f"[Structure checks] {len(reports)} files; {sum(len(r['warnings']) for r in reports)} warnings. Not financial or visual sign-off.")
                 if any(report["errors"] for report in reports):
                     raise ValueError("Generated files failed structural checks. Inspect the work log and revise before approval.")
+            if settings.profile == EXCEL_PROFILE:
+                from accounting_finance_agent.spreadsheets import validate_delivery
+                with deadline(controls.remaining()):
+                    result = validate_delivery(path)
+                log.event(run_id, "benchmark_delivery_checks", report=result)
+                if result['errors']:
+                    raise ValueError("Workbook acceptance blocked: " + '; '.join(result['errors']))
             status = "needs_review"
             print(f"\nAgent: {answer}\nRun saved for review: {run_id}")
         except BaseException as exc:
             error_type = type(exc).__name__
-            status = "limited" if isinstance(exc, RunLimitExceeded) else "failed"
+            cause = exc
+            while cause.__cause__ is not None:
+                cause = cause.__cause__
+            status = "limited" if isinstance(cause, RunLimitExceeded) else "failed"
+            log.event(run_id, "recovery_boundary", status=status,
+                      note="Only confirmed workspace exports are durable; in-flight changes/effects may be unknown.")
             raise
         finally:
             try:
@@ -102,6 +121,18 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 error_type = type(exc).__name__
             log.event(run_id, "run_counts", **controls.counts)
             log.finish(run_id, status, after, error_type)
+            if hasattr(controls, 'api_client'):
+                controls.api_client.close()
+            if settings.profile == EXCEL_PROFILE:
+                try:
+                    from time import monotonic
+                    with deadline(max(.001, getattr(controls, "cleanup_until", monotonic() + 60) - monotonic())):
+                        archive = archive_run(run_id, path)
+                    log.event(run_id, 'backup_saved', path=str(archive))
+                except Exception as exc:
+                    log.event(run_id, 'backup_failed', error=type(exc).__name__)
+                    log.finish(run_id, 'failed', after, type(exc).__name__)
+                    raise
 
 
 def chat(settings: Settings, history: ThreadHistory, *, sandbox: bool, thread_id: str, log=None) -> None:
@@ -165,7 +196,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the accounting and finance agent.")
     parser.add_argument("--sandbox", action="store_true", help="Use one temporary sandbox per prompt.")
     parser.add_argument("--profile", choices=["local", EXCEL_PROFILE], default="local",
-                        help="Select local settings or the staged, fixed Excel benchmark baseline.")
+                        help="Select local settings or the fixed Excel benchmark baseline.")
     parser.add_argument("--show-config", action="store_true",
                         help="Print secret-free configuration without running a model or sandbox.")
     parser.add_argument("--thread", metavar="ID", help="Resume an existing conversation.")
@@ -177,6 +208,8 @@ def main() -> None:
             print(json.dumps(effective_configuration(settings), indent=2, sort_keys=True))
             return
         require_runnable_profile(settings)
+        if settings.profile == EXCEL_PROFILE and not args.sandbox:
+            raise ConfigurationError("Use --sandbox with the Excel benchmark profile.")
     except ConfigurationError as exc:
         parser.error(str(exc))
     print(f"Deep Agent | Profile: {settings.profile} | Model: {settings.model} | Timezone: {settings.timezone}")

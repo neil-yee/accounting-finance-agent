@@ -91,6 +91,30 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         return await super().awrap_model_call(request, with_filenames)
 
     def wrap_tool_call(self, request, handler):
+        from accounting_finance_agent.config import EXCEL_PROFILE
+        from langsmith.sandbox import SandboxConnectionError
+        if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
+            import random
+            import time
+            # Reconcile writes explicitly; only read operations are replayable.
+            safe = request.tool_call['name'] in {'ls', 'read_file', 'glob', 'grep'}
+            for attempt in range(6):
+                try:
+                    return self._one_tool_call(request, handler)
+                except (ConnectionError, TimeoutError, SandboxConnectionError):
+                    if not safe or attempt == 5:
+                        raise
+                    delay = 2 ** attempt + random.random()
+                    if delay >= self.controls.remaining():
+                        from accounting_finance_agent.runtime import RunLimitExceeded
+                        raise RunLimitExceeded('Tool retry cannot fit the remaining deadline.')
+                    print(f'Retry {attempt + 1} of 5: {request.tool_call["name"]}', flush=True)
+                    self.controls.log.event(self.controls.context.run_id, 'tool_retry',
+                                            number=attempt + 1, delay=delay)
+                    time.sleep(delay)
+        return self._one_tool_call(request, handler)
+
+    def _one_tool_call(self, request, handler):
         if self.controls:
             self.controls.tool_started(request)
             request = self.controls.prepare_tool_request(request)

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | v0.23 build/evaluation separation · October 25, 2026 |
+| Version | v0.24 build complete · October 25, 2026 |
 | Owner | Neil Yee; assign additional owners during planning. |
 | Specification and design | [Agent specification and design](agent-spec.md) v0.25 |
 | Assessment baseline | Initial review against spec v0.24; first build increment at `8eb7d90` reviewed against unchanged requirements in spec v0.25. Historical evidence is labeled; no new tests or paid runs. |
@@ -13,7 +13,7 @@ This plan follows the [ADLC](mental-model/02-adlc.md). Assessments below disting
 
 **Scope first:** select the next trial or release under spec §1. Deferred features stay unassessed and do not block unrelated work. Include finance, Asana, delegation, memory and concurrency checks when the selected scope uses them.
 
-The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). The [fixture and rubric](evaluations/excel-benchmark.md) and labeled defaults now settle the design choices. The review below finds substantial reusable implementation, but the new benchmark, configuration and enforcement requirements are not yet complete.
+The owner has selected the [two-month Excel benchmark](agent-spec.md#32-starter-evaluation-tasks) and [trial settings](agent-spec.md#27-runtime-configuration-and-customization). The [fixture and rubric](evaluations/excel-benchmark.md) and labeled defaults now settle the design choices. All selected Build components are now implemented and connected. Their current evidence is in §11; benchmark evaluation and release approval remain outstanding.
 
 ## 1. Plan
 
@@ -45,14 +45,14 @@ Reuse framework features and the shared model/tool loop. Introduce specialized h
 |---|---|---|---|---|
 | BUILD-01 | Configure runtime and model — C2, C5–C6; §2.7; D1 | Versioned model/reasoning/tier/limit settings, override rules, locked host dependencies and explicit delegation configuration wired into the runner. | Meets completion criterion | [config.py](../src/accounting_finance_agent/config.py), [agent.py](../src/accounting_finance_agent/agent.py), [runner](../src/accounting_finance_agent/__main__.py) and [uv.lock](../uv.lock) supply the named baseline and wiring. Source-reviewed; runtime checks pending. Sandbox image belongs to BUILD-03; pricing/accounting/enforcement belongs to BUILD-06/07. |
 | BUILD-02 | Configure context, skills and planning — C1–C2; §2.7 | Request/history context, selected read-only references/skills, todo state and pinned framework compaction wired in; record compaction configuration and document owner guidance updates. | Meets completion criterion | [agent.py](../src/accounting_finance_agent/agent.py), [knowledge.py](../src/accounting_finance_agent/knowledge.py), [runtime.py](../src/accounting_finance_agent/runtime.py) and [owner procedure](operating-guide.md#versioned-excel-trial-profile) supply the selected behavior. Source-reviewed; no known missing implementation within this scope. Isolation, retention and failure behavior still need evaluation. |
-| BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; §4.2 | Sandbox/tool contracts, immutable image/package definition, credential wiring, source protection and filesystem/network restrictions configured. | Partial | Sandbox and transfer exist. Remaining: frozen benchmark image, configured provider network restriction and protection/detection of original-input changes. [§10.3](#103-sandbox-and-file-tools). |
-| BUILD-04 | Implement artifact creation and validation — C3, C9; §2.3 | Workbook creation, LibreOffice recalculation, saved formula caches, preview generation and required-artifact/check gates integrated. Independent graders are BUILD-09. | Partial | openpyxl is owner-confirmed available; structural checks and guidance exist. Remaining: recalculation/rendering pipeline and required-output/value-check gates. [§10.4](#104-artifacts-and-spreadsheet-tooling). |
-| BUILD-05 | Implement persistence and transfer — C4, C7; §4.2 | Thread state/files, intermediate exports, loss/conflict reporting, transfer caps, backup/retention and owner deletion procedures implemented. | Partial | SQLite, thread folders, locks, manifests and exit-time export exist. Remaining: milestone export, transfer caps, archive/retention and deletion procedures. [§10.5](#105-persistence-and-transfer). |
-| BUILD-06 | Implement permissions and budgets — C5; §§2.2, 2.7 | Versioned rate card, conservative dollar reservations, complete API-attempt accounting, remaining-time enforcement and access/budget stop paths connected. Include retries and compaction. | Partial | Basic admission/call limits and read-only references exist. Remaining: pricing asset, US$1 reservation/ledger, complete attempt accounting and hard deadline enforcement. Network enforcement is coordinated with BUILD-03. [§10.6](#106-permissions-and-budgets). |
-| BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | Unified five-retry ceiling, eligible-error handling, visible backoff, shared deadlines/budgets, accurate partial/failure outcomes and bounded preservation/cleanup. | Partial | Failure logging/manual recovery exist; benchmark SDK retries are disabled pending the controller. Remaining: shared retry controller, output-completeness handling and bounded cleanup. [§10.7](#107-outcomes-and-recovery). |
-| BUILD-08 | Implement evidence and review — C3, C6; §§2.4, 2.7 | Persist source/output/configuration identities, prompt/middleware/dependency versions, provider usage/pricing, sandbox package identity, actual-check records and version-specific approvals. | Partial | Traces, logs, hashes, approvals and new settings/reference manifests exist. Remaining: provider usage/rate records and sandbox package identity capture. Evaluating the saved evidence is TEST-05. [§11](#11-build-progress). |
-| BUILD-09 | Create cases and graders — §§3.2–3.3 | Separate agent inputs and evaluator answers; executable independent graders, human rubrics, requirement/case links, reset/repetition controls and seeded-defect fixtures. | Partial | Older CSV cases/runner and Excel design fixture exist. Remaining: runnable Excel inputs/oracle/graders, defect fixtures and three-run orchestration. Executing them and recording pass/fail results belongs to Test. [§10.9](#109-cases-and-evaluation-evidence). |
-| BUILD-10 | Configure monitoring — §§4–5 | Signal collection, owner review/response procedures, access/retention and stop/recovery controls connected; alerts only if selected. | Partial | CLI progress, structural checks, work logs and trace exports exist. Remaining: cost/completion signal integration and implemented retention/review procedures. Operating these is MON-01–03. [§10.10](#1010-monitoring-and-release). |
+| BUILD-03 | Configure sandbox and file/code tools — C2, C5, C7; §4.2 | Sandbox/tool contracts, immutable image/package definition, credential wiring, source protection and filesystem/network restrictions configured. | Meets completion criterion | [sandbox.py](../src/accounting_finance_agent/sandbox.py), [provider.py](../src/accounting_finance_agent/provider.py), [workspace.py](../src/accounting_finance_agent/workspace.py) and [image release](../environments/finance/excel-v1-release.json) configure the frozen environment, namespace-enforced network boundary and protected input detection. Live probes passed; provider proxy alone was insufficient. [§11](#11-build-progress). |
+| BUILD-04 | Implement artifact creation and validation — C3, C9; §2.3 | Workbook creation, LibreOffice recalculation, saved formula caches, preview generation and required-artifact/check gates integrated. Independent graders are BUILD-09. | Meets completion criterion | [recalculate.py](../skills/file-delivery-validation/recalculate.py), [spreadsheets.py](../src/accounting_finance_agent/spreadsheets.py) and runner gates provide final XLSX conversion/caches, PDF/PNG evidence and required-output checks. Live conversion returned cached value 5 for =2+3. Financial/visual benchmark evaluation remains TEST-02. |
+| BUILD-05 | Implement persistence and transfer — C4, C7; §4.2 | Thread state/files, intermediate exports, loss/conflict reporting, transfer caps, backup/retention and owner deletion procedures implemented. | Meets completion criterion | [workspace.py](../src/accounting_finance_agent/workspace.py), [lifecycle.py](../src/accounting_finance_agent/lifecycle.py), sandbox/tool hooks and [retention command](../scripts/manage_retention.py) implement checkpoints, caps, consistent backup, closure/retention/deletion and explicit loss/failure reporting. Backup/retention engineering checks pass; no real retention deletion was executed. |
+| BUILD-06 | Implement permissions and budgets — C5; §§2.2, 2.7 | Versioned rate card, conservative dollar reservations, complete API-attempt accounting, remaining-time enforcement and access/budget stop paths connected. Include retries and compaction. | Meets completion criterion | [budget.py](../src/accounting_finance_agent/budget.py), [rate card](../config/model-pricing.json), hard phase deadlines and namespace execution connect cost/time/access enforcement. Every synchronous HTTP attempt, including compaction, is metered; unknown usage retains reservations. Unpriced/binary/hidden-history/async requests fail closed. Pricing was checked against provider documentation; actual billing reconciliation remains Test/Release work. |
+| BUILD-07 | Implement outcomes and recovery — C2, C4–C5; §2.2 | Unified five-retry ceiling, eligible-error handling, visible backoff, shared deadlines/budgets, accurate partial/failure outcomes and bounded preservation/cleanup. | Meets completion criterion | HTTP and safe-read retry controllers, SDK retry disabling, outcome checks and shared work/cleanup deadlines are connected in [budget.py](../src/accounting_finance_agent/budget.py), [file_metadata.py](../src/accounting_finance_agent/file_metadata.py), [runner](../src/accounting_finance_agent/__main__.py) and sandbox lifecycle. Unsafe/uncertain writes are not replayed. Targeted retry/deadline tests pass. |
+| BUILD-08 | Implement evidence and review — C3, C6; §§2.4, 2.7 | Persist source/output/configuration identities, prompt/middleware/dependency versions, provider usage/pricing, sandbox package identity, actual-check records and version-specific approvals. | Meets completion criterion | [provenance.py](../src/accounting_finance_agent/provenance.py), HTTP usage/rate/provider records, sandbox inventory events, existing hashes/check logs and approvals implement the evidence chain. Manifests include pricing/image-release identities. Full benchmark walkthrough remains TEST-05. |
+| BUILD-09 | Create cases and graders — §§3.2–3.3 | Separate agent inputs and evaluator answers; executable independent graders, human rubrics, requirement/case links, reset/repetition controls and seeded-defect fixtures. | Meets completion criterion | [versioned inputs/oracle/rubric](../evaluations/excel-v1/), [preparer](../scripts/prepare_excel_benchmark.py), [grader](../scripts/grade_excel_benchmark.py), [defect seeder](../scripts/seed_excel_defects.py) and [series runner](../scripts/run_excel_series.py) are implemented. Four seeded defect paths are detected. Series records fixture/configuration hashes and every outcome; three paid trials remain TEST-02. |
+| BUILD-10 | Configure monitoring — §§4–5 | Signal collection, owner review/response procedures, access/retention and stop/recovery controls connected; alerts only if selected. | Meets completion criterion | [monitor_runs.py](../scripts/monitor_runs.py), [retention workflow](../scripts/manage_retention.py), API/transfer/check signals and [owner operating procedures](operating-guide.md#versioned-excel-trial-profile) connect monitoring, review, stop/recovery and retention. Hosted deletion is queued by exact root IDs and verified later; no deletion was performed. Operating cadence remains MON-01–03. |
 
 ### Verification and evaluation follow-up
 
@@ -71,7 +71,7 @@ These checks remain required even when the corresponding Build row is complete. 
 | BUILD-09 | Graders detect seeded defects; independent expected answers and three-run results are recorded. | TEST-02, plus applicable TEST-01/03–06 |
 | BUILD-10 | Signals and review/response procedures operate as intended; continuing review and retention are performed. | TEST-05/06, REL-01, MON-01–03 |
 
-**Configure gate — not met for the new benchmark:** BUILD-03–10 still have implementation gaps. The configured components, evaluation assets and operating procedures must be present and connected before this gate is met. The representative benchmark runs and success-criterion results belong to the foundation evaluation gate. The runner's temporary benchmark execution block remains in place.
+**Configure gate — met for the selected implementation scope:** BUILD-01–10 have their configured components, evaluation assets and operating procedures present and connected. Evidence includes source review, 78 offline checks, compiled tool inspection and a live frozen-image/network/recalculation probe. This is readiness to evaluate the controlled synthetic trial, not a benchmark pass or business-use release. The strict benchmark runner requires a POSIX host and the namespace-capable image.
 
 ## 3. Evaluate the foundation
 
@@ -82,9 +82,9 @@ Cover shared behavior and operating requirements alongside reusable file work, f
 | TEST-01 | E-PLAT-1 — C1–C3, C8 / SC-1 | Profile/override and context/skill/todo wiring checks; representative CSV, missing/conflicting-input, repeated compaction, revision-reference and selected delegation cases; compare configuration candidates with independent outputs/rubric and total usage/latency. | Partial | Historical CSV smoke and fake-model context/skill checks exist; no current-profile long-context/correction/three-run evidence. [§10.9](#109-cases-and-evaluation-evidence). |
 | TEST-02 | E-ART-1 — C3, C9–C11 / SC-1 | Check the graders against seeded defects, then three clean fresh-thread runs of the §3.2 Excel benchmark: fixed inputs/configuration, independent numbers, detailed grounded analysis, saved recalculated values, visual review and preservation. Each passes; later C10–C11/package checks when selected. | Missing | No completed three-run series for the agreed Excel fixture/profile found. Earlier workbook demonstrations do not meet this criterion. [§10.9](#109-cases-and-evaluation-evidence). |
 | TEST-03 | E-FILE-1 — C4, C7 / SC-2 | Task isolation/file lookup, source preservation, restart/abrupt-loss recovery under the declared policy, overlap rejection (or coordination if enabled), exclusions, conflicts and transfer failure. | Partial | Historical transfer, locks, checkpoint and conflict tests in [engineering results](engineering-checks.md); new export/retention/limits and abrupt-loss contract remain unevaluated. |
-| TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, reference-route isolation, absence of delegation when disabled, provider access, actual filesystem/network/identity checks and enforced shared budgets. | Partial | Historical reference-denial and shared-budget checks in [engineering results](engineering-checks.md); live sandbox boundaries, $1 cap and current-profile enforcement are not established. |
+| TEST-04 | E-CTRL-1 — C5 / SC-3 | Allowed/denied/adversarial cases, reference-route isolation, absence of delegation when disabled, provider access, actual filesystem/network/identity checks and enforced shared budgets. | Partial | Reference-denial, HTTP reservation/retry and namespace checks now pass; live sandbox DNS/direct-IP/re-entry probes also pass. Complete adversarial/current-profile evaluation remains. [Build evidence](build-evidence.json). |
 | TEST-05 | E-PROV-1 — C6 / SC-3, SC-4 | Input-to-output evidence walkthrough, saved effective settings/provider/sandbox identities and usage records, stale-approval cases, separate approval scopes and complete configuration references. | Partial | Historical approval/hash and persistence checks in [engineering results](engineering-checks.md); full effective-profile/input-to-output walkthrough for the benchmark remains. |
-| TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup or summarizer failure and safe resume/retry. | Partial | Historical lifecycle/runner failure checks and [manual recovery utility](../scripts/recover_sandbox.py) exist; five-retry, spend, hard-deadline and lost-provider scenarios remain. |
+| TEST-06 | E-REC-1 — C2, C4, C5 / SC-7 | Startup failure, timeout after possible effect, incomplete response, budget exhaustion, transfer/cleanup or summarizer failure and safe resume/retry. | Partial | Lifecycle/runner, five-retry, spend-reservation and hard-deadline checks pass offline; full task-level timeout/uncertain-write/lost-provider recovery scenarios remain. |
 
 **Foundation gate — not met:** required current-profile evidence is incomplete. Mandatory criteria pass for the defined cases and repetitions, with case/grader/configuration versions, limitations, and a recorded decision. Preserve passing capability cases as regressions.
 
@@ -160,7 +160,7 @@ This is the initial source-review snapshot. See [§11](#11-build-progress) for l
 
 **Existing evidence:** the saved, ignored `.state/engineering-checks-latest.txt` is dated October 22, 2026 and records 58 passing tests with zero network attempts. The tracked [engineering report](engineering-checks.md) describes coverage and one earlier CSV/JSON smoke run. These are historical plumbing/limited task evidence, not a current Excel benchmark pass. No reports were found in `.state/evaluations/` during this review.
 
-**How to interpret this review:** all six planning items meet their documentary criteria for the selected trial. The earlier v0.20 assessment incorrectly held PLAN-02/03/05 open for downstream implementation/verification; those gaps remain assigned to Build/Test/Release tasks. At that initial snapshot all ten composite Build items were Partial. The current source review marks BUILD-01/02 complete within their implementation scope; BUILD-03–10 retain concrete build gaps. Deferred features are not marked missing merely because they are out of scope. A checked component below means source presence, not evaluated reliability.
+**How to interpret this review:** all six planning items meet their documentary criteria for the selected trial. The earlier v0.20 assessment incorrectly held PLAN-02/03/05 open for downstream implementation/verification; those gaps remain assigned to Build/Test/Release tasks. At that initial snapshot all ten composite Build items were Partial. The later increments complete BUILD-01–10; current evidence is recorded in §11. Deferred features are not marked missing merely because they are out of scope. A checked component below means source presence, not evaluated reliability.
 
 ### 10.1 Runtime and model
 
@@ -254,20 +254,50 @@ Implemented in source on October 25, 2026; **not executed or tested**.
 | BUILD-08: configuration evidence | [provenance.py](../src/accounting_finance_agent/provenance.py) records settings, source/reference hashes and dependency versions; [runner](../src/accounting_finance_agent/__main__.py) stores the manifest and offers `--show-config`. | Build: implement usage/rate and sandbox package records. Test: verify saved manifests and identities under TEST-05. |
 | BUILD-02: owner reference maintenance | [Operating guide](operating-guide.md#versioned-excel-trial-profile) documents correction/removal and fresh-thread handling. | Stale-context evaluation: TEST-01/03. Thread/trace/archive deletion implementation: BUILD-05. |
 
-The named benchmark profile is staged. The CLI and `run_prompt` reject execution
+**Historical state after increment 1:** the benchmark profile was staged. The CLI and `run_prompt` rejected execution
 before remote work while cost/retry/deadline enforcement, sandbox network/image
 setup, required artifact checks and preservation safeguards are unfinished. This
 is a temporary implementation gate, not evidence that those safeguards exist.
 The existing local profile remains available with its documented limitations.
 
-**Current assessment:** BUILD-01 and BUILD-02 meet their source implementation criteria. BUILD-03–10 remain Partial for named implementation gaps. No Test or Release item is checked off; no new execution checks have run.
+**Assessment after increment 1:** BUILD-01/02 were source-complete; BUILD-03–10 still had implementation gaps. The increment below supersedes that status.
 The historical 58-check report does not cover this increment. Next: BUILD-06/07
 shared API-attempt accounting, dollar reservation, retry controller and deadlines.
+
+### Increment 2 — remaining build components and execution checks
+
+All ten Build tasks now meet their scoped implementation criteria. No Test or
+Release task is newly completed. The original 58 checks were rerun; the expanded
+suite passes **78 tests with zero network attempts**.
+
+| Evidence | Result |
+|---|---|
+| Frozen sandbox | `3dce6ed0-f050-432a-bc9a-79a7b960972f`; LibreOffice 26.2.6.3, Poppler/fonts and captured Python inventory. Builder deletion confirmed. |
+| Provider egress probe | Requested proxy deny-all still allowed PyPI because organization policy replaces caller controls. This mechanism was insufficient. |
+| Effective execution boundary | Every benchmark execution is wrapped in a user/network namespace. Live DNS/direct-IP connections failed; re-entry to the original network namespace was denied. |
+| Recalculation/rendering | The frozen image converted/rendered inside the namespace; =2+3 retained cached value 5 and one rendered page. Human visual review remains pending. Probe sandbox deletion was requested. |
+| Budget/retry checks | Conservative reservation/refund, unknown usage, six-attempt ceiling, invalid-request handling, remaining-budget output reduction and Retry-After/deadline stopping pass offline. |
+| State/evaluation checks | Reference isolation, consistent SQLite/file backup, closed-thread retention selection, namespace wrapper and four seeded grader defects pass offline. |
+| Compiled graph | Model/reasoning/tier/client settings compile; filesystem/todo tools are exposed and `task` is absent. No model request was made during inspection. |
+| Retention | Plan command runs; no eligible closed threads and no destructive deletion executed. Hosted delete requests are asynchronous and must be rechecked. |
+
+**Operating limits:** the selected runner is synchronous and requires a POSIX
+host. It rejects binary provider attachments and hidden server-side history; use
+sandbox libraries to inspect files. Reservation prices deliberately exceed the
+published Standard cache/long-context/regional rates, so logged estimates can be
+higher than invoiced cost. Unknown usage stays reserved. The frozen image and
+reference/prompt/configuration hashes must remain fixed during a three-run series.
+
+The build does not establish reliability for every file format. The exact
+numerical/label contract is in the agent-only task input. Human evaluation still
+checks grounded explanations, formula meaning and rendered presentation. The
+three fresh-thread model runs and release decisions remain outstanding.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
+| v0.24 | 2026-10-25 | Completed BUILD-03–10 implementation, captured and probed a frozen image, recorded 78 passing offline checks and compiled tool inspection; kept benchmark/release evidence separate. |
 | v0.23 | 2026-10-25 | Separated implementation from verification/evaluation; marked BUILD-01/02 source-complete, assigned image/pricing to their owning Build tasks, and retained all checks under linked Test/Monitor tasks. |
 | v0.22 | 2026-10-25 | Recorded the first source build increment: staged benchmark profile, scoped guidance and configuration provenance; retained Partial statuses and explicit verification gaps. |
 | v0.21 | 2026-10-25 | Corrected stage boundaries: planning judges decisions/design; all six selected-trial planning items meet that criterion. Preserved build, evaluation and release gaps and assigned memory procedures explicitly. |

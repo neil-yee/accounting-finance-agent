@@ -133,6 +133,7 @@ def upload_workspace(sandbox: Sandbox) -> dict[str, str]:
     """Upload working copies and record the bytes present at the start of a run."""
     prepare_workspace()
     baseline = {}
+    total_bytes = 0
     for source in sorted(workspace_root().rglob("*")):
         relative = source.relative_to(workspace_root()).as_posix()
         if not _included(PurePosixPath(relative)):
@@ -140,6 +141,10 @@ def upload_workspace(sandbox: Sandbox) -> dict[str, str]:
         source = _local_path(relative)
         if not source.is_file():
             continue
+        size = source.stat().st_size
+        total_bytes += size
+        if size > 10 * 1024**2 or total_bytes > 50 * 1024**2:
+            raise ValueError(f"Upload exceeds the 10 MiB/file or 50 MiB/run transfer limit: {relative}")
         remote = f"{REMOTE_WORKSPACE}/{relative}"
         parent = str(PurePosixPath(remote).parent)
         result = sandbox.run(f"mkdir -p -- {shlex.quote(parent)}", timeout=30)
@@ -152,7 +157,7 @@ def upload_workspace(sandbox: Sandbox) -> dict[str, str]:
     return baseline
 
 
-def download_workspace(sandbox: Sandbox, run_name: str, baseline: dict[str, str]) -> dict:
+def download_workspace(sandbox: Sandbox, run_name: str, baseline: dict[str, str], *, protected=()) -> dict:
     """Merge remote changes back, saving previous versions and local conflicts."""
     script = """
 from hashlib import sha256
@@ -171,6 +176,8 @@ for directory, dirs, names in os.walk(root, followlinks=False):
         path = Path(directory) / name
         if name.startswith('.') or path.is_symlink() or not path.is_file():
             continue
+        if path.stat().st_size > 10 * 1024**2:
+            raise RuntimeError('Remote file exceeds 10 MiB: ' + str(path))
         digest = sha256()
         with path.open('rb') as stream:
             for chunk in iter(lambda: stream.read(1024 * 1024), b''):
@@ -191,6 +198,8 @@ print(json.dumps(files))
     changed = conflicts = 0
     changed_files, conflict_files = {}, {}
     targets = set()
+    total_bytes = 0
+    source_errors = [name for name in protected if files.get(name) != baseline.get(name)]
     for relative, digest in files.items():
         target = _local_path(relative)
         if not _included(PurePosixPath(relative)):
@@ -202,11 +211,16 @@ print(json.dumps(files))
         targets.add(key)
         if digest == baseline.get(relative):
             continue  # Remote file unchanged: also leave any local edit intact.
+        if relative in protected:
+            continue
         original = target.read_bytes() if target.is_file() else None
         local_digest = sha256(original).hexdigest() if original is not None else None
         if local_digest == digest:
             continue
         content = sandbox.read(f"{REMOTE_WORKSPACE}/{relative}")
+        total_bytes += len(content)
+        if len(content) > 10 * 1024**2 or total_bytes > 50 * 1024**2:
+            raise ValueError(f"Download transfer limit exceeded: {relative}")
         if sha256(content).hexdigest() != digest:
             raise RuntimeError(f"Sandbox file changed during download: {relative}")
         if local_digest != baseline.get(relative):
@@ -225,4 +239,6 @@ print(json.dumps(files))
         f"Workspace downloaded: {changed} new/changed files, {conflicts} conflicts "
         f"saved for review in {workspace_root()}"
     )
+    if source_errors:
+        raise RuntimeError("Protected source files changed or disappeared: " + ", ".join(source_errors))
     return {"remote_files": files, "changed_files": changed_files, "conflict_files": conflict_files}

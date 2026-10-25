@@ -37,3 +37,12 @@ description: Create or revise Excel, Word, PowerPoint, CSV, or JSON deliverables
 
 The host also performs limited structural checks on changed output files. Those
 checks do not verify numerical correctness, formula recalculation, or visual layout.
+
+## Selected Excel benchmark
+
+For the two-month benchmark, read `/skills/file-delivery-validation/recalculate.py`
+through the file tool and copy it into the sandbox. Build the XLSX in a staging
+folder, then run this helper with a separate final directory. Deliver the final
+`working-paper.xlsx`, recalculation.json and rendered pages together. Do not save
+that final XLSX through openpyxl afterward. Missing recalculation/rendering is a
+blocked deliverable; human review of the pages and analysis is still required.

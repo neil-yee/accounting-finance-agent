@@ -43,6 +43,7 @@ class Settings:
 # distinguish these requested values from actual enforcement/provider behavior.
 EXCEL_PROFILE = "excel-benchmark-v1"
 EXCEL_SETTINGS = {
+    "sandbox_snapshot_id": "3dce6ed0-f050-432a-bc9a-79a7b960972f",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "tracing_enabled": True,
@@ -70,15 +71,16 @@ PROFILE_ENVIRONMENT_FIELDS = {
 
 # This is an implementation gate, not an operator waiver. Remove entries only
 # when the linked build requirements are implemented and assessed.
-EXCEL_RUN_BLOCKERS = (
-    "BUILD-06/07: shared API cost reservation, attempt accounting, five-retry policy and hard deadlines",
-    "BUILD-03/04: frozen recalculation image and enforced sandbox network isolation",
-    "BUILD-05/08: milestone preservation, transfer limits and complete usage/configuration evidence",
-    "BUILD-04/09: independent Excel grader and required-output/recalculation gates",
-)
+EXCEL_RUN_BLOCKERS: tuple[str, ...] = ()
 
 
 def require_runnable_profile(settings: Settings) -> None:
+    if settings.profile == EXCEL_PROFILE:
+        import signal
+        if not hasattr(signal, "setitimer"):
+            raise ConfigurationError("The strict benchmark runner requires a POSIX host (Linux/macOS).")
+        if not (PROJECT_ROOT / "config/model-pricing.json").is_file():
+            raise ConfigurationError("Benchmark rate card missing.")
     if settings.profile == EXCEL_PROFILE and EXCEL_RUN_BLOCKERS:
         raise ConfigurationError(
             "The Excel benchmark profile is staged, not runnable yet. "
