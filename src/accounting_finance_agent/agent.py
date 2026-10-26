@@ -6,6 +6,7 @@ from threading import RLock
 from deepagents import create_deep_agent
 from deepagents.middleware.summarization import (
     DEEPAGENTS_DEFAULT_SUMMARY_PROMPT, compute_summarization_defaults,
+    create_summarization_middleware,
 )
 from deepagents.profiles import (
     GeneralPurposeSubagentProfile, HarnessProfile, register_harness_profile,
@@ -104,6 +105,15 @@ def _build_agent(
             add_cache_control=True,
         ),
     ]
+    if settings.profile == EXCEL_PROFILE:
+        # Pinned adapter: BudgetClient owns retries, including summarization.
+        # Avoid six transport attempts multiplied by three framework attempts.
+        summarization = create_summarization_middleware(model, routed_backend)
+        helper = getattr(summarization, "_lc_helper", None)
+        if helper is None or not hasattr(helper, "_summary_model"):
+            raise RuntimeError("Pinned summarization retry adapter needs review.")
+        helper._summary_model = model
+        middleware.append(summarization)
     graph = create_deep_agent(
         model=model,
         middleware=middleware,
@@ -131,6 +141,7 @@ def _build_agent(
                 "model_max_input_tokens": (model.profile or {}).get("max_input_tokens"),
                 "trim_tokens_to_summarize": None,
                 "custom_summary_prompt": False,
+                "retry_owner": "BudgetClient; no framework summary retries" if settings.profile == EXCEL_PROFILE else "framework defaults",
                 "usage_accounting": "HTTP attempt ledger" if settings.profile == EXCEL_PROFILE else "logical calls only",
             },
         )

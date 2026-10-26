@@ -1,6 +1,6 @@
 # Finance & Accounting Agent — Specification and Design
 
-**Version:** v0.28 design draft · October 25, 2026 · **Owner:** Neil Yee
+**Version:** v0.30 design and evidence follow-up · October 26, 2026 · **Owner:** Neil Yee
 
 This document defines the intended agent, its proposed design, and the evidence needed to use it. It does **not** assert that the repository meets these requirements. Record implementation status, paths, gaps and results in the [task list](task-list.md).
 
@@ -30,7 +30,7 @@ The shared foundation should support new tasks through skills, tools or connecto
 - Three fresh-thread runs under the same configuration. Each run has a 30-minute work budget and a US$1 model API budget; model and retry choices are in §2.7.
 - Keep history/files within their thread. New threads can use approved shared skills/references, but do not automatically inherit unrelated task facts or modify shared guidance. Reusable guidance remains owner-maintained; automatic learning is deferred.
 
-These are agreed design decisions, not claims that configuration, budget enforcement or evaluation is implemented. Word/PDF, balance sheet, cash flow and bank reconciliation remain later scope. Review each deliverable before business use.
+These are agreed design decisions; current implementation and evidence are recorded in the [task list](task-list.md). The selected Excel fixture passes three fresh technical trials, and the owner approved all three exact outputs. Word/PDF business deliverables, balance sheet, cash flow and bank reconciliation remain later scope.
 
 ### Extensions, selected when needed
 
@@ -265,13 +265,13 @@ Follow the work links to record paths, scope, status, gaps and evidence in the t
 
 ### 2.7 Runtime configuration and customization
 
-Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The agreed trial values below are target settings, not observations of the current runtime. Defaults selected by the assistant under the owner’s authorization are labeled **Assumed baseline**. They are design choices to verify, not implemented capabilities.
+Settings influence quality, cost, latency and reliability. Record a versioned baseline before comparing results. The values below are the selected strict v3 configuration; verify and save effective settings on each run. Defaults selected by the assistant under the owner’s authorization are labeled **Assumed baseline**. They remain choices to validate, not claims of general reliability.
 
 | Configuration / requirements | Decisions to record | Starting approach |
 |---|---|---|
-| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Selected: **`gpt-6-luna`, high reasoning**, Responses API, Standard processing, fixed for the three-run series. Model documentation confirms high reasoning; account access and effective settings still need runtime verification. No silent substitution. |
+| **CFG-1: model** · C2, C5 | Provider/model/version, reasoning level, output limit, supported sampling settings. | Selected: **`gpt-6-luna`, high reasoning**, Responses API, Standard processing, fixed for the three-run series. The frozen v3 series exercised account access and recorded effective settings; later runs record the actual model/tier rather than assuming future availability. No silent substitution. |
 | **CFG-2: context** · C1, C2 | Instructions, history/reference/skill loading, retrieval limits and large-result handling. | Framework context/skill loading and large-result handling, with versioned defaults and approved procedural sources. Owner-approved image input supports rendered page inspection; embedded images use provider token-count preflight and the shared budgets. |
-| **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Assumed baseline: pinned framework compaction; no custom summary prompt for this benchmark. Record effective trigger, summarizer and retained-history settings; evaluate before changing them. |
+| **CFG-3: compaction** · C1, C4 | Trigger, retained messages, summarizer model/budget, summary instructions, access to original history and failure behavior. | Selected profile uses pinned framework compaction with no custom prompt. For v3, `BudgetClient` is the sole HTTP-attempt/retry controller for ordinary and summarizer calls; framework-level summarizer retries are disabled. Record effective trigger and retention settings; evaluate before changing them. |
 | **CFG-4: execution** · C2, C5 | Call/token/time budgets, timeouts, retry attempts/delays, concurrency and delegated limits. | Agreed: **30 minutes**, **US$1 model API**, **up to five retries**. Selected request ceiling: 40 provider requests including summarization/retries/image-token preflights. Other secondary ceilings: 40 tool attempts, 32,000 output tokens per model request (reduced to fit remaining spend). |
 | **CFG-5: tools and storage** · C4, C7–C11 | Sandbox image/packages, enabled tools, permissions, checkpoint/file backend and transfer rules. | Local terminal/host and remote sandbox. Assumed tooling: openpyxl + LibreOffice Calc for recalculation/PDF rendering; SQLite checkpoints and durable task folders. See §4.2 for storage/recovery defaults. |
 | **CFG-6: memory and observation** · C4, C6 | Memory sources/write policy; trace fields, access, sampling and retention. | Thread-local history/files; approved shared references maintained by the owner. No automatic cross-task learning or shared writes. Tracing on; retention/access defaults are in §4.2. |
@@ -284,12 +284,13 @@ For each selected choice, record **value or asset/module reference → rationale
 - **Cost:** US$1 in model API usage per run, including retries, summarization and enabled subagents. Sandbox and tracing/service charges are outside this cap. Record input/output tokens, cached-token usage where available, reasoning-token billing semantics and estimated API cost.
 - **Preflight:** use verified pricing and bounded outputs; reserve a conservative maximum cost before each call, including concurrent/automatic calls. Account for outstanding requests and unknown usage conservatively. If the next call cannot fit, stop rather than overspend. Confirm effective API accounting/enforcement before claiming this cap is guaranteed.
 - **Retries:** automatic, at most five retries after an initial failed attempt (six total attempts), for each eligible operation. SDK and application retries share this limit. Assumed retry delays: 1, 2, 4, 8 and 16 seconds plus up to one second of jitter. Honor server-requested delays; if a delay cannot fit the remaining budget, stop. Waiting counts against run time.
+- **v3 HTTP-attempt owner:** `BudgetClient` alone owns the six-attempt ceiling for ordinary and summarizer HTTP requests. Framework-level summarizer retries are disabled; compaction attempts still consume the same 40-request, time and dollar budgets.
 - **Eligibility:** temporary connection failures, rate limits and eligible transient service errors. Invalid requests, denied permissions and incorrect calculations are not automatic transport retries. Before repeating writes, establish whether they completed or rely on a verified idempotency guarantee (§2.2).
 - **Visibility:** report progress such as “Retry 2 of 5.” Stop when either budget is exhausted; preserve available work and report an incomplete result. Five retries are a ceiling, not an obligation to continue after a non-recoverable failure.
 
-**Model verification and price baseline:** [OpenAI’s model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna) lists `gpt-6-luna`, high reasoning and Responses API support. [Published pricing](https://developers.openai.com/api/docs/pricing), checked October 25, 2026, lists Standard short-context rates per million tokens of $0.10 input, $0.50 output and $0.01 cached input, with separate cache-write charges. Use a versioned rate card covering cache writes, context-length multipliers and endpoint/tier premiums; refresh before the series. No paid model request was made to verify account access.
+**Model verification and price baseline:** [OpenAI’s model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna) lists `gpt-6-luna`, high reasoning and Responses API support. [Published pricing](https://developers.openai.com/api/docs/pricing), checked October 25, 2026, lists Standard short-context rates per million tokens of $0.10 input, $0.50 output and $0.01 cached input, with separate cache-write charges. The frozen v3 series confirms access for those recorded runs, not future availability. Use a versioned rate card covering cache writes, context-length multipliers and endpoint/tier premiums; refresh before another series.
 
-**Assumed budget implementation:** reserve output capacity and conservatively priced input before each API attempt, including failed/timed-out attempts until usage is reconciled. Use provider usage for final accounting without counting cached/reasoning tokens twice. The published rates make the $1 target plausible, but enforcement remains an implementation requirement, not a billing guarantee established by this document.
+**Selected implementation:** the strict v3 profile reserves output capacity and conservatively priced input before each API attempt, including failed/timed-out attempts until usage is reconciled. `BudgetClient` is shared by ordinary and summarizer model calls; framework summarizer retries do not add another attempt layer. Provider usage supports final accounting. This is application enforcement, not a provider billing guarantee.
 
 #### Compaction customization
 
@@ -351,7 +352,7 @@ Evaluate both the shared foundation and its supported work. One case may provide
 | Reusable work | Can it correctly perform the selected CSV/Excel/Word/PDF operations? | E-PLAT-1 for tabular work; E-ART-1 for office files. |
 | Task-specific work | Does the selected workflow achieve its business outcome? | E-FIN-1; E-ASANA-1 when task integration is selected. |
 
-E-REL-1 assesses release readiness. Test the conditions that normal tasks do not exercise: a correct workbook does not prove blocked access or recovery after interruption. All results remain unassessed.
+E-REL-1 assesses release readiness. Test the conditions that normal tasks do not exercise: a correct workbook does not prove blocked access or recovery after interruption. Current selected-scope status is summarized in §3.1; detailed results are linked there.
 
 ### 3.1 Success criteria
 
@@ -370,6 +371,8 @@ Each criterion defines how to judge the capabilities and assignment behavior abo
 | SC-7 | C2, C4, C5, C7 | Interrupted or incomplete runs report accurate outcomes, preserve recoverable work, and retry without repeating completed external effects. | E-REC-1 |
 
 **Example:** C4 requires durable work → SC-2 defines successful preservation → an E-FILE-1 case checks files after cleanup/restart → SC-2 monitoring detects missing files → a finding triggers recovery and an updated regression case.
+
+**Current selected-scope evidence — October 26, 2026:** fixture v4 series `df3feccd-26d4-44e0-8c7c-5ae0adfd1edb` passes numerical, grounded-analysis and assistant visual checks 3/3 under runtime profile `excel-benchmark-v3`. TEST-01/03/04/05/06 meet their selected scope; TEST-02 also meets its criterion after owner approval of all three exact output manifests. The offline suite passes 142 tests, live context cases 7/7 and integrated offline recovery cases 3/3. Owner approval completes the selected Test gate; Release promotion is separate. The [follow-up report](evaluations/test-gate-followup-2026-10-25.md) preserves earlier failures and all scope limits.
 
 ### 3.2 Starter evaluation tasks
 
@@ -599,6 +602,8 @@ Owner: Neil Yee, with specialist review where needed. Owner decisions and assist
 
 | Version | Date | Change |
 |---|---|---|
+| v0.30 | 2026-10-26 | Recorded helper/retry/status hardening, final fixture v4 technical results and context/recovery evidence; recorded owner approval of the exact trial outputs; kept release separate. |
+| v0.29 | 2026-10-25 | Recorded prior v3 numerical/grounding evidence and selected-scope Test status; documented the runner status-handling correction required before the next formal series. |
 | v0.28 | 2026-10-25 | Raised the owner-requested work deadline to 30 minutes in profile v3; retained request, tool and API budget limits. |
 | v0.27 | 2026-10-25 | Raised the owner-requested provider-request ceiling to 40 in profile v2; retained tool, dollar and time limits. |
 | v0.26 | 2026-10-25 | Enabled owner-requested image input for rendered-page inspection, with provider token preflight and shared budgets; kept model inspection separate from owner approval. |

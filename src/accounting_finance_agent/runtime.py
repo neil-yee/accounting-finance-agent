@@ -63,6 +63,17 @@ class RunControls:
             f" Sandbox network destinations configured by the owner: {', '.join(self.settings.sandbox_allowed_hosts)}. "
             "If a required source is blocked, explain which host needs owner configuration; do not bypass restrictions."
         )
+        if self.settings.profile == EXCEL_PROFILE:
+            with self.lock:
+                spent = str(getattr(getattr(self, 'api_client', None), 'spent', '0'))
+                text += (
+                    f" Remaining allowance: {self.settings.max_model_calls-self.counts['model']} OpenAI requests, "
+                    f"{self.settings.max_tool_calls-self.counts['tool']} tool attempts, {int(self.remaining())} seconds. "
+                    f"Conservative API ledger ${spent} of $1; next-request reservation can stop earlier. "
+                    "Use staged approved-tools helpers instead of rewriting their implementation. "
+                    "Validate once, inspect at most two representative previews, then return the result. "
+                    "Only rebuild to correct a failed check; avoid optional styling cycles."
+                )
         original = request.system_message
         content = original.content if original else []
         blocks = list(content) if isinstance(content, list) else [{"type": "text", "text": content}]

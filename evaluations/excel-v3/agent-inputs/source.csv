@@ -1,0 +1,14 @@
+Classification,Category,January,February,Note ID
+Revenue,Product sales,50000,60000,N1
+Revenue,Service revenue,10000,12000,N2
+Cost of sales,Product costs,30000,33000,—
+Cost of sales,Service delivery costs,4000,4800,—
+Operating expense,Payroll,10000,10500,N3
+Operating expense,Rent,3000,3000,—
+Operating expense,Utilities,600,750,—
+Operating expense,Marketing,2000,2600,—
+Operating expense,Software,400,400,—
+Operating expense,Consulting,0,1200,N4
+Operating expense,Other operating expense,0,0,—
+Finance expense,Interest,200,180,N5
+Tax expense,Income tax,1500,2300,N6

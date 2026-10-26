@@ -42,6 +42,9 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
         raise ConfigurationError("The Excel benchmark profile requires sandbox mode.")
     run_id = str(uuid4())
     path = thread_workspace(thread_id) if sandbox else None
+    if path is not None:
+        from accounting_finance_agent.staging import stage_approved_helpers
+        stage_approved_helpers(settings, path)
     context = RunContext(run_id, thread_id, settings.timezone, str(path) if path else "virtual thread files")
     controls = RunControls(settings, context, log)
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 300,
@@ -82,6 +85,16 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 final = latest["messages"][-1]
                 if final.type != "ai" or getattr(final, "tool_calls", None):
                     raise RuntimeError("Run has unfinished tool work; inspect :state before continuing.")
+                response_metadata = getattr(final, "response_metadata", {}) or {}
+                response_status = response_metadata.get("status")
+                if response_status and response_status != "completed":
+                    details = response_metadata.get("incomplete_details") or {}
+                    reason = details.get("reason") if isinstance(details, dict) else None
+                    log.event(run_id, "incomplete_model_response", status=response_status, reason=reason)
+                    suffix = f" ({reason})" if reason else ""
+                    raise RuntimeError(
+                        f"Model response status was {response_status}{suffix}; assignment is incomplete."
+                    )
                 answer = final.text
                 if not answer.strip():
                     raise RuntimeError("Model returned no visible answer; assignment is incomplete.")

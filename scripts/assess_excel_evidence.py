@@ -72,8 +72,11 @@ def assess(path):
                 'backups': [e['path'] for e in events if e['kind'] == 'backup_saved'],
                 'sandbox_deletion_requested': any(e['kind'] == 'sandbox_deletion_requested' for e in events),
                 'trace': trace_result,
+                'actual_review_status': log.review_status(run['id'], current),
                 'actual_reviews': log.conn.execute('SELECT COUNT(*) FROM reviews WHERE run_id=?', (run['id'],)).fetchone()[0],
             })
+    if len(result['trials']) == 3 and all(t.get('actual_review_status') == 'approved' for t in result['trials']):
+        result['owner_review'] = 'approved'
     return result
 
 

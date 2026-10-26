@@ -6,8 +6,8 @@ from grade_excel_benchmark import grade
 from seed_excel_defects import seed
 
 
-def check(source, destination):
-    control = grade(source)
+def check(source, destination, assets=None):
+    control = grade(source, assets)
     if not control.get('numeric_pass'):
         raise ValueError('A numerically passing positive control is required before seeding defects.')
     seed(source, destination)
@@ -17,7 +17,7 @@ def check(source, destination):
                 'altered-input': 'Source changed or missing: source.csv'}
     results = {}
     for name, message in expected.items():
-        result = grade(Path(destination) / name)
+        result = grade(Path(destination) / name, assets)
         results[name] = {'rejected': not result.get('numeric_pass', False),
                          'intended_failure_detected': any(message in e for e in result['errors']),
                          'errors': result['errors']}
@@ -28,4 +28,5 @@ def check(source, destination):
 
 if __name__ == '__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=Path);p.add_argument('destination',type=Path);p.add_argument('--output',type=Path,required=True)
-    a=p.parse_args();report=check(a.source,a.destination);a.output.write_text(json.dumps(report,indent=2));print(a.output);raise SystemExit(0 if report['pass'] else 1)
+    p.add_argument('--assets',type=Path)
+    a=p.parse_args();report=check(a.source,a.destination,a.assets);a.output.write_text(json.dumps(report,indent=2));print(a.output);raise SystemExit(0 if report['pass'] else 1)

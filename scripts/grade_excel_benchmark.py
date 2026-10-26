@@ -35,6 +35,8 @@ def grade(folder, assets=None):
     if not report.get('workbook'):
         return report
     oracle=json.loads((assets/'evaluator/oracle.json').read_text())
+    contract_path=assets/'evaluator/contract.json'
+    contract=json.loads(contract_path.read_text()) if contract_path.is_file() else {}
     path=folder/report['workbook']
     wb=openpyxl.load_workbook(path,data_only=True)
     formulas=openpyxl.load_workbook(path,data_only=False)
@@ -123,7 +125,13 @@ def grade(folder, assets=None):
                 seen.add(label)
                 jan=Decimal(oracle['January'][label]);feb=Decimal(oracle['February'][label])
                 expected=[jan,feb,feb-jan,None if jan==0 else (feb-jan)/jan]
-                if 'margin' in label.lower(): expected=expected[:3]
+                if 'margin' in label.lower():
+                    expected=expected[:3]
+                    if contract.get('margin_change_unit')=='percentage_points':
+                        expected[2]*=100
+                        unit=wb['Analysis'].cell(cell.row,cell.column+4).value
+                        if str(unit).strip().lower() not in {'pp','percentage points'}:
+                            errors.append('Margin change unit missing: '+label)
                 for offset,expected_value in enumerate(expected,1):
                     value=wb['Analysis'].cell(cell.row,cell.column+offset).value
                     if expected_value is None:
@@ -142,6 +150,12 @@ def grade(folder, assets=None):
             for cell in row:
                 if cell.value == 'FAIL':
                     errors.append('Explicit FAIL cell: Checks!'+cell.coordinate)
+    if contract.get('body_font_minimum'):
+        for sheet in formulas:
+            for row in sheet:
+                for cell in row:
+                    if cell.value is not None and cell.font.sz and cell.font.sz < contract['body_font_minimum']:
+                        errors.append('Font below minimum: '+sheet.title+'!'+cell.coordinate)
     report['numeric_pass']=not errors
     report['human_review']='pending; grounding, formula dependency meaning, variance/margin presentation and rendered layout'
     wb.close();formulas.close()
@@ -150,4 +164,5 @@ def grade(folder, assets=None):
 if __name__=='__main__':
     import argparse
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('folder',type=Path)
-    a=p.parse_args();r=grade(a.folder);print(json.dumps(r,indent=2));raise SystemExit(bool(r['errors']))
+    p.add_argument('--assets',type=Path)
+    a=p.parse_args();r=grade(a.folder,a.assets);print(json.dumps(r,indent=2));raise SystemExit(bool(r['errors']))

@@ -22,7 +22,7 @@ class EvaluationLog:
         self.events.append({'kind': kind, **details})
 
 
-def recalculate(folder, destination, settings):
+def recalculate(folder, destination, settings, assets=None):
     """Keep original evidence unchanged; recalculate only the untrusted XLSX copy.
 
     No generated Python, macros, external sources or agent-supplied helper runs.
@@ -61,7 +61,7 @@ def recalculate(folder, destination, settings):
             if result.exit_code != 0:
                 raise RuntimeError('Evaluator recalculation failed.')
         from grade_excel_benchmark import grade
-        report['grader'] = grade(destination)
+        report['grader'] = grade(destination, assets) if assets is not None else grade(destination)
         report['status'] = 'complete'
         report['original_unchanged'] = sha256(source.read_bytes()).hexdigest() == report['original_workbook_sha256']
     except Exception as exc:

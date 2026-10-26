@@ -55,6 +55,7 @@ def reference_roots(settings: Settings | None = None) -> dict[str, Path]:
             "/skills/": PROJECT_ROOT / "references" / "excel-benchmark" / "skills",
             "/skills/file-delivery-validation/": SKILLS_ROOT / "file-delivery-validation",
             "/skills/csv-analysis/": SKILLS_ROOT / "csv-analysis",
+            "/skills/financial-working-paper/": SKILLS_ROOT / "financial-working-paper",
         }
     return {"/memories/": MEMORY_ROOT, SKILLS_PATH: SKILLS_ROOT}
 

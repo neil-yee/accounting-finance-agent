@@ -1,6 +1,8 @@
 # Excel benchmark — synthetic two-month working paper
 
-**Version:** 1 · October 25, 2026 · **Status:** first three-run evaluation collected; 0/3 complete passes. See the [Test results](test-phase-2026-10-25.md).
+**Version:** 4 · October 26, 2026 · **Status:** v4 technical checks pass on three fresh trials; owner visual/analysis approval recorded for all three exact outputs. See the [follow-up results](test-gate-followup-2026-10-25.md). The [first failed series](test-phase-2026-10-25.md) is retained.
+
+Business inputs and reference answers below are unchanged. Versioned [v4 task assets](../../evaluations/excel-v4/) clarify reusable helper use, percentage-point units, source grounding and accurate uncertainty statements. The rubric, all-three-pass requirement and owner review remain in force.
 
 Supports [spec §3.2](../agent-spec.md#32-starter-evaluation-tasks), C9 + C1–C7, SC-1–SC-4/SC-7 and E-ART-1 with applicable foundation checks.
 

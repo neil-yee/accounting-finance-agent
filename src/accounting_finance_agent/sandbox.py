@@ -85,7 +85,7 @@ def sandbox_backend(*, snapshot_id: str | None = None, allowed_hosts: tuple[str,
             if preparation.exit_code != 0:
                 raise RuntimeError("Could not prepare the sandbox's /workspace directory.")
             baseline = upload_workspace(sandbox)
-            protected = tuple(name for name in baseline if name in {'source.csv', 'notes.json', 'task.txt'}) if controls else ()
+            protected = tuple(name for name in baseline if name in {'source.csv', 'notes.json', 'task.txt'} or name.startswith('approved-tools/')) if controls else ()
             transferred_bytes = 0
             def preserve():
                 nonlocal baseline, transferred_bytes

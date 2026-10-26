@@ -1,0 +1,6 @@
+{
+  "runs": 3,
+  "fresh_threads": true,
+  "all_must_pass": true,
+  "human_review_required": true
+}

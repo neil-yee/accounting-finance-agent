@@ -129,6 +129,18 @@ class ExcelGraderAuditTests(unittest.TestCase):
             self.formulas["Analysis"].cell(row_number, col, formula)
             self.values["Analysis"].cell(row_number, col, self._number(value))
 
+    def test_v2_percentage_point_values_and_units_are_checked(self):
+        (self.assets / "evaluator/contract.json").write_text(json.dumps({"margin_change_unit": "percentage_points", "body_font_minimum": 10}))
+        for label in ["Gross margin", "Net margin"]:
+            row = self.analysis_row[label]
+            self.values["Analysis"].cell(row, 4).value *= 100
+            self.values["Analysis"].cell(row, 5).value = "percentage points"
+        self.assertTrue(self._grade()["numeric_pass"])
+        self.values["Analysis"].cell(self.analysis_row["Gross margin"], 5).value = "%"
+        report = self._grade()
+        self.assertFalse(report["numeric_pass"])
+        self.assertTrue(any("Margin change unit missing" in e for e in report["errors"]))
+
     def tearDown(self):
         self.temp.cleanup()
 

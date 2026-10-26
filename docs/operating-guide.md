@@ -1,10 +1,6 @@
 # Local operating defaults
 
-These foundations support a local, human-reviewed prototype. The expanded offline
-engineering suite passed 58 tests, including real graph execution with fake model
-replies. A user-run CSV/JSON smoke task also passed; finance-quality evaluation
-and broader live checks remain pending. See
-[engineering results](engineering-checks.md) for the distinction and coverage.
+These foundations support a local, human-reviewed prototype. The final three synthetic Excel trials pass numerical, grounding and assistant visual checks. All 142 offline tests pass. The owner approved all three exact output manifests; the selected Test gate is met. Release approval is separate. Earlier failures remain in the [test-gate follow-up](evaluations/test-gate-followup-2026-10-25.md).
 
 ## Versioned Excel trial profile
 
@@ -65,6 +61,24 @@ use sandbox libraries for their content, or render pages to supported images.
 Only the synchronous benchmark runner is metered. Model visual inspection must
 be distinguished from the owner's approval.
 
+### Current formal-series result and gate
+
+Fixture v4 series `df3feccd-26d4-44e0-8c7c-5ae0adfd1edb` passes numerical, independent recalculation, grounding and assistant visual checks on three fresh trials. The runtime profile remains `excel-benchmark-v3`: gpt-6-luna/high, 40 provider requests, 40 tool attempts, 30 minutes and US$1 conservative model API cap per run. The [follow-up report](evaluations/test-gate-followup-2026-10-25.md) retains earlier budget/tool stops and grounding failures.
+
+The 142-test offline suite, 7/7 live context cases and 3/3 integrated offline recovery cases pass. TEST-01/03/04/05/06 meet their selected scope. The owner approved the exact three output manifests, completing TEST-02 and the selected Test gate. Run outcomes remain `needs_review` in the execution log; separate version-specific review records show `approved`. No release is approved.
+
+In the strict Excel benchmark profile only, the `financial-working-paper` helper
+is copied under `approved-tools/`, hashed with the inputs, and checked for mutation during export. It
+contains reusable procedures and code only; it has no benchmark answers. The
+evaluator oracle remains under `evaluations/excel-v4/evaluator/`, outside agent
+inputs and staging. This integration does not change the local profile.
+
+`BudgetClient` remains the sole HTTP-attempt controller for ordinary and
+summarizer calls: at most six attempts (one initial request plus five eligible
+retries). Framework-level summarizer retries are disabled. Summary requests share
+the same 40-request, run-time and US$1 budgets; they do not receive an extra retry
+allowance.
+
 **Network and files.** Organization-level egress overrides the provider's requested
 deny rule. The benchmark therefore runs every execution command in a fresh Linux
 user/network namespace with no external interfaces. Live checks blocked DNS,
@@ -75,16 +89,16 @@ The same per-thread file scope, read-only approved routes and credential boundar
 apply throughout. Export checkpoints run after successful tool operations and at
 exit; abrupt remote loss can lose changes since the last confirmed export.
 
-**Artifacts and evaluation.** Read the approved `recalculate.py` helper through the
-file tool and copy it to the sandbox. Build in a staging directory and convert in a
+**Artifacts and evaluation.** Execute the approved helper already staged under
+`/workspace/approved-tools/file-delivery-validation/recalculate.py`. Build in a staging directory and convert in a
 separate invocation to a final directory. The helper saves recalculated XLSX,
 PDF/page previews and a check record; never resave the final XLSX through openpyxl.
 The runner blocks missing workbooks, missing formula caches and missing rendered
 evidence. Human narrative/layout approval is still required.
 
 ```powershell
-uv run --locked python scripts/run_excel_series.py --run
-uv run --locked python scripts/grade_excel_benchmark.py workspace/threads/THREAD_ID
+uv run --locked python scripts/run_excel_series.py --run --assets evaluations/excel-v4
+uv run --locked python scripts/grade_excel_benchmark.py workspace/threads/THREAD_ID --assets evaluations/excel-v4
 uv run --locked python scripts/seed_excel_defects.py PATH_TO_CANDIDATE PATH_TO_MUTANTS
 ```
 

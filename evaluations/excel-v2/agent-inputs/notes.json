@@ -1,0 +1,9 @@
+{
+  "company": "Harbor Office Supplies & Services",
+  "currency": "USD",
+  "periods": [
+    "January 2026",
+    "February 2026"
+  ],
+  "notes": "- **N1:** A product price increase took effect in February. Unit volumes and the price/volume split are not supplied.\n- **N2:** A new service retainer began in February. Its separate revenue contribution is not supplied.\n- **N3:** February payroll includes a $500 salary adjustment; no headcount change occurred.\n- **N4:** February consulting is a one-off $1,200 expense for a process review.\n- **N5:** Interest fell by $20 following a scheduled loan repayment. A loan balance schedule is not supplied.\n- **N6:** Income tax is a supplied illustrative expense. Do not infer a statutory rate or recompute tax liability.\n- No other causal explanations are supplied. Unchanged amounts and observed movements can be described, but causes must not be invented."
+}

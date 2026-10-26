@@ -48,11 +48,12 @@ def usage(log, run_id):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run', action='store_true')
+    parser.add_argument('--assets', type=Path, default=PROJECT_ROOT/'evaluations/excel-v4')
     args = parser.parse_args()
     if not args.run:
         parser.error('Use --run to start three paid model/sandbox trials.')
     settings = load_settings(require_sandbox=True, profile=EXCEL_PROFILE)
-    assets = PROJECT_ROOT / 'evaluations/excel-v1'
+    assets = args.assets.resolve()
     fixture = hashes(assets)
     configuration = effective_configuration(settings)
     graders = evaluator_hashes()
@@ -61,7 +62,7 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     record = {'series_id': series_id, 'started': datetime.now(timezone.utc).isoformat(),
               'configuration': configuration, 'fixture_sha256': fixture,
-              'evaluator_sha256': graders, 'status': 'running', 'runs': [],
+              'evaluator_sha256': graders, 'fixture_path': str(assets), 'status': 'running', 'runs': [],
               'dimensions': {'what': 'artifacts, calculations, required behavior and evidence',
                              'who': 'independent code grader; assistant review and owner review recorded separately',
                              'when': 'offline synthetic trials', 'why': 'capability, consistency and regression'},
@@ -100,9 +101,9 @@ def main():
                 record['status'] = 'invalidated'; save()
                 raise RuntimeError('Frozen configuration/fixture/evaluator changed; start a new series.')
             try:
-                item['grader'] = grade(folder)
+                item['grader'] = grade(folder, assets)
                 item['independent_recalculation'] = recalculate(
-                    folder, output.parent / (series_id + '-trial-' + str(n + 1)), settings)
+                    folder, output.parent / (series_id + '-trial-' + str(n + 1)), settings, assets)
             except Exception as exc:
                 item['evaluation_error'] = {'type': type(exc).__name__, 'message': str(exc)}
             independent = item.get('independent_recalculation', {})
