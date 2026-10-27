@@ -1,37 +1,63 @@
 # Accounting & Finance Agent
 
-> A general, human-supervised agent for accounting and finance work, with Asana as the planned work interface and sandboxed code execution for file processing.
+A human-supervised prototype that explores how an AI agent can help with accounting and finance work: gathering context, working with files in a sandbox, and producing outputs a person can inspect and review.
 
-**Status:** Three fresh synthetic Excel trials pass numerical, grounded-analysis and assistant visual checks. All 142 offline tests pass. The owner approved all three exact outputs, so the selected Test gate is met. Release approval is separate. See the [test-gate follow-up](docs/evaluations/test-gate-followup-2026-10-25.md). Asana integration remains planned.
+**Status:** The selected fictional Excel task passed a three-run evaluation and owner review. This is an early prototype; release for real business work has not been approved. Asana integration and hosted deployment are planned, not implemented.
 
-## Demo
+## Why this project
 
-Video coming after the first complete task and revision path works.
+Accounting work requires more than a plausible answer. A useful assistant must work from the right source data, show its calculations, preserve its work, and make its output reviewable. This project explores those requirements through a reusable agent foundation and a concrete financial working-paper task.
 
-## What this project aims to do
+The project was developed with AI coding assistance. The project owner guided the objectives, accounting workflow, design and evaluation decisions, and reviewed the trial outputs. The evaluation report records both successful results and earlier failures.
 
-Build a reusable system that accepts different accounting and finance requests, gathers relevant context, follows task-specific skills, and produces work that a person can inspect and approve.
+## What the prototype does
 
-Asana will be the main place to assign work, review outputs, and request revisions. The agent loop will run outside a temporary sandbox, using general execution and file capabilities inside the sandbox. Approved business knowledge and reusable assets will guide the work.
+- Accepts requests through a terminal and maintains separate conversation threads.
+- Uses a temporary sandbox to work with files and execute code; returned files are preserved in a thread workspace.
+- Uses task guidance and reusable helpers to create an Excel financial working paper from supplied data.
+- Applies run limits and records execution events; LangSmith provides traces of agent activity.
+- Supports human review of identified output versions.
 
-The selected trial creates a two-month Excel working paper from supplied synthetic inputs. BUILD-01–10 are complete. A reusable `financial-working-paper` skill provides build/validation helpers; the model writes grounded commentary and runs the procedure. Helpers contain no benchmark answers and are hashed and checked for mutation during export. Three frozen trials pass technical checks and have owner approval. See the [task list](docs/task-list.md).
+**Demonstrated task:** Given fictional data for two months, the agent produces an Excel working paper with income statements, variances, margins, a profit bridge and source-grounded commentary. The selected workflow uses approved spreadsheet helpers, while the agent writes commentary and runs the procedure. [Read the benchmark](docs/evaluations/excel-benchmark.md).
 
-## Target workflow
+## Evaluation results
+
+The final selected series used three fresh threads with the same synthetic inputs and configuration:
+
+- **3 of 3** outputs passed the recorded numerical, grounded-analysis and assistant visual checks and received owner approval of the exact output manifests.
+- **142 offline engineering tests** passed in the recorded test run. These cover selected controls, files, persistence and recovery scenarios.
+- **7 of 7** selected live context cases and **3 of 3** integrated offline recovery cases passed.
+
+These results show initial consistency for **one synthetic task**, not general accounting reliability. Earlier failures and corrective changes are retained in the [test-gate report](docs/evaluations/test-gate-followup-2026-10-25.md). Outputs require human review, and deployment for real work is a separate decision.
+
+## How the prototype works
 
 ```mermaid
 flowchart LR
-    A[Work assigned in Asana] --> B[Agent gathers context]
-    B --> C[Process input copies in a sandbox]
-    C --> D[Preserve outputs and supporting code]
-    D --> E[Publish results in Asana]
-    E --> F{Human review}
-    F -->|Feedback| B
-    F -->|Approve current output| G[Done]
+    A[Person supplies a task and files] --> B[Agent gathers context]
+    B --> C[Works in a temporary sandbox]
+    C --> D[Files and run evidence are preserved]
+    D --> E[Checks and human review]
+    E -->|Feedback| B
+    E -->|Approved version| F[Reviewed deliverable]
 ```
 
-This is the proposed workflow. Separate approval will be required before a proposed script, model, memory note, or skill change becomes an approved reusable asset.
+The current interface is a terminal. A future Asana integration could manage task assignment and feedback, but it is not part of the working prototype yet.
+
+## Explore the project
+
+- [Test report and evidence](docs/evaluations/test-gate-followup-2026-10-25.md) — results, limitations and earlier failures.
+- [Specification and design](docs/agent-spec.md) — capabilities, architecture, evaluation and release plans.
+- [Operating guide](docs/operating-guide.md) — configuration, sandbox use, review and recovery.
+- [Task list](docs/task-list.md) — implementation status and remaining work.
+- [Setup](#setup) and [run instructions](#run) — try the terminal prototype.
+
+A recorded demo is not yet available. The detailed technical inventory and setup instructions follow.
 
 ## Implementation status
+
+<details>
+<summary>Expand the detailed implementation and verification inventory</summary>
 
 The inventory separates architectural building blocks from supporting behavior, controls, evaluation, and delivery work. An implemented entry means code is present; live verification is recorded separately below. These categories organize the build by purpose, rather than prescribing a separate module for every entry.
 
@@ -68,7 +94,7 @@ The inventory separates architectural building blocks from supporting behavior, 
 | Basic engineering checks | 142 passing offline tests | Network-blocked suite covers lifecycle, context, limits, files, references, review, validation and recovery. Live model/sandbox checks are recorded separately. |
 | Operating limits | Implemented; live check pending | The benchmark adds shared HTTP reservations, attempt/retry accounting and hard work/cleanup deadlines. The local profile retains its earlier admission bounds; see the operating guide. |
 | Network destinations | Benchmark boundary checked | Benchmark execution uses an isolated network namespace; live DNS/direct-IP/re-entry checks passed. Local-profile provider allowlist enforcement remains separate. |
-| Artifact validation | Benchmark pipeline implemented; corrected-run validation pending | Structural checks, LibreOffice recalculation/caches, PDF/PNG evidence and independent grader. The runner fix/regression passed offline; the corrected formal series is underway. |
+| Artifact validation | Selected benchmark validated | Structural checks, LibreOffice recalculation/caches, PDF/PNG evidence and independent grader were applied to the final three-trial series. |
 | Dataset evaluations | Three synthetic Excel trials pass, with owner approval | Independent recalculation, source-grounded analysis, visual review, saved outputs and trace/provenance walks. Earlier failed trials are retained. |
 | Durable work log | Implemented; basic live check passed | SQLite run outcomes, fingerprints, call events, transfer manifests, validation findings, and human review records. Three owner approvals are bound to saved manifests; stale/rejection checks are exercised separately. |
 | Failure recovery | Basic implementation; live check pending | No automatic task/tool replay; bounded provider retries, per-thread local locks, failure records, and explicit retained-sandbox export. No distributed/exactly-once guarantee. |
@@ -99,8 +125,8 @@ The inventory separates architectural building blocks from supporting behavior, 
 - A fresh default sandbox inventory confirmed Python 3.14.4 and preinstalled Excel, Word, and PowerPoint libraries without installing packages. Its deletion was confirmed by the API.
 - The `accounting-finance:v1` snapshot build completed, recorded its inventory, and selected the resulting immutable ID in local `.env`. The temporary builder's deletion was confirmed by the API. The owner subsequently reported running the agent and observing faster startup; no timing comparison or trace assessment has established a performance improvement.
 - Additional-package installation during a build, rollback, and automated environment builds have not been verified live. No model calls were made during the inventory or snapshot build.
-- The expanded offline engineering suite passed all 58 tests with zero network connection attempts. Malformed-review-label validation and execute timeout handling gaps were fixed. The real compiled graph was exercised with fake model replies, including subagent budget sharing, checkpoint restoration and timeout capping before tool validation. See [engineering results](docs/engineering-checks.md).
-- User-run smoke task `4b5fa1d2-5cda-4ce2-9af9-34cb75f008cf` preserved a CSV and JSON with three rows and a verified Decimal total of `14.24`, recorded the run for review, and left no pending nodes. Two initial execute calls were rejected for requesting 120000 seconds; the third succeeded. The subsequent fix passed offline regression checks. A read-only API check confirmed sandbox deletion. Live egress enforcement, recovery, evaluation trials and the CI workflow remain unverified.
+- An earlier offline engineering suite passed all 58 tests with zero network connection attempts. Malformed-review-label validation and execute timeout handling gaps were fixed. The real compiled graph was exercised with fake model replies, including subagent budget sharing, checkpoint restoration and timeout capping before tool validation. See [engineering results](docs/engineering-checks.md).
+- User-run smoke task `4b5fa1d2-5cda-4ce2-9af9-34cb75f008cf` preserved a CSV and JSON with three rows and a verified Decimal total of `14.24`, recorded the run for review, and left no pending nodes. Two initial execute calls were rejected for requesting 120000 seconds; the third succeeded. The subsequent fix passed offline regression checks. A read-only API check confirmed sandbox deletion. This historical smoke run did not verify live egress enforcement, recovery, evaluation trials or the CI workflow; later evaluation evidence is reported above.
 - The bank-reconciliation skill and fictional-company defaults are owner-editable Markdown references. They have not been exercised on a reconciliation task or established as a verified finance capability. No transaction data or balances were invented to present a completed result.
 
 See the [operating guide](docs/operating-guide.md) for settings, workspace transition, commands, review scope, and recovery limitations.
@@ -112,6 +138,8 @@ It adds new traces, refreshes changed traces and retains unchanged copies.
 See [local trace copies](docs/operating-guide.md#local-trace-copies).
 
 **Intentionally deferred:** agent-drafted memory/skill change proposals and automatic learning. The owner currently maintains both folders directly. A separate Store, custom compaction tuning, async execution plumbing, and a large-result demo tool are optional additions when a concrete need arises. Default subagents, compaction, and result offloading already come with the harness.
+
+</details>
 
 ## Agent configuration
 
