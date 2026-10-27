@@ -1,5 +1,9 @@
 {
   "name": "accounting-finance",
-  "tag": "v1",
-  "base_snapshot": "8adf22a2-5940-4f2f-bddc-6939bc4b1960"
+  "tag": "excel-v1",
+  "base_snapshot": "8adf22a2-5940-4f2f-bddc-6939bc4b1960",
+  "prepare_commands": [
+    "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libreoffice-calc poppler-utils fonts-liberation",
+    "libreoffice --version && pdftoppm -v"
+  ]
 }

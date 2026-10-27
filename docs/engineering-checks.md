@@ -80,3 +80,75 @@ Bank-reconciliation arithmetic, matching decisions, financial conclusions, Excel
 recalculation and rendered document layout still require independent task-quality
 evaluations. The next step is a review/revision check, then representative finance
 cases with known answers. No finance-quality evaluation was run during these checks.
+
+## October 25 build extension
+
+The expanded suite passes 75 offline tests with zero network attempts. New checks
+exercise HTTP-level reservations/retries, deadline interruption, reference scope,
+missing formula caches, consistent backups, retention eligibility, namespace
+wrapping and four seeded grader defects. Run `uv run --locked python
+scripts/check_engineering.py` to reproduce. The ignored current report is in
+`.state/engineering-checks-latest.txt`.
+
+Separate live sandbox build checks captured LibreOffice in an immutable snapshot,
+blocked DNS/direct IP and network-namespace re-entry, and recalculated/rendered a
+small workbook inside that boundary. See [build evidence](build-evidence.json) and
+[task progress](task-list.md#11-build-progress). These checks made no model calls
+and do not substitute for the three financial benchmark runs or human review.
+
+## Fictional income-statement demonstration
+
+An ad hoc January/February income-statement + analysis workbook and separate
+two-page PDF were produced in the frozen sandbox with tracing enabled. This
+is separate from the fixed financial benchmark. Two earlier attempts exposed
+a repeated-checkpoint filename collision and an unsupported-image request; both
+were corrected before the continuation completed with `needs_review` status.
+
+Version preservation now keeps distinct content-addressed prior copies within
+one run, and checkpoint exports are serialized. Text-only model requests replace
+unsupported media with an explicit limitation while preserving original tool
+results for the reviewer. The expanded offline suite passes **80 tests with zero
+network attempts**. New regression cases cover repeated checkpoints and media
+adaptation without modifying stored messages. Main income-statement arithmetic
+and formula caches were independently checked; the PDF pages were inspected.
+This demonstration does not establish the formal three-run benchmark or release
+readiness. Private outputs, run records and traces remain Git-ignored.
+
+## Image-input extension
+
+The owner enabled image input. Five additional offline checks cover image
+pass-through, cached token preflight, invalid/unaffordable counts, remote URL
+rejection and preservation of original tool messages. The full suite passes
+**85 tests with zero network attempts**. A separate live sandbox run used
+`read_file` on a report-preview image, correctly identified its title and monthly
+net income, and reported layout observations. No spreadsheet/text extraction was
+requested for that check. Provider preflight/image usage is recorded in the work
+log; tracing remained enabled. This is a capability check rather than the formal
+three-run benchmark or human approval.
+
+## Multi-source case and request ceiling
+
+The full offline suite passes **94 tests with zero network attempts**. Eight new
+checks exercise fixture completeness/ties, Decimal answers, and valid/invalid
+cell maps including deliberately wrong values. A ninth verifies profile v2 allows
+40 request reservations and rejects the 41st without incrementing the counter.
+
+A separate paid management-review demonstration produced Excel/PDF deliverables.
+Independent grading exposed errors in generated formulas despite workbook PASS
+flags; reviewed repairs now match all 316 required metrics. This is assisted case
+evidence, not a formal release pass. See the [assessment](evaluations/management-review.md).
+
+## First formal Test pass
+
+The suite now passes **128 offline tests**, with zero failures, errors, expected
+failures or network attempts. Tests found defects in checkpoint baseline handling,
+final-artifact selection, grader row matching/source validation and defect targeting;
+repairs and regressions are recorded. A live checkpoint probe confirms the fixed
+delete/recreate behavior while preserving genuine host edits.
+
+Three frozen model trials were also collected: two API reservation stops and one
+tool ceiling, so **0/3 complete passes**. Original evidence was retained, then all
+unchanged outputs were regraded after evaluator repairs. See the
+[Test report](evaluations/test-phase-2026-10-25.md) for independent recalculation,
+seeded defects, source/provenance walkthrough, visual findings and remaining gates.
+This engineering result does not promote the release gate.

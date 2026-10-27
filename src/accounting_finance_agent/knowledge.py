@@ -1,5 +1,7 @@
 """Expose persistent approved memory and skills through local filesystem routes."""
 
+from pathlib import Path
+
 from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend
 from deepagents.backends.protocol import (
     BackendProtocol,
@@ -9,7 +11,7 @@ from deepagents.backends.protocol import (
     WriteResult,
 )
 
-from accounting_finance_agent.config import PROJECT_ROOT
+from accounting_finance_agent.config import EXCEL_PROFILE, PROJECT_ROOT, Settings
 
 
 MEMORY_ROOT = PROJECT_ROOT / "memory"
@@ -45,16 +47,40 @@ class ApprovedFilesBackend(FilesystemBackend):
         return [FileUploadResponse(path=path, error="permission_denied") for path, _ in files]
 
 
-def knowledge_backend(execution_backend: BackendProtocol | None = None) -> CompositeBackend:
+def reference_roots(settings: Settings | None = None) -> dict[str, Path]:
+    """Only selected procedural references are reachable in the benchmark."""
+    if settings is not None and settings.profile == EXCEL_PROFILE:
+        return {
+            "/memories/": PROJECT_ROOT / "references" / "excel-benchmark" / "memory",
+            "/skills/": PROJECT_ROOT / "references" / "excel-benchmark" / "skills",
+            "/skills/file-delivery-validation/": SKILLS_ROOT / "file-delivery-validation",
+            "/skills/csv-analysis/": SKILLS_ROOT / "csv-analysis",
+            "/skills/financial-working-paper/": SKILLS_ROOT / "financial-working-paper",
+        }
+    return {"/memories/": MEMORY_ROOT, SKILLS_PATH: SKILLS_ROOT}
+
+
+def knowledge_backend(execution_backend: BackendProtocol | None = None,
+                      *, settings: Settings | None = None) -> CompositeBackend:
     """Keep approved files on the host; leave ordinary file operations on the default."""
-    for folder in (MEMORY_ROOT, SKILLS_ROOT):
+    roots = reference_roots(settings)
+    for folder in roots.values():
         if folder.is_symlink() or folder.is_junction():
             raise ValueError(f"Approved reference folders must not be links: {folder}")
         folder.mkdir(parents=True, exist_ok=True)
+    routes = {route: ApprovedFilesBackend(root_dir=folder, virtual_mode=True)
+              for route, folder in roots.items()}
+    if settings is not None and settings.profile == EXCEL_PROFILE:
+        routes = {
+            "/memories/": routes["/memories/"],
+            SKILLS_PATH: CompositeBackend(
+                default=routes[SKILLS_PATH],
+                routes={route.removeprefix("/skills"): backend
+                        for route, backend in routes.items()
+                        if route.startswith("/skills/") and route != SKILLS_PATH},
+            ),
+        }
     return CompositeBackend(
         default=execution_backend if execution_backend is not None else StateBackend(),
-        routes={
-            "/memories/": ApprovedFilesBackend(root_dir=MEMORY_ROOT, virtual_mode=True),
-            SKILLS_PATH: ApprovedFilesBackend(root_dir=SKILLS_ROOT, virtual_mode=True),
-        },
+        routes=routes,
     )

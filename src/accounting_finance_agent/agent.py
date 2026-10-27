@@ -1,13 +1,23 @@
 """Build a default Deep Agent with the configured model."""
 
+from hashlib import sha256
+from threading import RLock
+
 from deepagents import create_deep_agent
+from deepagents.middleware.summarization import (
+    DEEPAGENTS_DEFAULT_SUMMARY_PROMPT, compute_summarization_defaults,
+    create_summarization_middleware,
+)
+from deepagents.profiles import (
+    GeneralPurposeSubagentProfile, HarnessProfile, register_harness_profile,
+)
 from deepagents.backends.protocol import BackendProtocol
 from deepagents.middleware.memory import MemoryMiddleware
 from langchain.agents.middleware import TodoListMiddleware
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.base import BaseCheckpointSaver
 
-from accounting_finance_agent.config import Settings
+from accounting_finance_agent.config import EXCEL_PROFILE, Settings
 from accounting_finance_agent.file_metadata import FileMetadataFilesystemMiddleware
 from accounting_finance_agent.knowledge import (
     APPROVED_MEMORY_PROMPT,
@@ -16,6 +26,12 @@ from accounting_finance_agent.knowledge import (
     knowledge_backend,
 )
 from accounting_finance_agent.runtime import RunContext, RunControls
+
+
+# Deep Agents 0.7.23 exposes model-keyed profile registration rather than a
+# per-build profile argument. Serialize registration + assembly so two builds
+# in this application cannot capture each other's delegation setting.
+_HARNESS_BUILD_LOCK = RLock()
 
 
 SANDBOX_INSTRUCTIONS = (
@@ -44,7 +60,7 @@ REFERENCE_INSTRUCTIONS = (
 )
 
 
-def build_agent(
+def _build_agent(
     settings: Settings,
     *,
     backend: BackendProtocol | None = None,
@@ -52,16 +68,33 @@ def build_agent(
     controls: RunControls | None = None,
 ):
     """Build the harness with persistent approved guidance and optional sandbox execution."""
+    model_options = {}
+    if settings.profile == EXCEL_PROFILE:
+        if controls is None:
+            raise ValueError("The benchmark requires shared run controls.")
+        from accounting_finance_agent.budget import BudgetClient, DisabledAsyncClient
+        client = BudgetClient(controls)
+        controls.api_client = client
+        model_options = {"http_client": client, "http_async_client": DisabledAsyncClient(), "disable_streaming": True,
+                         "store": False, "http_socket_options": ()}
     model = init_chat_model(
         settings.model,
         model_provider="openai",
         use_responses_api=True,
         reasoning={"effort": settings.reasoning_effort},
         timeout=settings.model_timeout_seconds,
-        max_retries=2,
+        max_retries=settings.sdk_max_retries,
         max_tokens=settings.max_output_tokens,
+        **model_options,
+        **({"service_tier": settings.service_tier} if settings.service_tier else {}),
     )
-    routed_backend = knowledge_backend(backend)
+    register_harness_profile(
+        f"openai:{settings.model}",
+        HarnessProfile(general_purpose_subagent=GeneralPurposeSubagentProfile(
+            enabled=settings.delegation_enabled,
+        )),
+    )
+    routed_backend = knowledge_backend(backend, settings=settings)
     middleware = [
         FileMetadataFilesystemMiddleware(backend=routed_backend, controls=controls),
         TodoListMiddleware(),
@@ -72,7 +105,16 @@ def build_agent(
             add_cache_control=True,
         ),
     ]
-    return create_deep_agent(
+    if settings.profile == EXCEL_PROFILE:
+        # Pinned adapter: BudgetClient owns retries, including summarization.
+        # Avoid six transport attempts multiplied by three framework attempts.
+        summarization = create_summarization_middleware(model, routed_backend)
+        helper = getattr(summarization, "_lc_helper", None)
+        if helper is None or not hasattr(helper, "_summary_model"):
+            raise RuntimeError("Pinned summarization retry adapter needs review.")
+        helper._summary_model = model
+        middleware.append(summarization)
+    graph = create_deep_agent(
         model=model,
         middleware=middleware,
         backend=routed_backend,
@@ -85,3 +127,34 @@ def build_agent(
         checkpointer=checkpointer,
         context_schema=RunContext,
     )
+
+    if controls is not None:
+        controls.log.event(
+            controls.context.run_id, "harness_configuration",
+            delegation_enabled=settings.delegation_enabled,
+            explicit_subagents=[],
+            compaction={
+                "implementation": "deepagents.middleware.summarization.create_summarization_middleware",
+                "defaults": compute_summarization_defaults(model),
+                "summary_prompt_sha256": sha256(DEEPAGENTS_DEFAULT_SUMMARY_PROMPT.encode()).hexdigest(),
+                "summarizer_model": settings.model,
+                "model_max_input_tokens": (model.profile or {}).get("max_input_tokens"),
+                "trim_tokens_to_summarize": None,
+                "custom_summary_prompt": False,
+                "retry_owner": "BudgetClient; no framework summary retries" if settings.profile == EXCEL_PROFILE else "framework defaults",
+                "usage_accounting": "HTTP attempt ledger" if settings.profile == EXCEL_PROFILE else "logical calls only",
+            },
+        )
+    return graph
+
+
+def build_agent(
+    settings: Settings,
+    *,
+    backend: BackendProtocol | None = None,
+    checkpointer: BaseCheckpointSaver | None = None,
+    controls: RunControls | None = None,
+):
+    """Compile one graph using an explicit, serialized delegation policy."""
+    with _HARNESS_BUILD_LOCK:
+        return _build_agent(settings, backend=backend, checkpointer=checkpointer, controls=controls)

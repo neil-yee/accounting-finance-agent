@@ -1,0 +1,75 @@
+{
+  "created_at": "2026-10-25T17:46:49.705192+00:00",
+  "release_tag": "excel-v1",
+  "base_snapshot_id": "8adf22a2-5940-4f2f-bddc-6939bc4b1960",
+  "recipe_sha256": "0f834419a7e5bdd292610a2fd95b5ff87a4a92be96dcf5267bdc4f1ac044b56c",
+  "requirements_sha256": "f32a6d2e578678204db713ea593ecd87381c0588e9231d1fa474d9d1b2e560d6",
+  "inventory": {
+    "python": "3.14.4",
+    "executable": "/usr/bin/python3",
+    "packages": [
+      {
+        "name": "dbus-python",
+        "version": "1.4.0"
+      },
+      {
+        "name": "defusedxml",
+        "version": "0.7.1"
+      },
+      {
+        "name": "et_xmlfile",
+        "version": "2.0.0"
+      },
+      {
+        "name": "lxml",
+        "version": "6.1.1"
+      },
+      {
+        "name": "openpyxl",
+        "version": "3.1.5"
+      },
+      {
+        "name": "packaging",
+        "version": "26.0"
+      },
+      {
+        "name": "pillow",
+        "version": "12.3.0"
+      },
+      {
+        "name": "pip",
+        "version": "25.1.1"
+      },
+      {
+        "name": "python-docx",
+        "version": "1.2.0"
+      },
+      {
+        "name": "python-pptx",
+        "version": "1.0.2"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "uv",
+        "version": "0.13.1"
+      },
+      {
+        "name": "wheel",
+        "version": "0.46.3"
+      },
+      {
+        "name": "xlsxwriter",
+        "version": "3.2.9"
+      }
+    ]
+  },
+  "system_packages": "fonts-liberation\t1:2.1.5-3build1\nlibreoffice-calc\t4:26.2.6.3-0ubuntu0.26.04.2\npoppler-utils\t26.01.0-2ubuntu0.3\n",
+  "compute": {
+    "vcpus": 1,
+    "memory_bytes": 2147483648
+  },
+  "snapshot_id": "3dce6ed0-f050-432a-bc9a-79a7b960972f"
+}

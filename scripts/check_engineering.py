@@ -40,7 +40,7 @@ def main():
     success = result.wasSuccessful() and not attempts
     print(f"{'PASS' if success else 'FAIL'}: {result.testsRun} tests; "
           f"{len(result.failures)} failures; {len(result.errors)} errors; "
-          f"{len(attempts)} network attempts.")
+          f"{len(result.expectedFailures)} expected failures; {len(attempts)} network attempts.")
     print(f"Report: {path}")
     if args.verbose or not success:
         print(report.getvalue())

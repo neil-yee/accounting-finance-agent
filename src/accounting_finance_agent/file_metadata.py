@@ -50,6 +50,36 @@ def add_file_names(messages: list[BaseMessage]) -> list[BaseMessage]:
     return result
 
 
+def supported_media_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
+    """Pass image inputs through and explain unsupported non-image media.
+
+    Saved tool results stay intact for the human reviewer; only the outgoing
+    request is adapted. Images pass through; unavailable documents are explained.
+    """
+    result = []
+    media = {"file", "input_file", "audio", "input_audio", "video"}
+    for message in messages:
+        if not isinstance(message.content, list):
+            result.append(message)
+            continue
+        content = []
+        changed = False
+        for block in message.content:
+            if isinstance(block, dict) and block.get("type") in media:
+                name = block.get("filename", "binary attachment")
+                content.append({"type": "text", "text": (
+                    f"{name}: binary content is available to the reviewer but is not "
+                    "supported as a direct attachment in this run. Inspect file structure/text using "
+                    "sandbox libraries. Render document pages as PNG/JPEG and read those for visual review; "
+                    "do not claim to have inspected an attachment that was not supplied."
+                )})
+                changed = True
+            else:
+                content.append(block)
+        result.append(message.model_copy(update={"content": content}) if changed else message)
+    return result
+
+
 class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
     """Retain filesystem behavior while repairing outgoing file metadata.
 
@@ -72,7 +102,11 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         def with_filenames(prepared: ModelRequest):
             if self.controls:
                 prepared = self.controls.model_request(prepared)
-            return handler(prepared.override(messages=add_file_names(list(prepared.messages))))
+            messages = add_file_names(list(prepared.messages))
+            from accounting_finance_agent.config import EXCEL_PROFILE
+            if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
+                messages = supported_media_messages(messages)
+            return handler(prepared.override(messages=messages))
 
         return super().wrap_model_call(request, with_filenames)
 
@@ -84,13 +118,39 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         async def with_filenames(prepared: ModelRequest):
             if self.controls:
                 prepared = self.controls.model_request(prepared)
-            return await handler(
-                prepared.override(messages=add_file_names(list(prepared.messages)))
-            )
+            messages = add_file_names(list(prepared.messages))
+            from accounting_finance_agent.config import EXCEL_PROFILE
+            if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
+                messages = supported_media_messages(messages)
+            return await handler(prepared.override(messages=messages))
 
         return await super().awrap_model_call(request, with_filenames)
 
     def wrap_tool_call(self, request, handler):
+        from accounting_finance_agent.config import EXCEL_PROFILE
+        from langsmith.sandbox import SandboxConnectionError
+        if self.controls and self.controls.settings.profile == EXCEL_PROFILE:
+            import random
+            import time
+            # Reconcile writes explicitly; only read operations are replayable.
+            safe = request.tool_call['name'] in {'ls', 'read_file', 'glob', 'grep'}
+            for attempt in range(6):
+                try:
+                    return self._one_tool_call(request, handler)
+                except (ConnectionError, TimeoutError, SandboxConnectionError):
+                    if not safe or attempt == 5:
+                        raise
+                    delay = 2 ** attempt + random.random()
+                    if delay >= self.controls.remaining():
+                        from accounting_finance_agent.runtime import RunLimitExceeded
+                        raise RunLimitExceeded('Tool retry cannot fit the remaining deadline.')
+                    print(f'Retry {attempt + 1} of 5: {request.tool_call["name"]}', flush=True)
+                    self.controls.log.event(self.controls.context.run_id, 'tool_retry',
+                                            number=attempt + 1, delay=delay)
+                    time.sleep(delay)
+        return self._one_tool_call(request, handler)
+
+    def _one_tool_call(self, request, handler):
         if self.controls:
             self.controls.tool_started(request)
             request = self.controls.prepare_tool_request(request)

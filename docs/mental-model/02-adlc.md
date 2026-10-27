@@ -1,375 +1,213 @@
-# Agent Mental Model: 02 ADLC (Agent Development Lifecycle)
+# Agent Mental Model: 02 ADLC
 
-> **Purpose:** how people create and improve an instance of the anatomy (`01-anatomy.md`).
-> The anatomy describes **the agent**. The ADLC describes **how people change the agent**.
-> Project-specific choices (task tracker, sandbox provider, dates, owners) belong in each agent's `SPEC.md` and project plan, not here.
+**Purpose:** turn an agent's intended capabilities into a system with evidence for its use, then improve it as requirements and conditions change.
 
-**Version:** v0.3 (draft) · **Owner:** Neil Yee
+**Version:** v0.6 working reference · **Owner:** Neil Yee · **Updated:** October 24, 2026
 
----
+## 1. Why a lifecycle is needed
 
-## 0. Three premises everything rests on
+Behavior depends on **configuration + task/input + retained state + external conditions**. Model variation adds uncertainty. Testing provides evidence for a defined scope; passing examples does not guarantee every future result. Some program properties can be checked deterministically, while task quality needs representative evaluation.
 
-| # | Premise | What it means |
+The lifecycle manages that uncertainty:
+
+**Build (Plan, Configure) → Test → Deploy → Monitor → back to Build.**
+
+| Activity | Main question | Output / condition to proceed |
 |---|---|---|
-| **1** | **Behaviour comes from the whole configuration.** | What the agent does depends on every part of the anatomy together: model, context, actions, controls and continuity. Changing any one part can change behaviour anywhere. |
-| **2** | **Quality is measured, not proven.** | The model's output varies and depends on its input, so you can't prove the agent is correct by reading its code. You can only measure it on examples and on live work. |
-| **3** | **The real world keeps changing.** | Inputs, data, processes and models change after release. So the lifecycle is a loop, not a line: what you learn in operation feeds the next build. |
+| **Plan** | What should it do, how will it work, and what evidence will justify use? | Specification and design document covering all four phases, plus a linked task list. Unknowns are explicit. |
+| **Configure** | Can we implement the intended behavior and checks? | Code/configuration, skills/tools, cases/graders, instrumentation, and a working path through a representative task. |
+| **Test** | Does this version meet the criteria for its intended scope? | Results, failure analysis, and a release decision tied to the evaluated configuration and cases. |
+| **Deploy** | Where and under what authority may it operate? | Readiness record, approved scope, rollout stage, and stop/recovery procedures. |
+| **Monitor** | Does it continue to meet expectations, and what needs action? | Signals, review findings, incident responses, and changes or new evaluation cases. |
 
-How each premise shapes the ADLC:
+Plan and Configure are parts of Build in this model. The phases overlap and repeat: prototypes inform plans, checks are built alongside features, and monitoring is prepared before deployment. People remain accountable even when agents help implement or evaluate changes.
 
-- **Premise 1:** Build sets every part of the anatomy deliberately, and every result is tied to a configuration version.
-- **Premise 2:** you decide **in Plan** how the agent will be measured, released and watched, then follow those plans in Test, Deploy and Monitor.
-- **Premise 3:** Monitor feeds back into Build, and failures become new eval cases.
+## 2. Plan from purpose to evidence
 
----
+Start with the objective and boundaries, then shared capabilities. Map capabilities to the [anatomy](01-anatomy.md): functions, mechanisms, and proposed implementation. Define observable success criteria, then how to evaluate, release, and monitor them. Iterate when a criterion exposes a missing design decision.
 
-## 1. Phases
+Separate shared capabilities from task applications. “Handle spreadsheets” is a capability to make precise; “reconcile this bank statement” is a task objective; a Python library is an implementation choice. General capabilities still need representative tasks to demonstrate them.
 
-```text
-Build (Plan, then Configure)  ->  Test  ->  Deploy  ->  Monitor  ->  back to Build
-```
+### 2.1 Minimum working artifacts
 
-| Phase | Question it answers | Acts on (anatomy) | Produces | Gate to move on |
+Use a combined **specification and design document** as the default planning artifact. It contains architecture views and evaluation, release and monitoring plans. Requirements state what must be true; design explains the proposed mechanisms, components and methods for achieving it.
+
+The document can contain sections, tables and diagrams. Separate files are useful when ownership or detail warrants them; the distinctions below do not require separate documents.
+
+| Artifact | Minimum contents | Used for |
+|---|---|---|
+| **Specification and design** | Purpose/scope; capabilities and required behavior; functions, mechanisms and proposed implementation; architecture views; success criteria; evaluation, deployment and monitoring requirements/plans; open decisions. | Agreeing what to build, how it should work and what evidence will justify use. |
+| **Task list** | Work items linked to capabilities, design and checks; dependencies, owner, status and completion evidence. | Building, verifying and tracking the implementation. |
+| **Cases and graders** | Inputs/setup, expected results or rubric, grader, thresholds, and reset/cleanup needs. | Repeatable evaluation. |
+| **Evaluation record** | Configuration and case/grader versions, results, repetitions/sample size, failures, and limitations. | Accepting or rejecting a release candidate. |
+| **Release record** | Approved version/scope/stage, readiness evidence, owner, and stop/recovery instructions. | Operating and recovering the system. |
+| **Finding / change record** | Evidence, impact, diagnosis, response, and linked corrective work or accepted limitation. | Closing the improvement loop. |
+
+**Organize the combined document around the lifecycle**
+
+Start with purpose and scope. Within each phase, distinguish requirements from proposed design:
+
+| Phase | Requirements: what must be true | Design: how to achieve or check it |
+|---|---|---|
+| **Build** | Capabilities, boundaries, assignment behavior and expected deliverables. | Functions, mechanisms, implementation choices, architecture and shared building blocks. |
+| **Test** | Success criteria, required coverage and acceptance thresholds. | Cases, datasets, graders, trial setup and evidence collection. |
+| **Deploy** | Release conditions, permitted use, ownership and recovery expectations. | Execution locations, storage, credentials, rollout and recovery procedures. |
+| **Monitor and improve** | Operating expectations, required review and conditions for intervention. | Signals, thresholds, alerts, response procedures and how findings become changes. |
+
+Plan all four phases before relying on the agent. Organizing the document by phase does not mean postponing evaluation or monitoring design until those phases begin.
+
+**Place architecture where it explains the design**
+
+- **Build:** show how the agent's components connect and how an assignment executes, including failure paths.
+- **Test and operation:** show how a version, cases and graders produce evidence for release, and how live findings feed back into changes.
+- **Deploy:** show execution locations, data flows, persistent storage, identities and trust boundaries.
+
+Keep these as complementary views. A lifecycle arrow explains the process; an architecture view identifies the components, evidence and connections that support it.
+
+Place an **implementation inventory** after the Build architecture when useful. Group the intended shared components, map them to capabilities, and link to the corresponding task-list items. Keep implementation status, findings and evidence in the task list so each assessment has one maintained source. Code/configuration is the actual implementation; inventory entries do not establish that it exists or works.
+
+The three plans inside the document answer distinct questions:
+
+- **Evaluation plan:** what to check, on which cases, by whom, with what pass criteria?
+- **Release plan:** where and with which access, at what rollout stage, and how to stop or recover?
+- **Monitoring plan:** which signals, thresholds, owners, and response procedures during use?
+
+### 2.2 Traceability across requirements, design and evidence
+
+Give capabilities, criteria, and evaluation cases stable IDs. Connect requirements to design, implementation work, results and monitoring. Link detailed descriptions rather than copying them into every table. One criterion can need several checks; one check can support several criteria.
+
+| Criterion | Design dependency | Evaluation evidence | Release condition | Live signal / response |
 |---|---|---|---|---|
-| **Build: Plan** | What are we building, within what limits, and how will we measure, release and watch it? | All five functions, on paper | Spec with the **eval plan**, **release plan** and **monitoring plan**; architecture diagram; project task list | The spec answers each anatomy question, every success criterion has a planned check, and rollout, stop and monitoring are defined |
-| **Build: Configure** | Does it work at all? | Each function, one at a time | Code, configuration, skills, tools, eval cases and graders, monitoring checks | It completes one representative task end to end, and the eval cases are ready |
-| **Test** | Is this configuration good enough to release? | The whole configured agent | Eval results tied to a configuration version | It passes the release gate |
-| **Deploy** | Is it safe to use on real work, and at what level of trust? | Environment and Controls: real access, real limits | Readiness check, rollout stage, change log entry | Readiness confirmed, then each rollout stage's criteria met before moving up |
-| **Monitor** | Is it still working, and what should change? | The running agent, through signals, traces and reviews | Findings, responses, new eval cases, change requests | Each finding is stopped, fixed through Build, or accepted |
+| Preserve work through restart | Continuity + Actions: checkpoints, files, transfer | Interrupt/resume cases compare state and files | Required recovery cases pass | Missing output or failed resume → investigate/recover |
+| Write only to approved destinations | Controls + Actions: authorization and destination checks | Allowed, denied, and adversarial requests | No forbidden write in the required cases; access reviewed | Unauthorized write → stop and investigate |
 
-Planning is not a separate phase. It is the first step of Build.
+Use these links to find missing design, checks, or operating responses. Coverage alone does not establish that the checks are strong enough.
 
-### Three plans made in Plan
-
-| Plan | Decides | Used in | Spec section |
-|---|---|---|---|
-| **Eval plan** | What to check, graders, cases, pass thresholds | Test (and Monitor checks) | Success criteria |
-| **Release plan** | Environment, access, rollout stages, stop and rollback, readiness | Deploy | Deployment |
-| **Monitoring plan** | Signals, review tiers, thresholds, responses | Monitor | Monitoring |
-
-### Eval work across the phases
-
-| Phase | Eval work |
-|---|---|
-| **Plan** | **Design:** decide what to check, who grades it, which cases to use, and what counts as passing |
-| **Configure** | **Create:** collect the cases and write the graders, alongside the skills |
-| **Test** | **Run:** run them as the release gate |
-| **Monitor** | **Extend:** turn live failures into new cases |
-
----
-
-## 2. Levers: what people can change
-
-Every lever belongs to one function of the anatomy.
-
-| Function | Levers |
-|---|---|
-| **Core** | Model choice, model settings, loop limits |
-| **Context** | System instructions, skills, knowledge, tool descriptions, how history is managed |
-| **Actions** | Tools, MCP connections, packages, the execution environment |
-| **Controls** | Approvals, permissions, limits, guardrails |
-| **Continuity** | Storage, checkpointing, memory policy (what can be written and who approves it) |
-
-**Configuration version:** a record of every lever's setting at a point in time. Every eval result, release and live run should be tied to one, otherwise "it passed" or "roll it back" has no meaning.
-
----
+Record the configuration needed to interpret results: code/dependencies, model/provider/version and settings, instructions, skills/tools, access policy, environment, and storage schema. Record relevant input, retrieval, and memory versions or snapshots separately. Version identifiers support comparison; external services and model variation can still prevent exact reproduction.
 
 ## 3. Evals
 
-### 3.1 Designing evals (done in Plan)
+An evaluation compares observed behavior or results with a stated criterion. Tracing supplies observations; a grader applies the criterion. Engineering tests check components; task evaluations check whether the configured agent accomplishes useful work. Both contribute evidence.
 
-Evals are designed before building, not invented at Test. Each check comes from a promise in the spec or a way the anatomy can fail.
+### 3.1 Design each check
 
-**Step 1: Success criteria.** Each criterion in the spec becomes an output check.
-
-**Step 2: Walk the anatomy.** For each function, ask how it could fail:
-
-| Function | How it could fail | Check |
-|---|---|---|
-| **Core** | Different answers to the same input, too slow, too costly | Consistency, cost and time |
-| **Context** | Wrong skill, misread business terms, guessing when information is missing | Right skill used, edge cases with missing input |
-| **Actions** | Wrong calculation, wrong output location, broken files | Results match expected, files in the right place, no formula errors |
-| **Controls** | Exceeds limits, follows instructions hidden in inputs | Boundary tests, prompt-injection tests |
-| **Continuity** | Loses work after a restart, revisions forget earlier feedback | Resume test, revision test |
-
-**Step 3: Walk the run path.** Check every step of a run once: trigger, context gathering, execution, output, review, revision, failure. These are the integration checks.
-
-**Step 4: Specify each check.**
-
-| Field | Decide |
-|---|---|
-| **What is checked** | Final output, trajectory (the path taken), or a single step |
-| **Grader** | Code, LLM judge, or a person |
-| **Cases** | Normal, edge, or adversarial |
-| **Pass threshold** | What result counts as passing |
-
-**Where cases come from:** past real work with known correct answers. Make edge cases by changing one thing in a known case, such as removing a file, adding a duplicate, or hiding an instruction in an input.
+1. Start from success criteria and important failure modes. Include final outcomes, required behavior, and boundaries.
+2. Walk the anatomy and the full work path: intake, context, action, preservation, review, revision, failure, and recovery. Choose cases at consequential boundaries.
+3. Define inputs/setup, expected answer or rubric, grading method, pass threshold, and allowed cost/time. Classify the check using the four dimensions below.
+4. Choose normal, edge, and adversarial cases where relevant. Use representative real examples, synthetic known-answer cases, or reviewed incidents; keep evaluation data separate from development examples where practical.
+5. Run enough cases and repetitions for the claim being made. Record sample size, variation, and limitations; a single success establishes only that trial's result.
 
 ### 3.2 Four dimensions of an eval
 
-| Dimension | Options |
-|---|---|
-| **What is checked** | Final output, trajectory, or a single step |
-| **Who grades** | Code, an LLM judge, or a person |
-| **When it runs** | Offline (before release, known answers) or online (live work) |
-| **Why it exists** | Capability (can it do something new?) or regression (did something break?) |
-
-Rules of thumb:
-
-- Use **code grading** wherever a right answer exists. Use an **LLM judge** for written explanations, checked against human grades. Keep a **person** as the final grader on anything important.
-- A **capability** case that passes reliably moves into the **regression** set.
-
-### 3.3 Test vs Monitor
-
-| | Test (offline) | Monitor (online) |
+| Dimension | Options | Question |
 |---|---|---|
-| **Data** | Fixed cases with known answers | Live runs, usually without a known answer |
-| **Question** | Is this version good enough to release? | Is it still working on real work? |
-| **Result** | Pass or fail gate | Signals, plus new test cases |
+| **What is checked** | Final output, trajectory (observable sequence), individual step | Is the result acceptable, was required behavior followed, or did one operation work? |
+| **Who grades** | Code, LLM judge, person; combinations allowed | How is the criterion judged? |
+| **When / setting** | Offline (controlled cases), online (live operation) | Is this a controlled evaluation or a check on real use? |
+| **Why** | Capability, regression, or both | Does it establish ability, detect loss of previously acceptable behavior, or both? |
 
-Some checks run in both because they need no known answer: tie-outs, formula errors, writes only to allowed locations.
+The dimensions are independent. For example, an arithmetic check can use code to grade final outputs offline for a new capability, then become a regression check and an online validation.
 
-### 3.4 Release gate (typical first deployment)
+Offline evaluation can run before or after release and can use a rubric instead of an exact answer. Online checks can use known outcomes, invariants, or human review. The same check may serve both settings; live monitoring also includes operational signals such as latency and outages.
 
-| Eval | Shows |
+Use deterministic code for exact answers and invariants. Use humans for judgment and representative presentation review; an LLM judge can help with subjective criteria when calibrated against human ratings and checked for bias or drift. Check the graders themselves.
+
+### 3.3 What good coverage includes
+
+| Area | Evidence to seek |
 |---|---|
-| Correctness on a test set | It gets known answers right |
-| Edge cases | It flags problems instead of guessing |
-| Boundaries and safety | It stays within its limits, including against instructions hidden in inputs |
-| Consistency | The same input gives the same result across runs |
-| End-to-end integration | The whole path works, not just the agent |
-| Failure handling | Errors are visible and recoverable |
-| Cost and speed | It stays within its limits |
-| Human review of samples | Outputs are actually usable |
+| **Task quality** | Independent expected results or a clear rubric; relevant sources, calculations, and usable artifacts. |
+| **Context** | Correct sources/skills, handling of missing or conflicting information, and appropriate clarification. |
+| **Actions** | Valid tool inputs, correct effects, appropriate output locations, and agreement across related deliverables. |
+| **Controls** | Limits and permissions hold; adversarial inputs do not cause forbidden effects. |
+| **Continuity / integration** | State/files survive required interruptions; revision uses feedback; retries do not duplicate external actions. |
+| **Reliability and efficiency** | Acceptable outcomes across cases/repetitions, within latency, call, token, and cost budgets. |
 
-The parallel run is part of Deploy (Section 4), because it uses real work.
+Consistency means acceptable results within defined tolerances, not necessarily identical words or tool sequences. Grade a specific trajectory only when that behavior is required. File integrity alone does not establish content accuracy; a spreadsheet may open correctly while using the wrong formula or disagreeing with its report.
 
----
+### 3.4 Release gate
 
-## 4. Designing deployment (done in Plan)
+Agree thresholds before assessing the release candidate. Identify mandatory conditions, tolerances, acceptable failure rates, and human review requirements. Do not average away a critical boundary failure with many easy passes.
 
-### 4.1 Decisions
+Record case/grader versions, configuration, results, and unresolved limits. Reliably passing capability cases become part of the regression set. A passing gate authorizes only the evaluated scope and rollout stage.
 
-| Decision | Question |
-|---|---|
-| **Environment** | Where does it run, and which configuration version is released? |
-| **Access** | Under whose identity, with the narrowest permissions it needs? |
-| **Rollout stages** | How does it move from trial to normal use, and what must be true to move up? |
-| **Stop and rollback** | How is it stopped immediately, and what does rolling back revert? |
-| **Readiness** | Who owns it, and what must be confirmed before it goes live? |
+## 4. Deployment and recovery
 
-### 4.2 Rollout stages
+Deployment makes a version available for intended use; it need not mean cloud hosting. Define environment, identity/access, data handling, operational owner, limits, and monitoring before exposure to real work.
 
-| Stage | How it works | Move up when |
+Choose a rollout proportionate to consequences. A common sequence is:
+
+| Stage | Use | Evidence to expand |
 |---|---|---|
-| **1. Parallel run** | The agent works alongside the normal process; its outputs are not used | Its results match the normal process on real work |
-| **2. Limited use** | Outputs are used, but a person reviews every one | Rejections stay low over a set period |
-| **3. Normal use** | Review is set by risk: spot-check low-risk work, approve high-risk work | Monitoring stays within its thresholds |
+| **Controlled trial** | Synthetic or approved cases with restricted access. | Evaluation gate and readiness checks pass. |
+| **Parallel / shadow operation** | Compare with the normal process; suppress consequential external writes and keep outputs non-authoritative. | Reviewed agreement on representative work; discrepancies understood. |
+| **Supervised use** | Outputs/actions are used with the defined human review or approval. | Quality and operating thresholds hold over an agreed sample/period. |
+| **Broader use, if justified** | Expand workload, access, or autonomy within approved limits. | Evidence for the added scope, monitoring, and recovery. |
 
-If something goes wrong, move back down a stage.
+Permanent supervised use can be the right endpoint. Approval of one task type or stage does not authorize every capability or more access.
 
-### 4.3 Stop and rollback
+Before rollout, record the approved configuration and scope, owner, access/data policy, capacity/budgets, monitoring responses, and rehearsed stop/recovery procedure. Distinguish:
 
-| What | Rollback action |
+| Operation | What must be defined |
 |---|---|
-| **Configuration** | Return to the previous configuration version |
-| **Outputs** | Flag anything produced by the faulty version for re-review |
-| **Memory** | Review notes written since the faulty version was released |
+| **Stop** | Prevent new work; cancel or contain active runs; disable triggers or credentials when needed. |
+| **Recover** | Identify completed and partial actions; preserve evidence; reconcile external state before bounded retries or resumption. |
+| **Roll back** | Restore a compatible prior configuration; consider stored state and memory migrations. |
+| **Repair effects** | Re-review affected outputs and correct/reverse external changes where possible. Reverting code does not undo them. |
 
-### 4.4 Readiness check (before going live)
+## 5. Monitoring and response
 
-- Release gate passed, tied to a configuration version.
-- Owner named.
-- Stop procedure tested.
-- Access confirmed as the narrowest needed.
-- Data handling policy confirmed.
-- Release recorded in the change log.
+Watch the same outcomes and boundaries used to justify release. For each signal, define its source, threshold, review cadence, owner, and response. A dashboard without a decision or response path is incomplete.
 
----
-
-## 5. Designing monitoring (done in Plan)
-
-### 5.1 Signals for each part of the anatomy
-
-| Function | Signal |
-|---|---|
-| **Core** | Errors, run time, cost, number of steps |
-| **Context** | Wrong skill used, questions asked or guesses made about missing information |
-| **Actions** | Automatic output checks failing, corrections people make |
-| **Controls** | Limit hits, refused requests, attempts outside its boundaries |
-| **Continuity** | Memory written, failed resumes |
-| **Overall** | Approval and rejection rate, revision rounds, drift over time |
-
-### 5.2 Three tiers of checking
-
-| Tier | What | When |
+| Function / outcome | Useful signals | What they may prompt you to inspect |
 |---|---|---|
-| **Every run** | Automatic checks (tie-outs, formula errors, file locations, limits) | Continuously |
-| **Sample** | Human review of a selection of outputs and traces | Weekly |
-| **Trend** | Rejection rate, cost and drift over time | Monthly |
+| **Core** | Incomplete runs, errors, time, calls, tokens/cost | Model responses, orchestration, budgets, dependency failures |
+| **Context** | Unsupported assumptions, wrong retrieval/skill, missed information | Sources, instructions, retrieval, context selection |
+| **Actions** | Tool failures, incorrect calculations, artifact defects, human corrections | Tool contracts, scripts, inputs, validation |
+| **Controls** | Limit hits, denied requests, attempted or completed forbidden effects | Authorization, approvals, policy coverage, identities |
+| **Continuity** | Resume failures, stale/missing files, repeated actions, unsuitable memory use | Checkpoints, transfer, retry handling, memory scope/version |
+| **User outcome** | Acceptance, correction/rejection, unresolved tasks, revision effort | Whether the capability meets the actual need |
 
-### 5.3 How to respond
+These are diagnostic starting points; the same symptom can have several causes. Compare by task type and configuration so changes in workload do not masquerade as quality changes. Review decisions and authoritative external records can reveal problems absent from traces.
 
-| Severity | Example | Response |
-|---|---|---|
-| **Stop** | A boundary was breached, or a wrong result reached someone | Stop the agent, roll back (4.3), investigate |
-| **Fix** | A repeated error, or a check failing | Diagnose it (Section 7), add an eval case, fix it through Build |
-| **Accept** | A one-off issue with an acceptable workaround | Note it and keep watching |
+Combine three levels of observation:
 
----
+- **Per run:** retain appropriate status, configuration/source IDs, action outcomes, limits/usage, artifact checks, and review decisions. Apply data minimization, access, and retention rules to logs and traces.
+- **Sample review:** inspect outputs and trajectories at a frequency based on risk and volume; use full review where required.
+- **Trend review:** examine quality, corrections, cost, and changing inputs over an agreed period. Check whether graders and thresholds still reflect the task.
+
+Respond by impact: **stop/contain** material boundary breaches or harmful results; **diagnose and fix** repeatable defects; **accept with an owner and rationale** bounded limitations. Findings should link to evidence and a decision. Add reproducible evaluation cases where useful, then verify the fix and relevant regressions.
 
 ## 6. Changes after release
 
-Every change goes back through Build, Test and Deploy, starting with updating the eval plan. Testing has two jobs: **capability** (does the new thing work?) and **regression** (did anything that worked before break?).
+Use the same loop for changes, with effort proportional to impact. Revisit the affected requirements and plans; build, test, release, and monitor the change. A small fix need not recreate every artifact.
 
-| Change | Functions affected | Before release |
-|---|---|---|
-| New skill, same access | Context | New skill's cases plus regression on existing skills; parallel run for the new skill |
-| New tool, package or system access | Actions, Controls | Above, plus boundary and safety tests for the new access |
-| New knowledge or instructions | Context | Regression on cases that depend on that context |
-| New objective or role | All | Close to a first deployment: new plans, full release gate, rollout from stage 1 |
-| Model change | Core, so everything | Full rerun of all evals |
-| Approving an agent-drafted tool or model | Actions | That tool's tests plus regression on tasks that use it |
-
----
-
-## 7. Diagnosis: from a failure to a lever
-
-Monitor's main job is to say which part of the anatomy to change.
-
-| Failure | Function | Lever to check first |
-|---|---|---|
-| Wrong steps for a task | Context | Skill |
-| Right steps, wrong calculation | Actions | Tool or script |
-| Misread a business term or account | Context | Knowledge |
-| Went outside its limits | Controls | Permissions, hooks, environment |
-| Repeated an old mistake, or applied a wrong lesson | Continuity | Memory |
-| Lost track in a long task | Context | History management, planning |
-| Generally weak reasoning | Core | Model |
-| Ran too long or cost too much | Core, Controls | Loop limits, tool design |
-
-Every diagnosed failure also becomes a new eval case, so the same failure is caught in Test next time.
-
----
-
-## 8. Who changes what
-
-| Who | Changes | How |
-|---|---|---|
-| **The agent, during runs** | Memory only | Proposes notes. Controls decide what is kept. This is part of the anatomy, not the ADLC |
-| **The agent, as drafts** | Proposed tools, scripts, models, skill edits | Drafts only. They take effect only after people release them through the ADLC |
-| **People, through the ADLC** | Everything else: model, instructions, skills, knowledge, tools, access, controls, and the eval, release and monitoring plans | Build, Test, Deploy |
-
-**Promotion path:** a lesson the agent records in memory can be promoted by people into a skill, knowledge or a tool, through the ADLC, with a new eval case.
-
----
-
-## 9. Diagrams
-
-### The lifecycle loop
-
-```mermaid
-flowchart LR
-    PLAN["Build: Plan<br/>spec with eval, release and monitoring plans"] --> CONF["Build: Configure<br/>set the levers, create eval cases"]
-    CONF --> TEST["Test<br/>run evals, release gate"]
-    TEST -->|"pass"| DEP["Deploy<br/>readiness, rollout stages"]
-    TEST -->|"fail"| CONF
-    DEP --> MON["Monitor<br/>signals, reviews, responses"]
-    MON -->|"stop: roll back"| DEP
-    MON -->|"failures become eval cases"| TEST
-    MON -->|"what to change"| PLAN
-```
-
-### How the ADLC connects to the anatomy
-
-```mermaid
-flowchart TB
-    subgraph ADLC["ADLC: people change the agent"]
-        direction LR
-        B["Build"] --> T["Test"] --> D["Deploy"] --> M["Monitor"]
-        M --> B
-    end
-
-    subgraph AGENT["Anatomy: the agent"]
-        direction LR
-        CORE["Core"]
-        CTX["Context"]
-        ACT["Actions"]
-        CTL["Controls"]
-        CON["Continuity"]
-    end
-
-    B -->|"sets the levers and plans how each function is checked"| AGENT
-    T -->|"measures the whole configuration"| AGENT
-    D -->|"places it in a real environment at a rollout stage"| AGENT
-    AGENT -->|"signals, traces, reviews"| M
-    CON -->|"memory changes during runs, audited in Monitor"| M
-```
-
----
-
-## 10. Playbook: generic activities per phase
-
-True for any agent. A project plan copies this and adds dates and owners.
-
-### Build: Plan
-- Define the goal, scope and what is out of scope.
-- Decide each function: model, context sources, actions and access, controls and approvals, continuity and memory policy.
-- Define success criteria.
-- **Design the eval plan:** derive checks from the success criteria, the anatomy and the run path (Section 3.1).
-- **Design the release plan:** environment, access, rollout stages, stop and rollback, readiness (Section 4).
-- **Design the monitoring plan:** signals, review tiers, response rules (Section 5).
-- Produce: spec (with all three plans), architecture diagram, project task list.
-
-### Build: Configure
-- Build a walking skeleton first: one trivial task through the full path.
-- Configure each function and test each part on its own.
-- Collect eval cases and write graders alongside each skill.
-- Set up the every-run monitoring checks.
-- Record the configuration version.
-
-### Test
-- Run capability cases for anything new and the full regression set.
-- Run edge cases, boundary tests and consistency runs.
-- Test integration and failure handling end to end.
-- Test the stop procedure.
-- Review sample outputs as if they came from a colleague.
-
-### Deploy
-- Complete the readiness check.
-- Set up real access with the narrowest permissions needed.
-- Start at rollout stage 1 (parallel run) and move up only when each stage's criteria are met.
-- Record the release in the change log.
-
-### Monitor
-- Run automatic checks on every live output.
-- Review samples weekly and trends monthly.
-- Respond by severity: stop, fix or accept.
-- Audit memory the agent has written.
-- Turn each failure into an eval case and a change request.
-
-### Tooling layer (examples, not part of the concept)
-
-| Need | Examples |
+| Change | Review and evidence |
 |---|---|
-| Tracing and online evals | LangSmith, Langfuse |
-| Offline evals | LangSmith, Braintrust, Arize Phoenix, DeepEval |
-| Versioning configuration | Git |
-| Project instance | Asana or another task tracker |
+| New task or skill | Objective, procedure, representative capability cases, and relevant regressions; assess bundled code or added access too. |
+| New tool, package, connector, or access | Tool behavior, permissions, side effects, failure/retry paths, and affected task regressions. |
+| Instructions, retrieval, or knowledge | Cases depending on changed context, plus checks for unintended effects elsewhere. |
+| Model or orchestration | Broad representative task and boundary regressions, cost/latency comparison; full release suite where dependencies are broad. |
+| Storage or memory policy/schema | Existing-state compatibility, migration/deletion, isolation, resume behavior, and rollback. |
+| Purpose, authority, or deployment scope | Revisit all three plans and the release evidence for the new scope. |
 
----
+### Memory changes alongside software
 
-## The ADLC in one sentence
+Runtime updates—messages, working files, status, and permitted memory writes—follow the released policy. They do not each require a new software deployment. But memory can change later behavior even when code is unchanged.
 
-*Because an agent's behaviour comes from its whole configuration, varies from run to run, and meets a changing world, people improve it in a loop: plan the parts of the anatomy and decide upfront how each will be measured, released and watched; configure them with their eval cases; run those evals as the release gate; roll the agent out in stages it must earn; and monitor live work to stop, fix or accept what they find, turning each failure into a new case and a change to the right part.*
+Define whose information may be remembered, its source and scope, how writes are validated, and how it is corrected, expired, or deleted. Approval may be manual or automated according to the use case. Keep user, task, and shared organizational information appropriately separated.
 
----
+When changing the agent, evaluate representative empty, existing, stale, and conflicting memory states. Decide which stored data remain compatible, which need migration, and which must be invalidated. Keep enough provenance to diagnose behavior and make rollback meaningful.
+
+Agent-generated scripts or skill changes can be used or promoted only within granted authority. Draft generation is not itself authorization to change shared behavior or permissions. Whether a person or automation makes the change, its impact determines the required evidence and release controls.
 
 ## Change log
 
 | Version | Date | Change |
 |---|---|---|
-| v0.1 | [2026-10-15] | First draft: premises, phases, levers, evals, changes after release, diagnosis, who changes what, diagrams, playbook |
-| v0.2 | [2026-10-15] | Added eval design to Plan, eval work across phases, eval plan in the spec, eval cases created in Configure |
-| v0.3 | [2026-10-15] | Added Designing deployment (Section 4) and Designing monitoring (Section 5), three plans made in Plan, parallel run moved to Deploy, rollback and response rules; renumbered later sections; updated playbook, diagrams and summary |
+| v0.6 | 2026-10-24 | Clarified that the implementation inventory maps intended components while the task list owns implementation status and evidence. |
+| v0.5 | 2026-10-24 | Combined specification and design as the default planning artifact; placed architecture views and the implementation inventory within the lifecycle structure while keeping requirements, design, code and task tracking distinct. |
+| v0.4 | 2026-10-23 | Connected planning artifacts and traceability; clarified evaluation dimensions, rollout/recovery, diagnosis, and memory compatibility; removed universal gates, cadences, and duplicate playbooks. |
+| v0.3 | 2026-10-15 | Added release and monitoring plans, staged rollout, rollback, and response rules. |
+| v0.2 | 2026-10-15 | Added evaluation design in Plan and cases/graders in Configure. |
+| v0.1 | 2026-10-15 | Initial lifecycle model. |

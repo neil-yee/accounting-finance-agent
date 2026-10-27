@@ -1,0 +1,10 @@
+{
+  "namespace_probe": "{\"pypi.org\": \"gaierror\", \"1.1.1.1\": \"OSError\", \"escape_exit\": 1}\n",
+  "conversion": {
+    "exit_code": 0,
+    "stdout": "{\"file\": \"working-paper.xlsx\", \"formula_caches\": \"present\", \"rendered_pages\": 1, \"visual_review\": \"pending owner review\"}\n",
+    "stderr": ""
+  },
+  "cached_value": "5",
+  "cleanup": "deletion requested"
+}
