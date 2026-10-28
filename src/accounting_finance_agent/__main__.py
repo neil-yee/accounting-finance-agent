@@ -38,22 +38,21 @@ def show_state(settings, history, thread_id):
 
 def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
     require_runnable_profile(settings)
-    if settings.profile == EXCEL_PROFILE and not sandbox:
-        raise ConfigurationError("The Excel benchmark profile requires sandbox mode.")
+    if not sandbox:
+        raise ConfigurationError("Agent runs require a sandbox.")
     run_id = str(uuid4())
-    path = thread_workspace(thread_id) if sandbox else None
-    if path is not None:
-        from accounting_finance_agent.staging import stage_approved_helpers
-        stage_approved_helpers(settings, path)
-    context = RunContext(run_id, thread_id, settings.timezone, str(path) if path else "virtual thread files")
+    path = thread_workspace(thread_id)
+    from accounting_finance_agent.staging import stage_approved_helpers
+    stage_approved_helpers(settings, path)
+    context = RunContext(run_id, thread_id, settings.timezone, str(path))
     controls = RunControls(settings, context, log)
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 300,
               "run_id": run_id, "metadata": {"app_run_id": run_id, "work_thread_id": thread_id}}
     inputs = {"messages": [{"role": "user", "content": prompt}]}
     print(f"Run: {run_id}")
-    with thread_lease(thread_id), (use_workspace(path) if path else nullcontext()):
+    with thread_lease(thread_id), use_workspace(path):
         mark_active(thread_id)
-        before = workspace_manifest() if sandbox else {}
+        before = workspace_manifest()
         log.start(run_id, thread_id, {"workspace": str(path), "snapshot": settings.sandbox_snapshot_id,
                   "timezone": settings.timezone, "model": settings.model,
                   "configuration": effective_configuration(settings)}, before)
@@ -65,7 +64,7 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 command_timeout=settings.tool_timeout_seconds,
                 event=lambda kind, **details: log.event(run_id, kind, **details),
                 **({"controls": controls} if settings.profile == EXCEL_PROFILE else {}),
-            ) if sandbox else nullcontext(None)
+            )
             with (deadline(controls.remaining()) if settings.profile == EXCEL_PROFILE else nullcontext()), scope as backend:
                 agent = build_agent(settings, backend=backend, checkpointer=history.checkpointer, controls=controls)
                 latest = None
@@ -98,15 +97,14 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                 answer = final.text
                 if not answer.strip():
                     raise RuntimeError("Model returned no visible answer; assignment is incomplete.")
-            if sandbox:
-                after_transfer = workspace_manifest()
-                reports = [validate_artifact(path / relative) for relative, digest in after_transfer.items()
-                           if digest != before.get(relative) and (path / relative).suffix.lower() in
-                           {".xlsx", ".docx", ".pptx", ".csv", ".json"}]
-                log.event(run_id, "artifact_structure_checks", reports=reports)
-                print(f"[Structure checks] {len(reports)} files; {sum(len(r['warnings']) for r in reports)} warnings. Not financial or visual sign-off.")
-                if any(report["errors"] for report in reports):
-                    raise ValueError("Generated files failed structural checks. Inspect the work log and revise before approval.")
+            after_transfer = workspace_manifest()
+            reports = [validate_artifact(path / relative) for relative, digest in after_transfer.items()
+                       if digest != before.get(relative) and (path / relative).suffix.lower() in
+                       {".xlsx", ".docx", ".pptx", ".csv", ".json"}]
+            log.event(run_id, "artifact_structure_checks", reports=reports)
+            print(f"[Structure checks] {len(reports)} files; {sum(len(r['warnings']) for r in reports)} warnings. Not financial or visual sign-off.")
+            if any(report["errors"] for report in reports):
+                raise ValueError("Generated files failed structural checks. Inspect the work log and revise before approval.")
             if settings.profile == EXCEL_PROFILE:
                 from accounting_finance_agent.spreadsheets import validate_delivery
                 with deadline(controls.remaining()):
@@ -127,7 +125,7 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
             raise
         finally:
             try:
-                after = workspace_manifest() if sandbox else {}
+                after = workspace_manifest()
             except Exception as exc:
                 after = {}
                 status = "failed"
@@ -148,10 +146,9 @@ def run_prompt(settings, history, log, thread_id, prompt, *, sandbox):
                     raise
 
 
-def chat(settings: Settings, history: ThreadHistory, *, sandbox: bool, thread_id: str, log=None) -> None:
+def chat(settings: Settings, history: ThreadHistory, *, thread_id: str, log=None) -> None:
     print(f"Current thread: {thread_id}")
-    if sandbox:
-        print(f"Thread workspace: {thread_workspace(thread_id)}")
+    print(f"Thread workspace: {thread_workspace(thread_id)}")
     print(COMMANDS)
     while True:
         prompt = input("\nYou: ").strip()
@@ -165,8 +162,7 @@ def chat(settings: Settings, history: ThreadHistory, *, sandbox: bool, thread_id
             elif prompt == ":new":
                 thread_id = history.new().id
                 print(f"New thread: {thread_id}")
-                if sandbox:
-                    print(f"New separate workspace: {thread_workspace(thread_id)}")
+                print(f"New separate workspace: {thread_workspace(thread_id)}")
             elif prompt == ":threads":
                 for thread in history.list():
                     print(f"{'*' if thread.id == thread_id else ' '} {thread.id} | {thread.title or '(empty conversation)'}")
@@ -175,31 +171,28 @@ def chat(settings: Settings, history: ThreadHistory, *, sandbox: bool, thread_id
             elif prompt.startswith(":thread "):
                 thread_id = history.select(prompt.split(maxsplit=1)[1].strip()).id
                 print(f"Resumed thread: {thread_id}")
-                if sandbox:
-                    print(f"Workspace: {thread_workspace(thread_id)}")
+                print(f"Workspace: {thread_workspace(thread_id)}")
             elif prompt == ":workspace":
-                print(thread_workspace(thread_id) if sandbox else "Files are virtual and checkpointed in this thread.")
+                print(thread_workspace(thread_id))
             elif prompt == ":state":
                 show_state(settings, history, thread_id)
             elif prompt in {":runs", ":review"}:
-                with use_workspace(thread_workspace(thread_id)) if sandbox else nullcontext():
-                    manifest = workspace_manifest() if sandbox else {}
+                with use_workspace(thread_workspace(thread_id)):
+                    manifest = workspace_manifest()
                 for run in log.runs(thread_id):
                     print(f"{run['id']} | {run['status']} | {log.review_status(run['id'], manifest)} | {run['started']}")
             elif prompt.startswith((":approve ", ":reject ")):
-                if not sandbox:
-                    raise ValueError("Artifact review commands require sandbox mode and its local workspace.")
                 parts = prompt.split(maxsplit=2)
                 decision = "approved" if parts[0] == ":approve" else "rejected"
-                with use_workspace(thread_workspace(thread_id)) if sandbox else nullcontext():
-                    manifest = workspace_manifest() if sandbox else {}
+                with use_workspace(thread_workspace(thread_id)):
+                    manifest = workspace_manifest()
                 log.review(parts[1], thread_id, decision, manifest, getpass.getuser(), parts[2] if len(parts) > 2 else "")
                 print(f"Recorded {decision} for exact run {parts[1]}. No reusable assets were promoted.")
             elif prompt.startswith(":"):
                 print(f"Unknown command. {COMMANDS}")
             else:
                 history.record_prompt(history.select(thread_id), prompt)
-                run_prompt(settings, history, log, thread_id, prompt, sandbox=sandbox)
+                run_prompt(settings, history, log, thread_id, prompt, sandbox=True)
         except Exception as exc:
             print(f"{type(exc).__name__}: {exc}")
             print("No task was automatically replayed. Inspect :state, :runs, and the workspace before continuing.")
@@ -207,7 +200,8 @@ def chat(settings: Settings, history: ThreadHistory, *, sandbox: bool, thread_id
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the accounting and finance agent.")
-    parser.add_argument("--sandbox", action="store_true", help="Use one temporary sandbox per prompt.")
+    # Keep existing launch commands working; all runs now use a sandbox.
+    parser.add_argument("--sandbox", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--profile", choices=["local", EXCEL_PROFILE], default="local",
                         help="Select local settings or the fixed Excel benchmark baseline.")
     parser.add_argument("--show-config", action="store_true",
@@ -215,31 +209,28 @@ def main() -> None:
     parser.add_argument("--thread", metavar="ID", help="Resume an existing conversation.")
     args = parser.parse_args()
     try:
-        settings = load_settings(require_sandbox=args.sandbox, profile=args.profile,
+        settings = load_settings(require_sandbox=True, profile=args.profile,
                                  validate_credentials=not args.show_config)
         if args.show_config:
             print(json.dumps(effective_configuration(settings), indent=2, sort_keys=True))
             return
         require_runnable_profile(settings)
-        if settings.profile == EXCEL_PROFILE and not args.sandbox:
-            raise ConfigurationError("Use --sandbox with the Excel benchmark profile.")
     except ConfigurationError as exc:
         parser.error(str(exc))
     print(f"Deep Agent | Profile: {settings.profile} | Model: {settings.model} | Timezone: {settings.timezone}")
     print(f"Conversation state: {CHECKPOINT_DATABASE}")
     print(f"Limits per run: {settings.max_model_calls} model calls, {settings.max_tool_calls} tool calls, {settings.run_seconds}s admission deadline")
-    if args.sandbox:
-        print(f"Sandbox environment: {settings.sandbox_snapshot_id or 'LangSmith default'}")
-        print("Each thread has its own workspace; use :workspace to see where to put files.")
-        print("Existing files at workspace/ are untouched; copy needed files into the thread folder.")
-        print("Sandbox HTTPS allowlist: " + ", ".join(settings.sandbox_allowed_hosts))
+    print(f"Sandbox environment: {settings.sandbox_snapshot_id or 'LangSmith default'}")
+    print("Each thread has its own workspace; use :workspace to see where to put files.")
+    print("Existing files at workspace/ are untouched; copy needed files into the thread folder.")
+    print("Sandbox HTTPS allowlist: " + ", ".join(settings.sandbox_allowed_hosts))
     try:
-        with open_history(mode="sandbox" if args.sandbox else "virtual") as history, closing(WorkLog()) as log:
+        with open_history(mode="sandbox") as history, closing(WorkLog()) as log:
             try:
                 thread = history.initial(args.thread)
             except ValueError as exc:
                 parser.error(str(exc))
-            chat(settings, history, sandbox=args.sandbox, thread_id=thread.id, log=log)
+            chat(settings, history, thread_id=thread.id, log=log)
     except (EOFError, KeyboardInterrupt):
         print("\nSession ended. Your thread can be resumed next time.")
 

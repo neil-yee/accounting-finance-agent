@@ -11,7 +11,7 @@ The current cloud host and frozen snapshot passed the build checks. The existing
 
 ```powershell
 uv run --locked finance-agent --profile excel-benchmark-v3 --show-config
-uv run --locked finance-agent --profile excel-benchmark-v3 --sandbox
+uv run --locked finance-agent --profile excel-benchmark-v3
 ```
 
 The v3 profile raises the work deadline from 10 to 30 minutes (1,800 seconds),

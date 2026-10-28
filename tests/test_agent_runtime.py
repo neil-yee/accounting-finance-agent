@@ -1,6 +1,6 @@
 """Exercise real agent middleware and CLI orchestration with fake model responses."""
 
-from contextlib import contextmanager, redirect_stdout
+from contextlib import contextmanager, nullcontext, redirect_stdout
 import io
 import json
 from pathlib import Path
@@ -171,9 +171,11 @@ class RunnerChecks(unittest.TestCase):
         thread = str(uuid4())
         fake_agent = Mock()
         fake_agent.stream.side_effect = RuntimeError("simulated failure")
-        with patch.object(cli, "build_agent", return_value=fake_agent):
+        with patch.object(cli, "build_agent", return_value=fake_agent), patch.object(
+            cli, "sandbox_backend", return_value=nullcontext(Mock())
+        ):
             with self.assertRaisesRegex(RuntimeError, "simulated failure"):
-                cli.run_prompt(self.settings, Mock(), self.log, thread, "Task", sandbox=False)
+                cli.run_prompt(self.settings, Mock(), self.log, thread, "Task", sandbox=True)
         self.assertEqual(fake_agent.stream.call_count, 1)
         self.assertEqual(self.log.runs(thread)[0]["status"], "failed")
         with worklog.thread_lease(thread):

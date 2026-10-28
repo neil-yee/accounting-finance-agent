@@ -113,7 +113,7 @@ def load_settings(*, require_sandbox: bool = False, profile: str = "local",
         raise ConfigurationError("Set OPENAI_API_KEY in .env before starting the agent.")
 
     if validate_credentials and require_sandbox and not os.getenv("LANGSMITH_API_KEY", "").strip():
-        raise ConfigurationError("Set LANGSMITH_API_KEY in .env to use --sandbox.")
+        raise ConfigurationError("Set LANGSMITH_API_KEY in .env to use the sandbox.")
 
     tracing = "true" if benchmark else (os.getenv("LANGSMITH_TRACING", "false").strip().lower() or "false")
     if tracing not in {"true", "false"}:
