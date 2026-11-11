@@ -1,8 +1,14 @@
 # Accounting & Finance Agent
 
-A human-supervised prototype for accounting and finance work. It uses an AI agent to work with supplied files in a sandbox and produce deliverables for a person to inspect and review.
+A human-supervised AI agent prototype that turns supplied financial data into a reviewable Excel working paper.
 
-**Status:** A fictional Excel working-paper task passed three trials and owner review under the v5 benchmark configuration. This is a proof of concept; it has not been approved for real business work. [Results](docs/evaluations/excel-v5-results.md) · [Foundation checks](docs/evaluations/foundation-v5-2026-11-05.md) · [How to run](#setup)
+**Demo video:** Coming soon.
+
+**Demonstrated:** Three trials of a fictional two-month reporting task passed numerical checks and independent recalculation. The project owner reviewed and approved the resulting output versions.
+
+**Approach:** The agent works with files in a sandbox, preserves its work, and records activity in LangSmith. A person reviews its outputs. This is a proof of concept and has not been approved for real business work.
+
+[How it works](#how-the-prototype-works) · [Evaluation results](docs/evaluations/excel-v5-results.md) · [Setup](#setup)
 
 ## Why this project
 
@@ -59,7 +65,7 @@ The current interface is a terminal. A future Asana integration could manage tas
 - [Task list](docs/task-list.md) — implementation status and remaining work.
 - [Setup](#setup) and [run instructions](#run) — try the terminal prototype.
 
-A recorded demo is not yet available. The detailed technical inventory and setup instructions follow.
+The detailed technical inventory and setup instructions follow.
 
 ## Implementation status
 
