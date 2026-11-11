@@ -1,7 +1,9 @@
 # Offline engineering checks
 
-**Latest result:** 58 tests passed; 0 failures; 0 errors; 0 network connection
-attempts. These are engineering results, not financial-quality evaluation scores.
+**Initial result:** 58 tests passed; 0 failures; 0 errors; 0 network connection
+attempts. This report records earlier checks and subsequent extensions. The
+[November 5 foundation report](evaluations/foundation-v5-2026-11-05.md) records
+the later 150-test pass. These are engineering results, not financial-quality scores.
 
 ## Run again
 

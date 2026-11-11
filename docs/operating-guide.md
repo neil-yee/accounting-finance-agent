@@ -1,6 +1,6 @@
 # Local operating defaults
 
-These foundations support a local, human-reviewed prototype. The final three synthetic Excel trials pass numerical, grounding and assistant visual checks. All 142 offline tests pass. The owner approved all three exact output manifests; the selected Test gate is met. Release approval is separate. Earlier failures remain in the [test-gate follow-up](evaluations/test-gate-followup-2026-10-25.md).
+These foundations support a local, human-reviewed prototype. The latest published v5 evidence records three synthetic Excel trials passing numerical checks and independent recalculation, owner approval of the exact output versions, and 150 passing offline engineering checks. See the [v5 results](evaluations/excel-v5-results.md) and [foundation report](evaluations/foundation-v5-2026-11-05.md). Release approval is separate. Earlier failures remain in the [test-gate follow-up](evaluations/test-gate-followup-2026-10-25.md). For installation and terminal commands, start with the [technical guide](technical-guide.md).
 
 ## Versioned Excel trial profile
 
