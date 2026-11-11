@@ -151,11 +151,19 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         return self._one_tool_call(request, handler)
 
     def _one_tool_call(self, request, handler):
+        from langgraph.errors import GraphInterrupt
         if self.controls:
             self.controls.tool_started(request)
             request = self.controls.prepare_tool_request(request)
         try:
             result = super().wrap_tool_call(request, handler)
+        except GraphInterrupt:
+            if self.controls:
+                self.controls.log.event(self.controls.context.run_id, 'tool_paused',
+                                        name=request.tool_call['name'],
+                                        call_id=request.tool_call.get('id'))
+                print(f"[Tool paused] {request.tool_call['name']}", flush=True)
+            raise
         except BaseException as exc:
             if self.controls:
                 self.controls.tool_finished(request, error=exc)
@@ -165,11 +173,19 @@ class FileMetadataFilesystemMiddleware(FilesystemMiddleware):
         return result
 
     async def awrap_tool_call(self, request, handler):
+        from langgraph.errors import GraphInterrupt
         if self.controls:
             self.controls.tool_started(request)
             request = self.controls.prepare_tool_request(request)
         try:
             result = await super().awrap_tool_call(request, handler)
+        except GraphInterrupt:
+            if self.controls:
+                self.controls.log.event(self.controls.context.run_id, 'tool_paused',
+                                        name=request.tool_call['name'],
+                                        call_id=request.tool_call.get('id'))
+                print(f"[Tool paused] {request.tool_call['name']}", flush=True)
+            raise
         except BaseException as exc:
             if self.controls:
                 self.controls.tool_finished(request, error=exc)

@@ -1,0 +1,1 @@
+Correction from the finance lead: february_correction.csv supersedes the Software amount in february.csv. A CAD 500 invoice was entered twice. Update the February working paper and management summary. Explain which figures changed, retain the original source and prior deliverable, and identify the correction as a revision. Other February amounts remain unchanged.

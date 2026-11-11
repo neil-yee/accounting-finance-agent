@@ -10,6 +10,7 @@ def summary(log):
     for row in rows:
         item=dict(row); signals=[]
         if item['status'] in ('failed','limited','running'): signals.append('investigate before using outputs')
+        if item['status'] == 'awaiting_clarification': signals.append('human clarification needed')
         events=log.conn.execute("SELECT kind,details FROM events WHERE run_id=? ORDER BY id",(item['id'],)).fetchall()
         item['api_attempts']=sum(e['kind']=='api_reserved' for e in events)
         ledger=[json.loads(e['details']) for e in events if e['kind'] in ('api_reserved','api_usage')]

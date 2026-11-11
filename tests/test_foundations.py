@@ -104,7 +104,7 @@ class ConfigurationChecks(unittest.TestCase):
         self.enterContext(patch.dict(os.environ, {"OPENAI_API_KEY": "offline-placeholder", "LANGSMITH_TRACING": "false"}, clear=True))
 
     def test_defaults_and_snapshot_override(self):
-        self.assertEqual(config.load_settings().max_model_calls, 40)
+        self.assertEqual(config.load_settings().max_model_calls, 100)
         with patch.dict(os.environ, {"SANDBOX_SNAPSHOT_ID": "chosen-id", "AGENT_MAX_MODEL_CALLS": "7"}):
             loaded = config.load_settings()
         self.assertEqual(loaded.sandbox_snapshot_id, "chosen-id")

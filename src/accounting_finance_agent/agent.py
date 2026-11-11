@@ -17,7 +17,8 @@ from langchain.agents.middleware import TodoListMiddleware
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.base import BaseCheckpointSaver
 
-from accounting_finance_agent.config import EXCEL_PROFILE, Settings
+from accounting_finance_agent.config import COLLAB_PROFILE, EXCEL_PROFILE, Settings
+from accounting_finance_agent.clarification import ask_clarification, ClarificationIsolationMiddleware
 from accounting_finance_agent.file_metadata import FileMetadataFilesystemMiddleware
 from accounting_finance_agent.knowledge import (
     APPROVED_MEMORY_PROMPT,
@@ -57,6 +58,15 @@ REFERENCE_INSTRUCTIONS = (
     "The owner maintains memory and skills."
     " Use the relevant validation skill for generated files. Report which checks actually "
     "ran, unresolved issues, and limitations; file creation alone is not validation."
+    " Work independently within the task's scope. Use available sources and make "
+    "reasonable, reversible choices when they do not materially affect the result; "
+    "disclose relevant assumptions. Do not invent missing facts or explanations. "
+    "Continue useful work that does not depend on an answer. Use ask_clarification "
+    "when missing or conflicting information prevents a reliable result, or a needed "
+    "decision is outside your authority. Group related questions in one request where "
+    "practical. Call the clarification tool on its own, not in parallel with other "
+    "tools. Subagents should report missing information to the main agent, which asks "
+    "the person. A clarification is not authorization for an otherwise unapproved action."
 )
 
 
@@ -91,11 +101,12 @@ def _build_agent(
     register_harness_profile(
         f"openai:{settings.model}",
         HarnessProfile(general_purpose_subagent=GeneralPurposeSubagentProfile(
-            enabled=settings.delegation_enabled,
+            enabled=settings.delegation_enabled and settings.profile != COLLAB_PROFILE,
         )),
     )
     routed_backend = knowledge_backend(backend, settings=settings)
     middleware = [
+        ClarificationIsolationMiddleware(),
         FileMetadataFilesystemMiddleware(backend=routed_backend, controls=controls),
         TodoListMiddleware(),
         MemoryMiddleware(
@@ -105,6 +116,13 @@ def _build_agent(
             add_cache_control=True,
         ),
     ]
+    if settings.dynamic_subagents_enabled and settings.delegation_enabled:
+        from langchain_quickjs import CodeInterpreterMiddleware
+        # Opt-in local capability. PTC is disabled; JavaScript is scoped to a
+        # single call. Subagent calls share the normal model-call budget, but
+        # task() bridge dispatches do not pass the parent tool middleware.
+        middleware.append(CodeInterpreterMiddleware(mode="call", max_subagent_concurrency=4,
+                                                    timeout=10, ptc=None))
     if settings.profile == EXCEL_PROFILE:
         # Pinned adapter: BudgetClient owns retries, including summarization.
         # Avoid six transport attempts multiplied by three framework attempts.
@@ -114,8 +132,14 @@ def _build_agent(
             raise RuntimeError("Pinned summarization retry adapter needs review.")
         helper._summary_model = model
         middleware.append(summarization)
+    subagents = None
+    if settings.profile == COLLAB_PROFILE:
+        from accounting_finance_agent.collaboration import PeerMailbox, reviewer_specs
+        subagents = reviewer_specs(PeerMailbox(controls), routed_backend, controls)
     graph = create_deep_agent(
         model=model,
+        tools=[ask_clarification],
+        subagents=subagents,
         middleware=middleware,
         backend=routed_backend,
         system_prompt=(
@@ -132,7 +156,8 @@ def _build_agent(
         controls.log.event(
             controls.context.run_id, "harness_configuration",
             delegation_enabled=settings.delegation_enabled,
-            explicit_subagents=[],
+            dynamic_subagents_enabled=settings.dynamic_subagents_enabled,
+            explicit_subagents=[s['name'] for s in subagents] if subagents else [],
             compaction={
                 "implementation": "deepagents.middleware.summarization.create_summarization_middleware",
                 "defaults": compute_summarization_defaults(model),

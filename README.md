@@ -1,37 +1,70 @@
 # Accounting & Finance Agent
 
-> A general, human-supervised agent for accounting and finance work, with Asana as the planned work interface and sandboxed code execution for file processing.
+A human-supervised prototype for accounting and finance work. It uses an AI agent to work with supplied files in a sandbox and produce deliverables for a person to inspect and review.
 
-**Status:** Three fresh synthetic Excel trials pass numerical, grounded-analysis and assistant visual checks. All 142 offline tests pass. The owner approved all three exact outputs, so the selected Test gate is met. Release approval is separate. See the [test-gate follow-up](docs/evaluations/test-gate-followup-2026-10-25.md). Asana integration remains planned.
+**Status:** A fictional Excel working-paper task passed three trials and owner review under the v5 benchmark configuration. This is a proof of concept; it has not been approved for real business work. [Results](docs/evaluations/excel-v5-results.md) · [Foundation checks](docs/evaluations/foundation-v5-2026-11-05.md) · [How to run](#setup)
 
-## Demo
+## Why this project
 
-Video coming after the first complete task and revision path works.
+Accounting work requires source data, calculations that can be checked, and an opportunity for human judgment. This project explores how an agent can assist with that work while preserving files and evidence for review.
 
-## What this project aims to do
+The project was developed with AI coding assistance. The project owner guided the objectives, accounting workflow, design and evaluation decisions, and reviewed the trial outputs. Reports retain earlier failures and corrective work.
 
-Build a reusable system that accepts different accounting and finance requests, gathers relevant context, follows task-specific skills, and produces work that a person can inspect and approve.
+## Why build a custom agent harness?
 
-Asana will be the main place to assign work, review outputs, and request revisions. The agent loop will run outside a temporary sandbox, using general execution and file capabilities inside the sandbox. Approved business knowledge and reusable assets will guide the work.
+The harness provides control over how the agent works: its tools, sandbox, file handling, operating limits, and review process can be configured for the task. Run records and LangSmith traces make model and tool activity visible, helping investigate failures and assess changes. Task-specific skills and evaluations let the project apply and check accounting requirements against concrete cases.
 
-The selected trial creates a two-month Excel working paper from supplied synthetic inputs. BUILD-01–10 are complete. A reusable `financial-working-paper` skill provides build/validation helpers; the model writes grounded commentary and runs the procedure. Helpers contain no benchmark answers and are hashed and checked for mutation during export. Three frozen trials pass technical checks and have owner approval. See the [task list](docs/task-list.md).
+These controls and integrations also require ongoing implementation, testing, and maintenance. A trace helps explain what happened; it does not by itself establish that an output is correct.
 
-## Target workflow
+## Demonstrated workflow
+
+Given fictional financial data and business notes for two months, the agent creates an Excel working paper with income statements, variances, margins, a profit bridge, and commentary grounded in the supplied notes. The agent uses approved spreadsheet helpers and writes the commentary. [Task and rubric](docs/evaluations/excel-benchmark.md).
+
+1. A person supplies the assignment and inputs through a terminal and a thread workspace.
+2. The agent uses guidance and tools to work in a temporary sandbox.
+3. The system preserves the output and records execution evidence; LangSmith traces show recorded model and tool activity.
+4. Independent checks and human review assess the resulting workbook and its identified version.
+
+Separate thread workspaces retain files for follow-up work. Run limits, file protections, recovery records, and human approval support the supervised workflow. These controls have defined scopes and are described in the [operating guide](docs/operating-guide.md).
+
+## Evaluation results
+
+The v5 series used three fresh threads with the same synthetic inputs and configuration:
+
+- **3 of 3** outputs passed the numerical grader and independent recalculation. The assistant reviewed the narratives and rendered pages; the owner approved the three exact output manifests.
+- **150 offline engineering tests** passed with network access blocked, covering selected controls, files, persistence, and recovery scenarios.
+- **7 of 7** selected live context cases and **3 of 3** integrated offline recovery cases passed. Selected live sandbox boundary and file-preservation probes also passed.
+
+These results are evidence for **one synthetic task and its tested configuration**. They do not establish general accounting reliability. Outputs require human review, and a release for real work is a separate decision. Read the [v5 results](docs/evaluations/excel-v5-results.md), [foundation checks and limitations](docs/evaluations/foundation-v5-2026-11-05.md), and [earlier test report](docs/evaluations/test-gate-followup-2026-10-25.md).
+
+## How the prototype works
 
 ```mermaid
 flowchart LR
-    A[Work assigned in Asana] --> B[Agent gathers context]
-    B --> C[Process input copies in a sandbox]
-    C --> D[Preserve outputs and supporting code]
-    D --> E[Publish results in Asana]
-    E --> F{Human review}
-    F -->|Feedback| B
-    F -->|Approve current output| G[Done]
+    A[Person supplies a task and files] --> B[Agent gathers context]
+    B --> C[Works in a temporary sandbox]
+    C --> D[Files and run evidence are preserved]
+    D --> E[Checks and human review]
+    E -->|Revision request| B
+    E -->|Approved version| F[Reviewed deliverable]
 ```
 
-This is the proposed workflow. Separate approval will be required before a proposed script, model, memory note, or skill change becomes an approved reusable asset.
+The current interface is a terminal. A future Asana integration could manage task assignment and feedback, but it is not part of the working prototype yet.
+
+## Explore the project
+
+- [Evaluation reports](docs/evaluations/excel-v5-results.md) — benchmark results, evidence and links to related checks.
+- [Specification and design](docs/agent-spec.md) — capabilities, architecture, evaluation and release plans.
+- [Operating guide](docs/operating-guide.md) — configuration, sandbox use, review and recovery.
+- [Task list](docs/task-list.md) — implementation status and remaining work.
+- [Setup](#setup) and [run instructions](#run) — try the terminal prototype.
+
+A recorded demo is not yet available. The detailed technical inventory and setup instructions follow.
 
 ## Implementation status
+
+<details>
+<summary>Expand the detailed implementation and verification inventory</summary>
 
 The inventory separates architectural building blocks from supporting behavior, controls, evaluation, and delivery work. An implemented entry means code is present; live verification is recorded separately below. These categories organize the build by purpose, rather than prescribing a separate module for every entry.
 
@@ -43,7 +76,7 @@ The inventory separates architectural building blocks from supporting behavior, 
 | Todo middleware | Implemented | `TodoListMiddleware` and `write_todos`. |
 | Memory middleware | Implemented | Loads short, owner-maintained guidance from local `memory/AGENTS.md`. |
 | Skills middleware | Implemented | Discovers local CSV analysis, file-delivery validation and bank-reconciliation procedures. |
-| Backend routing | Implemented | `CompositeBackend` with read-only local memory/skills routes and a sandbox or state default. |
+| Backend routing | Implemented | `CompositeBackend` with read-only local memory/skills routes and a sandbox-backed working area. |
 | Execution environment | Implemented | Temporary LangSmith sandbox per prompt, with explicit 1 vCPU / 2 GiB RAM allocation and optional snapshot selection. |
 | Working-file storage | Implemented | Separate persistent `workspace/threads/<thread-id>/` folders, copied to `/workspace` per run. |
 | Checkpointer | Implemented | Local SQLite graph/conversation checkpoints and a thread directory outside the sandbox. |
@@ -65,10 +98,10 @@ The inventory separates architectural building blocks from supporting behavior, 
 | File metadata compatibility | Implemented; live check pending | Supply filenames omitted from binary reads by the pinned library version. |
 | Environment/configuration setup | Implemented | Private `.env`, locked dependencies, and reproducible local Python environment. |
 | Sandbox release records and rollback | Implemented | Save base/snapshot IDs, build-input hashes, and Python/package inventory under `.state/snapshots/`. Select a previous immutable ID to roll back; rollback has not been exercised. |
-| Basic engineering checks | 142 passing offline tests | Network-blocked suite covers lifecycle, context, limits, files, references, review, validation and recovery. Live model/sandbox checks are recorded separately. |
+| Basic engineering checks | 150 passing offline tests in the November 5 run | Network-blocked suite covers selected lifecycle, context, limits, files, references, review, validation and recovery. Live model/sandbox checks are recorded separately. |
 | Operating limits | Implemented; live check pending | The benchmark adds shared HTTP reservations, attempt/retry accounting and hard work/cleanup deadlines. The local profile retains its earlier admission bounds; see the operating guide. |
 | Network destinations | Benchmark boundary checked | Benchmark execution uses an isolated network namespace; live DNS/direct-IP/re-entry checks passed. Local-profile provider allowlist enforcement remains separate. |
-| Artifact validation | Benchmark pipeline implemented; corrected-run validation pending | Structural checks, LibreOffice recalculation/caches, PDF/PNG evidence and independent grader. The runner fix/regression passed offline; the corrected formal series is underway. |
+| Artifact validation | Selected benchmark validated | Structural checks, LibreOffice recalculation/caches, PDF/PNG evidence and independent grader were applied to the final three-trial series. |
 | Dataset evaluations | Three synthetic Excel trials pass, with owner approval | Independent recalculation, source-grounded analysis, visual review, saved outputs and trace/provenance walks. Earlier failed trials are retained. |
 | Durable work log | Implemented; basic live check passed | SQLite run outcomes, fingerprints, call events, transfer manifests, validation findings, and human review records. Three owner approvals are bound to saved manifests; stale/rejection checks are exercised separately. |
 | Failure recovery | Basic implementation; live check pending | No automatic task/tool replay; bounded provider retries, per-thread local locks, failure records, and explicit retained-sandbox export. No distributed/exactly-once guarantee. |
@@ -99,8 +132,8 @@ The inventory separates architectural building blocks from supporting behavior, 
 - A fresh default sandbox inventory confirmed Python 3.14.4 and preinstalled Excel, Word, and PowerPoint libraries without installing packages. Its deletion was confirmed by the API.
 - The `accounting-finance:v1` snapshot build completed, recorded its inventory, and selected the resulting immutable ID in local `.env`. The temporary builder's deletion was confirmed by the API. The owner subsequently reported running the agent and observing faster startup; no timing comparison or trace assessment has established a performance improvement.
 - Additional-package installation during a build, rollback, and automated environment builds have not been verified live. No model calls were made during the inventory or snapshot build.
-- The expanded offline engineering suite passed all 58 tests with zero network connection attempts. Malformed-review-label validation and execute timeout handling gaps were fixed. The real compiled graph was exercised with fake model replies, including subagent budget sharing, checkpoint restoration and timeout capping before tool validation. See [engineering results](docs/engineering-checks.md).
-- User-run smoke task `4b5fa1d2-5cda-4ce2-9af9-34cb75f008cf` preserved a CSV and JSON with three rows and a verified Decimal total of `14.24`, recorded the run for review, and left no pending nodes. Two initial execute calls were rejected for requesting 120000 seconds; the third succeeded. The subsequent fix passed offline regression checks. A read-only API check confirmed sandbox deletion. Live egress enforcement, recovery, evaluation trials and the CI workflow remain unverified.
+- An earlier offline engineering suite passed all 58 tests with zero network connection attempts. Malformed-review-label validation and execute timeout handling gaps were fixed. The real compiled graph was exercised with fake model replies, including subagent budget sharing, checkpoint restoration and timeout capping before tool validation. See [engineering results](docs/engineering-checks.md).
+- User-run smoke task `4b5fa1d2-5cda-4ce2-9af9-34cb75f008cf` preserved a CSV and JSON with three rows and a verified Decimal total of `14.24`, recorded the run for review, and left no pending nodes. Two initial execute calls were rejected for requesting 120000 seconds; the third succeeded. The subsequent fix passed offline regression checks. A read-only API check confirmed sandbox deletion. This historical smoke run did not verify live egress enforcement, recovery, evaluation trials or the CI workflow; later evaluation evidence is reported above.
 - The bank-reconciliation skill and fictional-company defaults are owner-editable Markdown references. They have not been exercised on a reconciliation task or established as a verified finance capability. No transaction data or balances were invented to present a completed result.
 
 See the [operating guide](docs/operating-guide.md) for settings, workspace transition, commands, review scope, and recovery limitations.
@@ -113,11 +146,23 @@ See [local trace copies](docs/operating-guide.md#local-trace-copies).
 
 **Intentionally deferred:** agent-drafted memory/skill change proposals and automatic learning. The owner currently maintains both folders directly. A separate Store, custom compaction tuning, async execution plumbing, and a large-result demo tool are optional additions when a concrete need arises. Default subagents, compaction, and result offloading already come with the harness.
 
+</details>
+
 ## Agent configuration
 
-Both modes use the built-in Deep Agents harness with a SQLite checkpointer, a routed filesystem, and brief instructions about working and reference paths. In default mode, ordinary files are virtual and stored in thread state; only the approved memory and skills routes expose their local folders. In the pinned Deep Agents version, the `execute` tool schema is present even in this mode, but execution returns an unavailable error. Sandbox mode supplies the `LangSmithSandbox` default backend that enables execution. Each prompt starts another run within the selected conversation thread.
+The terminal uses the built-in Deep Agents harness with a SQLite checkpointer, a routed filesystem, and a temporary `LangSmithSandbox` for each prompt. Ordinary working files are stored in the sandbox and preserved in the selected thread’s host workspace. Approved memory and skill routes expose their local folders to file tools. Each prompt starts another run within the selected conversation thread.
 
-Both modes explicitly add [LangChain's to-do middleware](https://docs.langchain.com/oss/python/langchain/middleware/built-in#to-do-list). Its `write_todos` tool lets the agent keep a plan with `pending`, `in_progress`, and `completed` items. The list lives in graph state and is persisted with the selected thread. The model decides when a plan is useful; simple questions may not produce a todo list. Inspect `write_todos` calls in LangSmith to observe planning and progress. These internal todos are separate from the future Asana task board.
+The agent explicitly adds [LangChain's to-do middleware](https://docs.langchain.com/oss/python/langchain/middleware/built-in#to-do-list). Its `write_todos` tool lets the agent keep a plan with `pending`, `in_progress`, and `completed` items. The list lives in graph state and is persisted with the selected thread. The model decides when a plan is useful; simple questions may not produce a todo list. Inspect `write_todos` calls in LangSmith to observe planning and progress. These internal todos are separate from the future Asana task board.
+
+### Experimental dynamic subagents
+
+For the local profile, set `AGENT_DYNAMIC_SUBAGENTS=true` before launching the agent to add the beta QuickJS interpreter. The agent can call `eval` with JavaScript that dispatches configured subagents through `task()`. Each `eval` starts with a fresh interpreter, and up to four subagent calls run concurrently. Programmatic access to other tools is disabled. The Excel benchmark profile does not enable this option.
+
+Interpreter dispatches use the parent run's shared model-call controls, but the `task()` bridge calls do not pass through the parent tool middleware: each dispatch is not individually counted against the normal tool-call limit or separately subject to parent-level tool approval. The interpreter's concurrency setting is not a total dispatch limit. This option is exploratory; its use changes the local runtime and should be evaluated for the intended workload.
+
+### Experimental reviewer messaging
+
+`finance-agent --profile peer-collaboration-v1` adds two named reviewers that can exchange addressed messages during one run. The reviewers' `send_peer_message` and `receive_peer_messages` tools use a bounded, in-memory mailbox; messages are not durable across runs and do not wake a reviewer that has finished. Tool calls and message contents may appear in traces. The two reviewers have separate conversation contexts and access to the same sandbox-backed workspace. They share the parent run's model and tool limits. The main agent must delegate them concurrently when the work requires real-time communication. Each reviewer name has one inbox per run: multiple simultaneous invocations of the same reviewer would share that inbox, so use one invocation of each role in this prototype. This profile is experimental; it does not add external messaging, background agents, or stateful subagent sessions.
 
 The pinned Deep Agents version omits filenames from some binary `read_file` content blocks. A small filesystem middleware adapter supplies the source basename before model requests, including restored thread history. Existing filenames are preserved; inline attachments without a known source path receive a MIME-based attachment name. This avoids LangChain's `LC_AUTOGENERATED` warning without suppressing warnings globally. The adapter retains the built-in filesystem behavior and is inherited by the default general-purpose subagent through its filesystem middleware slot.
 
@@ -142,8 +187,7 @@ These folders are on the local host, outside the temporary sandbox and thread wo
 | --- | --- | --- |
 | `/memories/` | Local `memory/` | Read-only to agent file tools |
 | `/skills/` | Local `skills/` | Read-only to agent file tools |
-| Other paths in sandbox mode | Remote sandbox; eligible `/workspace` changes copied back | Working-file tools and execution |
-| Other paths in default mode | Current thread's virtual filesystem | File tools; no shell execution |
+| Other working paths | Remote sandbox; eligible `/workspace` changes copied back | Working-file tools and execution |
 
 `MemoryMiddleware` loads `/memories/AGENTS.md` into the main agent's system context. A custom memory prompt describes these files as owner-maintained and read-only. `SkillsMiddleware` is registered through `skills=["/skills/"]`; it supplies skill names and descriptions, and the agent reads matching procedures through file tools. Starter CSV analysis and file-delivery validation skills are bundled; company-specific finance skills remain future work. See [memory](https://docs.langchain.com/oss/python/deepagents/memory) and [skills](https://docs.langchain.com/oss/python/deepagents/skills).
 
@@ -171,7 +215,7 @@ LANGSMITH_API_KEY=your-langsmith-key
 LANGSMITH_PROJECT=accounting-finance-agent
 ```
 
-Set `LANGSMITH_TRACING=false` to run without uploading traces. The OpenAI API key is required in either case. `.env.example` also documents the optional model and reasoning settings; the defaults follow the earlier learning prototype.
+Set `LANGSMITH_TRACING=false` to run without uploading traces. The OpenAI API key is required. The LangSmith API key is also required for the sandbox, even when tracing is disabled. `.env.example` also documents the optional model and reasoning settings; the defaults follow the earlier learning prototype.
 
 `.env`, the virtual environment, and local caches are ignored by Git. Keep real credentials out of tracked files. When tracing is enabled, prompts, model outputs, and tool data may be sent to LangSmith; use synthetic data for this prototype.
 
@@ -187,17 +231,20 @@ Enter a prompt, read the response, and type `exit` to quit. Follow-up prompts co
 
 ### Persistent conversations
 
-Conversation checkpoints and the thread directory are saved in `.state/checkpoints.sqlite`, outside `workspace/` and outside the sandbox. This private folder is ignored by Git and is not uploaded to the sandbox. On startup, the application resumes the last selected thread for the current execution mode, or creates one if none exists. The terminal prints its ID.
+Conversation checkpoints and the thread directory are saved in `.state/checkpoints.sqlite`, outside `workspace/` and outside the sandbox. This private folder is ignored by Git and is not uploaded to the sandbox. On startup, the application resumes the last selected sandbox thread, or creates one if none exists. The terminal prints its ID.
 
 | Command | Purpose |
 | --- | --- |
 | `:new` | Start a fresh conversation with a new thread ID. |
-| `:threads` | List saved IDs and their first-prompt titles for this mode. |
+| `:threads` | List saved sandbox thread IDs and their first-prompt titles. |
 | `:thread` | Show the current thread ID. |
 | `:thread ID` | Switch to an existing saved conversation. |
 | `:workspace` | Show the current thread's local working folder. |
 | `:state` | Inspect saved state keys, message count, pending nodes, and todos. |
+| `:pending` | Show pending clarification requests and their IDs. |
+| `:answer ID response` | Answer a pending clarification and resume its checkpoint in a new sandbox run. |
 | `:runs` / `:review` | List recent runs and human review status in this thread. |
+| `:recovery [RUN_ID]` | Inspect recorded failure, workspace, transfer and cleanup information; without an ID, show the latest failed, limited or running run. |
 | `:approve RUN_ID` | Record approval of a successful run's unchanged file manifest. |
 | `:reject RUN_ID reason` | Record rejection; submit requested revisions as the next normal prompt. |
 | `:help` | Show terminal commands. |
@@ -206,16 +253,23 @@ Conversation checkpoints and the thread directory are saved in `.state/checkpoin
 To select a saved sandbox conversation when launching:
 
 ```powershell
-uv run --locked finance-agent --sandbox --thread YOUR_SAVED_THREAD_ID
+uv run --locked finance-agent --thread YOUR_SAVED_THREAD_ID
 ```
 
-Default virtual-filesystem threads and sandbox threads are tracked separately so their tool histories and filesystem backends stay compatible. Thread IDs must already exist to resume them; use `:new` to create another. Switching threads makes no model or sandbox calls.
+Existing virtual-mode thread data remains in the checkpoint database, but the terminal selects only sandbox threads; it does not migrate virtual files or histories. Thread IDs must already exist to resume them; use `:new` to create another. Switching threads makes no model or sandbox calls.
+
+For missing information, the agent can call `ask_clarification` to pause. The
+question is checkpointed and the sandbox workspace is preserved before cleanup.
+Use `:pending` and `:answer ID response` in the same thread; this starts a new
+run and sandbox and resumes the checkpoint. A paused run is not a completed or
+approved deliverable. Questions and answers may appear in checkpoints and traces.
+The request format is independent of the terminal, but no Asana adapter exists.
 
 Only the new user message is submitted on each turn. The checkpointer restores previous graph state for that thread, including conversation messages and the harness's context-management state. This is thread memory, not a cross-thread long-term memory store. The integration uses [LangGraph checkpointers](https://docs.langchain.com/oss/python/langgraph/persistence) and [SqliteSaver](https://reference.langchain.com/python/langgraph.checkpoint.sqlite/SqliteSaver).
 
 **Files are separate by thread:** each sandbox conversation uses `workspace/threads/<thread-id>/`, mapped to `/workspace`. Use `:workspace` to locate it. Existing shared files at the root remain untouched; copy needed inputs into the selected thread folder. `:new` creates a separate empty folder. Per-thread local locks prevent overlapping runner executions; external exactly-once recovery is not guaranteed.
 
-To try conversation persistence without allocating a sandbox, start `uv run --locked finance-agent`, say "For this task, the project code is MAPLE-42. Remember it in this conversation," then exit. Start the same command again and ask "What is the project code?" The displayed thread ID should be unchanged. Use `:new` to check that the next conversation starts separately. These prompts make model calls; no model call is made merely by starting the app or selecting a thread.
+To try conversation persistence, start `uv run --locked finance-agent`, say "For this task, the project code is MAPLE-42. Remember it in this conversation," then exit. Start the same command again and ask "What is the project code?" The displayed thread ID should be unchanged. Use `:new` to check that the next conversation starts separately. Each prompt starts a sandbox and makes model calls; starting the app or selecting a thread alone does neither.
 
 These commands make model API calls. Local Python execution does not mean that the model runs locally.
 
@@ -230,13 +284,13 @@ VS Code is configured to use `.venv`. If an interpreter was previously selected 
 
 ## Sandbox execution
 
-Start sandbox mode with:
+Start the agent with:
 
 ```powershell
-uv run --locked finance-agent --sandbox
+uv run --locked finance-agent
 ```
 
-This mode requires a LangSmith account with sandbox access enabled and `LANGSMITH_API_KEY` in `.env`, even when tracing is disabled. The SDK uses `LANGSMITH_ENDPOINT` if your account needs another region's API endpoint.
+The agent requires a LangSmith account with sandbox access enabled and `LANGSMITH_API_KEY` in `.env`, even when tracing is disabled. The SDK uses `LANGSMITH_ENDPOINT` if your account needs another region's API endpoint.
 
 Try this prompt:
 
@@ -403,11 +457,11 @@ The mental models define shared vocabulary: the anatomy describes the agent's fi
 
 The current build sequence is tracked in the [ADLC task list](docs/task-list.md). At a high level, the remaining order is:
 
-1. Complete and verify the platform evaluation plan.
-2. Prepare known-answer bank-reconciliation cases and evaluate the first finance skill.
-3. Confirm release readiness, stop/rollback, and monitoring before real-work deployment.
-4. Add and evaluate the Asana task-to-review workflow after the foundation and first finance workflow are ready.
-5. Monitor outcomes and turn diagnosed failures into regression cases before later releases.
+1. Present the tested Excel workflow and its evidence as a supervised proof of concept.
+2. For any real-work use, complete the scope-specific release, recovery, and monitoring review.
+3. When a finance workflow such as bank reconciliation is selected, prepare known-answer cases and evaluate that workflow.
+4. Evaluate an Asana task-to-review integration if it becomes part of the selected scope.
+5. Use operating findings to guide changes and relevant regression checks.
 
 ## Boundaries and evaluation
 

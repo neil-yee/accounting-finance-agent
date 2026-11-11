@@ -27,7 +27,7 @@ def effective_configuration(settings: Settings) -> dict:
     dependencies = {}
     for name in ("deepagents", "langchain", "langchain-core", "langchain-openai",
                  "langgraph", "langgraph-checkpoint-sqlite", "langsmith", "openai",
-                 "python-dotenv", "tzdata"):
+                 "python-dotenv", "tzdata", "langchain-quickjs"):
         try:
             dependencies[name] = version(name)
         except PackageNotFoundError:

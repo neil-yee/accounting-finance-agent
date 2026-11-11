@@ -23,7 +23,7 @@ class Settings:
     langsmith_project: str
     sandbox_snapshot_id: str | None = None
     timezone: str = "America/Toronto"
-    max_model_calls: int = 40
+    max_model_calls: int = 100
     max_tool_calls: int = 120
     run_seconds: int = 900
     model_timeout_seconds: int = 120
@@ -35,25 +35,28 @@ class Settings:
 
     profile: str = "local"
     delegation_enabled: bool = True
+    dynamic_subagents_enabled: bool = False
     service_tier: str | None = None
     sdk_max_retries: int = 2
 
 
 # Version this named baseline whenever a setting changes. Runtime evidence must
 # distinguish these requested values from actual enforcement/provider behavior.
-EXCEL_PROFILE = "excel-benchmark-v3"
+EXCEL_PROFILE = "excel-benchmark-v5"
+COLLAB_PROFILE = "peer-collaboration-v1"
 EXCEL_SETTINGS = {
     "sandbox_snapshot_id": "3dce6ed0-f050-432a-bc9a-79a7b960972f",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
     "tracing_enabled": True,
-    "max_model_calls": 40,
-    "max_tool_calls": 40,
+    "max_model_calls": 100,
+    "max_tool_calls": 100,
     "run_seconds": 1800,
     "model_timeout_seconds": 180,
     "tool_timeout_seconds": 120,
     "max_output_tokens": 32000,
     "delegation_enabled": False,
+    "dynamic_subagents_enabled": False,
     # OpenAI calls its Standard service tier "default" in the API.
     "service_tier": "default",
     # Disable hidden SDK retries; BudgetClient meters the shared retry controller.
@@ -63,6 +66,7 @@ EXCEL_SETTINGS = {
 PROFILE_ENVIRONMENT_FIELDS = {
     "model": "OPENAI_MODEL", "reasoning_effort": "OPENAI_REASONING_EFFORT",
     "tracing_enabled": "LANGSMITH_TRACING", "max_model_calls": "AGENT_MAX_MODEL_CALLS",
+    "dynamic_subagents_enabled": "AGENT_DYNAMIC_SUBAGENTS",
     "max_tool_calls": "AGENT_MAX_TOOL_CALLS", "run_seconds": "AGENT_RUN_SECONDS",
     "model_timeout_seconds": "AGENT_MODEL_TIMEOUT_SECONDS",
     "tool_timeout_seconds": "AGENT_TOOL_TIMEOUT_SECONDS",
@@ -101,10 +105,13 @@ def positive_setting(name: str, default: int) -> int:
 def load_settings(*, require_sandbox: bool = False, profile: str = "local",
                   validate_credentials: bool = True) -> Settings:
     """Load local settings; the named trial baseline overrides its fixed fields."""
-    if profile not in {"local", EXCEL_PROFILE}:
+    if profile not in {"local", EXCEL_PROFILE, COLLAB_PROFILE}:
         raise ConfigurationError(f"Unknown runtime profile: {profile}")
     load_dotenv(PROJECT_ROOT / ".env", override=False)
     benchmark = profile == EXCEL_PROFILE
+    dynamic_subagents = os.getenv("AGENT_DYNAMIC_SUBAGENTS", "false").strip().lower() or "false"
+    if dynamic_subagents not in {"true", "false"}:
+        raise ConfigurationError("AGENT_DYNAMIC_SUBAGENTS must be true or false.")
 
     def limit(field: str, environment_name: str, default: int) -> int:
         return EXCEL_SETTINGS[field] if benchmark else positive_setting(environment_name, default)
@@ -113,7 +120,7 @@ def load_settings(*, require_sandbox: bool = False, profile: str = "local",
         raise ConfigurationError("Set OPENAI_API_KEY in .env before starting the agent.")
 
     if validate_credentials and require_sandbox and not os.getenv("LANGSMITH_API_KEY", "").strip():
-        raise ConfigurationError("Set LANGSMITH_API_KEY in .env to use --sandbox.")
+        raise ConfigurationError("Set LANGSMITH_API_KEY in .env to use the sandbox.")
 
     tracing = "true" if benchmark else (os.getenv("LANGSMITH_TRACING", "false").strip().lower() or "false")
     if tracing not in {"true", "false"}:
@@ -149,13 +156,18 @@ def load_settings(*, require_sandbox: bool = False, profile: str = "local",
         langsmith_project=project,
         sandbox_snapshot_id=os.getenv("SANDBOX_SNAPSHOT_ID", "").strip() or None,
         timezone=timezone_name,
-        max_model_calls=limit("max_model_calls", "AGENT_MAX_MODEL_CALLS", 40),
+        max_model_calls=limit("max_model_calls", "AGENT_MAX_MODEL_CALLS", 100),
         max_tool_calls=limit("max_tool_calls", "AGENT_MAX_TOOL_CALLS", 120),
         run_seconds=limit("run_seconds", "AGENT_RUN_SECONDS", 900),
         model_timeout_seconds=limit("model_timeout_seconds", "AGENT_MODEL_TIMEOUT_SECONDS", 120),
         tool_timeout_seconds=limit("tool_timeout_seconds", "AGENT_TOOL_TIMEOUT_SECONDS", 120),
         max_output_tokens=limit("max_output_tokens", "AGENT_MAX_OUTPUT_TOKENS", 16000),
         sandbox_allowed_hosts=hosts,
+        dynamic_subagents_enabled=dynamic_subagents == "true" and not benchmark,
     )
 
-    return replace(settings, profile=profile, **EXCEL_SETTINGS) if benchmark else settings
+    if benchmark:
+        return replace(settings, profile=profile, **EXCEL_SETTINGS)
+    if profile == COLLAB_PROFILE:
+        return replace(settings, profile=profile, dynamic_subagents_enabled=False)
+    return settings

@@ -27,6 +27,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
 from accounting_finance_agent.agent import build_agent
+from accounting_finance_agent.clarification import pending_requests
 from accounting_finance_agent.config import EXCEL_PROFILE, PROJECT_ROOT, load_settings
 from accounting_finance_agent.knowledge import reference_roots
 from accounting_finance_agent.runtime import RunContext, RunControls
@@ -205,6 +206,26 @@ def check_case(kind: str, text: str, *, correction_present: bool = False) -> dic
     raise ValueError(f"Unknown case rubric: {kind}")
 
 
+def check_missing_input_result(result: dict, pending: list[dict]) -> dict[str, Any]:
+    """Accept a text question or a matching, genuinely pending clarification."""
+    answer = output_text(result)
+    answer_check = check_case("missing_input", answer)
+    calls = tool_activity(result)
+    questions = [request.get("question", "") for request in pending
+                 if request.get("type") == "clarification" and request.get("id")]
+    matched = [question for question in questions if question and any(
+        call.get("name") == "ask_clarification"
+        and (call.get("args") or {}).get("question") == question
+        and call.get("result") is None for call in calls)]
+    interrupt_checks = [check_case("missing_input", question) for question in matched]
+    interrupt_passes = any(check["passes"] for check in interrupt_checks)
+    return {"passes": (answer_check["passes"] or interrupt_passes)
+                      and not answer_check["invented_result_pattern"],
+            "answer_check": answer_check,
+            "pending_clarification_matched": bool(matched),
+            "pending_question_checks": interrupt_checks}
+
+
 def make_history() -> list[Any]:
     scope = ("Task CASE-17. REV-B is the authoritative revised source for the February 2026 report: it reports 13 transactions in USD. "
              "The obsolete REV-A January draft said 12; do not use that value. Scope: report only CASE-17's transaction count, "
@@ -335,11 +356,17 @@ def run_case(case_id: str, kind: str, prompts: list[str], *, repeated_compaction
             activities = tool_activity(result)
             if kind == "source_injection":
                 grade = check_case(kind, answer, correction_present=json.dumps(activities))
+            elif kind == "missing_input":
+                pending = pending_requests(graph.get_state(config))
+                grade = check_missing_input_result(result, pending)
             elif kind == "compaction_applied":
                 grade = check_case(kind, answer)
             else:
                 grade = check_case(kind, answer, correction_present=True)
-            results.append({"cycle": index + 1, "answer": answer, "tool_activity": activities, "rubric": grade})
+            cycle = {"cycle": index + 1, "answer": answer, "tool_activity": activities, "rubric": grade}
+            if kind == "missing_input":
+                cycle["pending_clarifications"] = pending
+            results.append(cycle)
         evidence["cycles"] = results
         evidence["trace"] = trace.calls
         evidence["provider_attempts"] = controls.counts["model"]

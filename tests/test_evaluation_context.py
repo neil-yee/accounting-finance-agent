@@ -55,6 +55,26 @@ class OpenAIProfileFakeModel(CapturingFakeModel):
 
 
 class EvaluationContextChecks(unittest.TestCase):
+    def test_missing_input_evaluator_requires_matching_pending_clarification(self):
+        from scripts.evaluate_context_cases import check_missing_input_result
+
+        question = "Please provide the source data and reporting period."
+        result = {"messages": [AIMessage(content="", tool_calls=[{
+            "name": "ask_clarification", "args": {"question": question}, "id": "ask-1",
+        }])]}
+        pending = [{"id": "interrupt-1", "type": "clarification", "question": question}]
+        self.assertTrue(check_missing_input_result(result, pending)["passes"])
+        self.assertFalse(check_missing_input_result(result, [])["passes"])
+        self.assertFalse(check_missing_input_result(result, [{**pending[0], "question": "Different question"}])["passes"])
+
+    def test_missing_input_evaluator_accepts_text_question_but_rejects_invented_result(self):
+        from scripts.evaluate_context_cases import check_missing_input_result
+
+        valid = {"messages": [AIMessage(content="Please provide the source data.")]}
+        invalid = {"messages": [AIMessage(content="Please provide the source data; revenue is $500.")]}
+        self.assertTrue(check_missing_input_result(valid, [])["passes"])
+        self.assertFalse(check_missing_input_result(invalid, [])["passes"])
+
     def setUp(self):
         self.temp = TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -196,12 +216,12 @@ class EvaluationContextChecks(unittest.TestCase):
             settings = load_settings(profile=EXCEL_PROFILE, validate_credentials=False)
 
         dotenv.assert_called_once()
-        self.assertEqual(settings.profile, "excel-benchmark-v3")
+        self.assertEqual(settings.profile, "excel-benchmark-v5")
         self.assertEqual(settings.model, "gpt-6-luna")
         self.assertEqual(settings.reasoning_effort, "high")
         self.assertTrue(settings.tracing_enabled)
-        self.assertEqual(settings.max_model_calls, 40)
-        self.assertEqual(settings.max_tool_calls, 40)
+        self.assertEqual(settings.max_model_calls, 100)
+        self.assertEqual(settings.max_tool_calls, 100)
         self.assertEqual(settings.run_seconds, 1800)
         self.assertFalse(settings.delegation_enabled)
         self.assertEqual(settings.sandbox_allowed_hosts, ())

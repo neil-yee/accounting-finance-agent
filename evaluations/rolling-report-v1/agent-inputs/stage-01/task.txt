@@ -1,0 +1,10 @@
+Task: January management report for Northstar Consulting (fictional)
+
+Objective: Prepare a reviewable January 2026 income statement and brief management summary for the finance lead.
+
+Input: january.csv contains the supplied figures in CAD. Expenses are recorded as positive amounts.
+
+Definition of done:
+- An Excel working paper shows revenue, cost of sales, gross profit, operating expenses and operating profit, with calculations that can be reviewed.
+- A short summary reflects the supplied data and identifies material missing information or assumptions.
+- The source is preserved, and the deliverables are saved in the workspace for review.

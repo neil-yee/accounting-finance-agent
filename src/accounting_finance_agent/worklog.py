@@ -60,6 +60,28 @@ class WorkLog:
                 "SELECT id, status, started, error_type FROM runs WHERE thread_id=? ORDER BY started DESC LIMIT 20",
                 (thread_id,))]
 
+    def recovery_summary(self, thread_id, run_id=None):
+        """Return recorded facts for inspection; never resume or replay work."""
+        with self.lock:
+            if run_id is None:
+                row = self.conn.execute(
+                    "SELECT * FROM runs WHERE thread_id=? AND status IN ('failed','limited','running') "
+                    "ORDER BY started DESC LIMIT 1", (thread_id,),
+                ).fetchone()
+            else:
+                row = self.conn.execute("SELECT * FROM runs WHERE thread_id=? AND id=?",
+                                        (thread_id, run_id)).fetchone()
+            if row is None:
+                raise ValueError("No matching run in the current thread.")
+            events = self.conn.execute("SELECT kind, details FROM events WHERE run_id=? ORDER BY id",
+                                       (row['id'],)).fetchall()
+        data = dict(row)
+        data['inputs'] = json.loads(data['inputs'])
+        data['outputs'] = json.loads(data['outputs']) if data['outputs'] is not None else None
+        data['events'] = [(event['kind'], json.loads(event['details'])) for event in events]
+        data.pop('details', None)
+        return data
+
     def review(self, run_id, thread_id, decision, current_manifest, reviewer, note=""):
         if decision not in {"approved", "rejected"}:
             raise ValueError("Review decision must be approved or rejected.")

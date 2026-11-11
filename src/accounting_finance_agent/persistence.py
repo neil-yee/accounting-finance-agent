@@ -1,6 +1,7 @@
 """Keep conversation checkpoints and a small thread directory on the local host."""
 
 from collections.abc import Iterator
+import asyncio
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -13,6 +14,32 @@ from accounting_finance_agent.config import PROJECT_ROOT
 
 
 CHECKPOINT_DATABASE = PROJECT_ROOT / ".state" / "checkpoints.sqlite"
+
+
+class SyncAsyncSqliteSaver(SqliteSaver):
+    """Expose async checkpoint operations using the same locked SQLite saver.
+
+    Dynamic subagent dispatch invokes child graphs asynchronously, while the
+    terminal runner uses synchronous graph methods. SqliteSaver's connection is
+    opened with check_same_thread=False and its sync methods use its lock.
+    """
+
+    async def aget_tuple(self, config):
+        return await asyncio.to_thread(self.get_tuple, config)
+
+    async def alist(self, config, *, filter=None, before=None, limit=None):
+        items = await asyncio.to_thread(lambda: list(self.list(config, filter=filter, before=before, limit=limit)))
+        for item in items:
+            yield item
+
+    async def aput(self, config, checkpoint, metadata, new_versions):
+        return await asyncio.to_thread(self.put, config, checkpoint, metadata, new_versions)
+
+    async def aput_writes(self, config, writes, task_id, task_path=""):
+        await asyncio.to_thread(self.put_writes, config, writes, task_id, task_path)
+
+    async def adelete_thread(self, thread_id):
+        await asyncio.to_thread(self.delete_thread, thread_id)
 
 
 @dataclass(frozen=True)
@@ -102,5 +129,5 @@ class ThreadHistory:
 def open_history(*, mode: str, database: Path = CHECKPOINT_DATABASE) -> Iterator[ThreadHistory]:
     """Own the SQLite connection for the whole terminal session."""
     database.parent.mkdir(parents=True, exist_ok=True)
-    with SqliteSaver.from_conn_string(str(database)) as checkpointer:
+    with SyncAsyncSqliteSaver.from_conn_string(str(database)) as checkpointer:
         yield ThreadHistory(checkpointer, mode)

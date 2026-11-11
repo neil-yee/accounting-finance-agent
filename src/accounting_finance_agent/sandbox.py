@@ -57,6 +57,7 @@ def sandbox_backend(*, snapshot_id: str | None = None, allowed_hosts: tuple[str,
         cleanup_until = None
         try:
             # Keep the requested name for cleanup even if create/wait fails.
+            record("sandbox_starting")
             client.create_sandbox(
                 snapshot_id=snapshot_id, name=name, wait_for_ready=False,
                 vcpus=SANDBOX_VCPUS, mem_bytes=SANDBOX_MEMORY_BYTES,
@@ -132,8 +133,10 @@ def sandbox_backend(*, snapshot_id: str | None = None, allowed_hosts: tuple[str,
                         client.delete_sandbox(name)
                     record("sandbox_deletion_requested")
                 except ResourceNotFoundError:
+                    record("sandbox_absent_on_cleanup")
                     print(f"Sandbox already deleted: {name}")
                 except Exception as exc:
+                    record("sandbox_deletion_unconfirmed", error=type(exc).__name__)
                     raise RuntimeError(
                         f"Could not delete sandbox {name}. Check it in LangSmith "
                         "and delete it manually."

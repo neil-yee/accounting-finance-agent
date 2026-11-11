@@ -4,28 +4,29 @@ These foundations support a local, human-reviewed prototype. The final three syn
 
 ## Versioned Excel trial profile
 
-`excel-benchmark-v3` configures the current trial baseline. Its strict runner requires a
+`excel-benchmark-v5` configures the current trial baseline. Its strict runner requires a
 POSIX host (Linux/macOS) and a sandbox supporting unprivileged network namespaces.
 The current cloud host and frozen snapshot passed the build checks. The existing
 `local` profile retains its earlier behavior and limitations.
 
 ```powershell
-uv run --locked finance-agent --profile excel-benchmark-v3 --show-config
-uv run --locked finance-agent --profile excel-benchmark-v3 --sandbox
+uv run --locked finance-agent --profile excel-benchmark-v5 --show-config
+uv run --locked finance-agent --profile excel-benchmark-v5
 ```
 
-The v3 profile raises the work deadline from 10 to 30 minutes (1,800 seconds),
-following v2's increase to 40 requests. Prior runs retain their recorded
-configuration and outcomes. The US$1 API budget, 40-request ceiling, 40-tool
-ceiling and separate 60-second preservation/cleanup phase are unchanged.
+The v4 profile raised the provider-request ceiling from 40 to 100. The v5 profile
+raises the tool-attempt ceiling from 40 to 100. The US$1 API
+budget, 30-minute deadline and separate 60-second
+preservation/cleanup phase remain in effect. Prior v3 runs retain their recorded
+40-request configuration and outcomes; they do not establish a pass for v5.
 
 `EXCEL_SETTINGS` in `config.py` supplies the ceiling. Our `BudgetClient` reserves
 one slot through `RunControls.reserve()` before each inference attempt or uncached
 image-token preflight. Retries and compaction share the counter; the next request
-is blocked when 40 slots have been used. This is application enforcement, separate
+is blocked when 100 slots have been used. This is application enforcement, separate
 from LangChain middleware and LangGraph's recursion limit. The local profile counts
 logical model calls in middleware instead. A retry is another request, not another
-40-request allowance. A larger ceiling does not override the dollar or time budget.
+100-request allowance. A larger ceiling does not override the dollar or time budget.
 
 The first command prints settings, dependency/source/reference hashes and snapshot
 identity without model calls. The second starts an interactive session. The
@@ -37,7 +38,7 @@ Do not change settings during a three-run series.
 |---|---|
 | Model/reasoning/API tier | gpt-6-luna / high / Standard (`default`) |
 | Tracing/delegation | Tracing on; delegation disabled |
-| Requests/tools | At most 40 provider requests including compaction, retries and image-token preflights; 40 tool attempts |
+| Requests/tools | At most 100 provider requests including compaction, retries and image-token preflights; 100 tool attempts |
 | Time | 1,800-second (30-minute) work deadline; shared 60-second preservation/cleanup phase |
 | API budget | US$1, conservative preflight reservations; unknown usage keeps its reservation |
 | Output | At most 32,000 tokens, reduced to fit remaining spend |
@@ -63,9 +64,11 @@ be distinguished from the owner's approval.
 
 ### Current formal-series result and gate
 
-Fixture v4 series `df3feccd-26d4-44e0-8c7c-5ae0adfd1edb` passes numerical, independent recalculation, grounding and assistant visual checks on three fresh trials. The runtime profile remains `excel-benchmark-v3`: gpt-6-luna/high, 40 provider requests, 40 tool attempts, 30 minutes and US$1 conservative model API cap per run. The [follow-up report](evaluations/test-gate-followup-2026-10-25.md) retains earlier budget/tool stops and grounding failures.
+Fixture v4 series `df3feccd-26d4-44e0-8c7c-5ae0adfd1edb` passed numerical, independent recalculation, grounding and assistant visual checks on three fresh trials under the historical `excel-benchmark-v3` configuration: 40 provider requests, 40 tool attempts, 30 minutes and US$1 conservative model API cap per run. This historical series is evidence for v3; the later v5 series is recorded separately below. The [follow-up report](evaluations/test-gate-followup-2026-10-25.md) retains earlier budget/tool stops and grounding failures.
 
-The 142-test offline suite, 7/7 live context cases and 3/3 integrated offline recovery cases pass. TEST-01/03/04/05/06 meet their selected scope. The owner approved the exact three output manifests, completing TEST-02 and the selected Test gate. Run outcomes remain `needs_review` in the execution log; separate version-specific review records show `approved`. No release is approved.
+The historical v3 evidence reports 142 offline tests, 7/7 live context cases and 3/3 integrated offline recovery cases passing. The owner approved the exact three output manifests, completing the selected v3 Test gate. Run outcomes remain `needs_review` in the execution log; separate version-specific review records show `approved`.
+
+The v5 runtime subsequently completed three fresh Excel benchmark trials. All passed the numerical and independent recalculation checks, and the owner approved the three exact output manifests on November 5, 2026. Selected foundation checks were also repeated. [Live ceiling probes](evaluations/v5-live-ceiling-probes-2026-11-05.md) confirmed the request and tool controls, with a test-only higher graph recursion limit needed to reach the tool ceiling in the tested call pattern. See the [v5 Excel results](evaluations/excel-v5-results.md) and [foundation checks](evaluations/foundation-v5-2026-11-05.md). No release is approved.
 
 In the strict Excel benchmark profile only, the `financial-working-paper` helper
 is copied under `approved-tools/`, hashed with the inputs, and checked for mutation during export. It
@@ -76,7 +79,7 @@ inputs and staging. This integration does not change the local profile.
 `BudgetClient` remains the sole HTTP-attempt controller for ordinary and
 summarizer calls: at most six attempts (one initial request plus five eligible
 retries). Framework-level summarizer retries are disabled. Summary requests share
-the same 40-request, run-time and US$1 budgets; they do not receive an extra retry
+the same 100-request, run-time and US$1 budgets; they do not receive an extra retry
 allowance.
 
 **Network and files.** Organization-level egress overrides the provider's requested
@@ -206,7 +209,7 @@ the first run with these new defaults and newly registered skills.
 | Setting | Default | Scope |
 | --- | --- | --- |
 | AGENT_TIMEZONE | America/Toronto | Date, weekday, and current time refreshed per model request; tzdata supports Windows. |
-| AGENT_MAX_MODEL_CALLS | 40 | Intercepted agent model requests shared by parent and default general-purpose subagent. |
+| AGENT_MAX_MODEL_CALLS | 100 | Local-profile intercepted agent model requests shared by parent and default general-purpose subagent. |
 | AGENT_MAX_TOOL_CALLS | 120 | Tool attempts, including delegation and subagent tools, shared across the run. |
 | AGENT_RUN_SECONDS | 900 | Refuse new model/tool calls after this elapsed time. |
 | AGENT_MODEL_TIMEOUT_SECONDS | 120 | Provider request timeout, including its configured transport behavior. |
@@ -250,8 +253,11 @@ The separate environment builder does not use the task runner's destination list
 | Command | Meaning |
 | --- | --- |
 | :state | Checkpoint keys, message count, pending nodes, and todo status; no model call. |
+| :pending | List checkpointed clarification requests and IDs for the current thread. |
+| :answer ID response | Submit an answer and resume the corresponding checkpoint in a new run and sandbox. |
 | :workspace | Current local working folder; no sandbox allocation. |
 | :runs / :review | Last 20 runs for the current thread, execution outcome and review status. |
+| :recovery [RUN_ID] | Show recorded recovery facts for a run in the current thread; without an ID, select the latest failed, limited or running run. Does not resume work. |
 | :approve RUN_ID | In sandbox mode, record human approval only if a successful run's entire eligible file manifest still matches. |
 | :reject RUN_ID reason | Record rejection of that run's output version. Send the revision request as the next normal prompt. |
 
@@ -266,6 +272,28 @@ authenticated enterprise approval or permission to post ERP transactions. No
 memory, skill, or script is automatically promoted. The check and approval record
 are not an OS lock against a person editing a file concurrently.
 
+### Clarifications
+
+The agent is instructed to proceed with reasonable, reversible choices, disclose
+relevant assumptions, and avoid inventing facts. It should use available context
+and continue independent work before asking; related questions can be grouped.
+When missing or conflicting information prevents a reliable result, or a needed
+decision is outside its authority, the agent may call `ask_clarification`.
+This creates a versioned request containing a question in the LangGraph
+checkpoint. The runner preserves eligible workspace files, cleans up the
+temporary sandbox, and marks the run `awaiting_clarification`. Use `:pending`
+to inspect the request and `:answer ID response` to provide the answer. The
+response starts a new run with a fresh sandbox and a fresh per-run budget; it
+does not approve outputs. Normal task prompts are blocked while a clarification
+is pending. If preservation or cleanup fails, inspect `:recovery` before
+answering. Clarifications are stored in checkpoints and can be traced, so handle
+their content under the same privacy and retention rules as other task data.
+
+The structured request and interrupt ID can be used by a future Asana adapter,
+which would still need its own task mapping, permissions, duplicate handling and
+response routing. No Asana integration or automatic comment posting is included.
+This is a clarification mechanism, not a general approval gate for external writes.
+
 ## Work logs and recovery
 
 `.state/worklog.sqlite` stores run status, run/thread IDs, selected snapshot, input
@@ -279,8 +307,23 @@ at the same time. After a hard crash, a run may remain marked running and its lo
 may remain. Inspect the lock's recorded PID and actual process before removing a
 stale lock. There is no distributed lease service or exactly-once action guarantee.
 
-On ordinary errors the runner records failure and returns to the terminal. Inspect
-the checkpoint and files before giving the next instruction. Download failure keeps
+On ordinary errors the runner records failure and returns to the terminal. Use
+`:recovery` to see the recorded error type, workspace manifest, and sandbox
+transfer and cleanup events. Its manifest is a snapshot, not a guarantee that
+files remain unchanged or that an external effect did or did not happen. Use
+`:state`, inspect the files and reconcile uncertain effects before deciding what
+to do. A new prompt starts a new run; this command does not resume a failed run.
+Older records may lack detailed failure or sandbox events. A run marked `running`
+may still be active or may be left by a crash; check the process and lock.
+
+For the local profile, model API timeouts and SDK retries are configured in
+settings; the default is a 120-second request timeout and two automatic retries.
+Retries repeat the model request, not an entire task, and the timeout is not a
+guaranteed total deadline for all attempts. The stricter Excel trial profile uses
+a separate budgeted retry controller. No uncertain external write is automatically
+replayed by the recovery command.
+
+Download failure keeps
 the sandbox available under its existing idle/deletion timers. To explicitly retry
 export using recorded upload hashes, without replaying the task:
 

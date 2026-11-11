@@ -1,0 +1,1 @@
+Continue the report with March using march.csv and march_notes.txt. Compare March to the corrected February figures. Add the new expense category to the report; previous months did not have that category. Explain material movements only to the extent supported by the sources, and flag missing information. Preserve the source files and prior versions.

@@ -1,0 +1,10 @@
+Task: February management report for Northstar Consulting
+
+Objective: Continue the monthly report, adding February results and explaining the changes from January.
+
+Inputs: The existing January working paper, february.csv and february_notes.txt. Amounts are CAD.
+
+Definition of done:
+- The Excel working paper covers both months, with reviewable calculations and a comparison.
+- An updated summary explains the results using the supplied information and identifies material unknowns or assumptions.
+- Source files and the prior deliverable are preserved, and the updated deliverables are saved for review.

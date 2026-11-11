@@ -21,16 +21,23 @@ from accounting_finance_agent import knowledge
 class BenchmarkBuildChecks(unittest.TestCase):
     def test_versioned_profile_allows_40_requests_and_blocks_41st(self):
         settings = load_settings(profile=EXCEL_PROFILE, validate_credentials=False)
-        self.assertEqual(EXCEL_PROFILE, 'excel-benchmark-v3')
-        self.assertEqual(settings.max_model_calls, 40)
-        self.assertEqual(settings.max_tool_calls, 40)
+        self.assertEqual(EXCEL_PROFILE, 'excel-benchmark-v5')
+        self.assertEqual(settings.max_model_calls, 100)
+        self.assertEqual(settings.max_tool_calls, 100)
         self.assertEqual(settings.run_seconds, 1800)
-        controls = RunControls(settings, RunContext('run', 'thread', 'UTC', 'virtual'), Mock())
+        # Keep the historical 40-call boundary and exercise the new profile.
+        controls = RunControls(replace(settings, max_model_calls=40), RunContext('run', 'thread', 'UTC', 'virtual'), Mock())
         for _ in range(40):
             controls.reserve('model', api_attempt=True)
         with self.assertRaisesRegex(RunLimitExceeded, 'limit reached \\(40\\)'):
             controls.reserve('model', api_attempt=True)
         self.assertEqual(controls.counts['model'], 40)
+        controls = RunControls(settings, RunContext('run', 'thread', 'UTC', 'virtual'), Mock())
+        for _ in range(100):
+            controls.reserve('model', api_attempt=True)
+        with self.assertRaisesRegex(RunLimitExceeded, 'limit reached \\(100\\)'):
+            controls.reserve('model', api_attempt=True)
+        self.assertEqual(controls.counts['model'], 100)
 
     def setUp(self):
         self.settings=replace(Settings('gpt-6-luna','high',False,'offline'),profile=EXCEL_PROFILE)

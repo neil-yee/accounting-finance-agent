@@ -1,0 +1,7 @@
+period,category,classification,amount_cad
+2026-03,Consulting revenue,revenue,60000
+2026-03,Contractor delivery costs,cost_of_sales,18000
+2026-03,Salaries,operating_expense,22000
+2026-03,Rent,operating_expense,5000
+2026-03,Software,operating_expense,2500
+2026-03,Specialist project support,operating_expense,6000
