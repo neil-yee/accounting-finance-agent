@@ -1,5 +1,7 @@
 # Accounting & Finance Agent
 
+## Summary
+
 A human-supervised AI agent prototype that turns supplied financial data into a reviewable Excel working paper.
 
 **Demo video:** Coming soon.
@@ -8,21 +10,25 @@ A human-supervised AI agent prototype that turns supplied financial data into a 
 
 **Approach:** The agent works with files in a sandbox, preserves its work, and records activity in LangSmith. A person reviews its outputs. This is a proof of concept and has not been approved for real business work.
 
-[How it works](#how-the-prototype-works) · [Evaluation results](docs/evaluations/excel-v5-results.md) · [Setup](#setup)
+[Project details](#project-details) · [Evaluation results](docs/evaluations/excel-v5-results.md) · [Setup](#setup)
 
-## Why this project
+---
+
+## Project details
+
+### Why this project
 
 Accounting work requires source data, calculations that can be checked, and an opportunity for human judgment. This project explores how an agent can assist with that work while preserving files and evidence for review.
 
 The project was developed with AI coding assistance. The project owner guided the objectives, accounting workflow, design and evaluation decisions, and reviewed the trial outputs. Reports retain earlier failures and corrective work.
 
-## Why build a custom agent harness?
+### Why build a custom agent harness?
 
 The harness provides control over how the agent works: its tools, sandbox, file handling, operating limits, and review process can be configured for the task. Run records and LangSmith traces make model and tool activity visible, helping investigate failures and assess changes. Task-specific skills and evaluations let the project apply and check accounting requirements against concrete cases.
 
 These controls and integrations also require ongoing implementation, testing, and maintenance. A trace helps explain what happened; it does not by itself establish that an output is correct.
 
-## Demonstrated workflow
+### Demonstrated workflow
 
 Given fictional financial data and business notes for two months, the agent creates an Excel working paper with income statements, variances, margins, a profit bridge, and commentary grounded in the supplied notes. The agent uses approved spreadsheet helpers and writes the commentary. [Task and rubric](docs/evaluations/excel-benchmark.md).
 
@@ -33,7 +39,7 @@ Given fictional financial data and business notes for two months, the agent crea
 
 Separate thread workspaces retain files for follow-up work. Run limits, file protections, recovery records, and human approval support the supervised workflow. These controls have defined scopes and are described in the [operating guide](docs/operating-guide.md).
 
-## Evaluation results
+### Evaluation results
 
 The v5 series used three fresh threads with the same synthetic inputs and configuration:
 
@@ -43,7 +49,7 @@ The v5 series used three fresh threads with the same synthetic inputs and config
 
 These results are evidence for **one synthetic task and its tested configuration**. They do not establish general accounting reliability. Outputs require human review, and a release for real work is a separate decision. Read the [v5 results](docs/evaluations/excel-v5-results.md), [foundation checks and limitations](docs/evaluations/foundation-v5-2026-11-05.md), and [earlier test report](docs/evaluations/test-gate-followup-2026-10-25.md).
 
-## How the prototype works
+### How the prototype works
 
 ```mermaid
 flowchart LR
@@ -57,7 +63,7 @@ flowchart LR
 
 The current interface is a terminal. A future Asana integration could manage task assignment and feedback, but it is not part of the working prototype yet.
 
-## Explore the project
+### Explore the project
 
 - [Evaluation reports](docs/evaluations/excel-v5-results.md) — benchmark results, evidence and links to related checks.
 - [Specification and design](docs/agent-spec.md) — capabilities, architecture, evaluation and release plans.
@@ -65,7 +71,11 @@ The current interface is a terminal. A future Asana integration could manage tas
 - [Task list](docs/task-list.md) — implementation status and remaining work.
 - [Setup](#setup) and [run instructions](#run) — try the terminal prototype.
 
-The detailed technical inventory and setup instructions follow.
+---
+
+## Technical details
+
+The implementation inventory, configuration, and setup instructions follow.
 
 ## Implementation status
 
