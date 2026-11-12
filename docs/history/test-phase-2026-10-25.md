@@ -20,7 +20,7 @@ requests, 40 tool attempts, 1,800 seconds of work and a US$1 conservative API
 reservation budget, plus separate bounded cleanup. The frozen sandbox was
 `3dce6ed0-f050-432a-bc9a-79a7b960972f`.
 
-Only [agent inputs](../../evaluations/excel-v1/agent-inputs/) entered the task
+Only [agent inputs](../../evaluations/excel-v1/agent-inputs) entered the task
 workspace. The Decimal oracle and evaluator stayed outside it. After each run,
 the evaluator copied the submitted workbook into a separate sandbox and ran the
 repository's fixed LibreOffice helper. It ran no agent-generated Python. The

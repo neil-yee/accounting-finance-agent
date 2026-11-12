@@ -28,11 +28,13 @@ Describe the procedure, expected outputs, and checks.
 
 The middleware initially supplies skill names and descriptions. The agent reads
 the full file when the task matches. Keep detailed references in supporting files.
-This README is not a registered skill. Three procedures are bundled:
+This README is not a registered skill. Four procedures are bundled:
 
 - `csv-analysis`: inspect and summarize structured transaction data.
 - `file-delivery-validation`: check sources, calculations, file structure and presentation.
-- `bank-reconciliation`: the first end-to-end finance workflow procedure, covering
+- `financial-working-paper`: build and validate a two-month workbook with reusable
+  helpers; used by the [evaluated Excel workflow](../docs/evaluations/excel-v5-results.md).
+- `bank-reconciliation`: a draft finance workflow procedure, covering
   scope, source controls, matching, the balance bridge, draft entries, Excel/Word
   deliverables, exceptions and human review. Execution remains unverified.
 
@@ -42,8 +44,10 @@ from workflow instructions so either file can be revised without changing agent 
 The reference is demonstration context, not verified information about a real business.
 
 These virtual routes are accessible through file tools, not sandbox shell paths.
-If a skill includes a script that must execute remotely, its contents must first
-be copied into the sandbox working directory. Python packages still need to be
+If a skill includes a script that must execute remotely, it must be available in
+the sandbox working directory. The strict Excel profile stages approved helpers
+under `/workspace/approved-tools/`; other local-profile scripts must be copied
+before execution. Python packages still need to be
 available or installed there; documenting a library in a skill does not install it.
 
 After adding or changing approved guidance, restart the app and use `:new` for a

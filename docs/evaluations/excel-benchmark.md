@@ -1,6 +1,6 @@
 # Excel benchmark — synthetic two-month working paper
 
-**Version:** 4 · October 26, 2026 · **Status:** v4 technical checks pass on three fresh trials; owner visual/analysis approval recorded for all three exact outputs. See the [follow-up results](test-gate-followup-2026-10-25.md). The [first failed series](test-phase-2026-10-25.md) is retained.
+**Version:** 4 · October 26, 2026 · **Status:** v4 technical checks pass on three fresh trials; owner visual/analysis approval recorded for all three exact outputs. See the [follow-up results](../history/test-gate-followup-2026-10-25.md). The [first failed series](../history/test-phase-2026-10-25.md) is retained.
 
 Business inputs and reference answers below are unchanged. Versioned [v4 task assets](../../evaluations/excel-v4/) clarify reusable helper use, percentage-point units, source grounding and accurate uncertainty statements. The rubric, all-three-pass requirement and owner review remain in force.
 

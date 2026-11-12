@@ -1,6 +1,6 @@
 # Setup and technical guide
 
-[Back to the project overview](../README.md)
+[Project overview](../README.md) · [Documentation index](README.md) · [Script catalog](../scripts/README.md)
 
 This guide covers installation, terminal commands, configuration, and file handling. For profile-specific limits, benchmark execution, output review, and recovery, use the [operating guide](operating-guide.md). Build status is tracked in the [task list](task-list.md); current published test evidence is in the [v5 results](evaluations/excel-v5-results.md) and [foundation report](evaluations/foundation-v5-2026-11-05.md).
 
@@ -183,8 +183,8 @@ Build and select a reusable snapshot independently of agent runs:
 uv run --locked python scripts/build_sandbox_snapshot.py --activate
 ```
 
-The recipe in `environments/finance/` initially captures LangSmith's default
-libraries without installing extras. The script uses one temporary builder with
+The recipe in `environments/finance/` adds LibreOffice Calc, Poppler, and fonts to
+the pinned base snapshot. The script uses one temporary builder with
 1 vCPU and 2 GiB RAM, records package versions and the resolved base snapshot ID,
 captures the release, and confirms builder deletion. Snapshot storage persists
 separately. It does not upload task files or make model calls.
@@ -192,8 +192,9 @@ separately. It does not upload task files or make model calls.
 `--activate` selects the returned immutable ID in local `.env` as
 `SANDBOX_SNAPSHOT_ID`; restart the agent to load it. Blank selects LangSmith's
 default. Sandbox allocation and workspace preservation continue as before.
-Future library additions go in the environment's pinned requirements file and
-require a new build, not installation at every agent startup. See the
+Additional Python packages go in the environment's pinned requirements file;
+system packages are configured in `snapshot.json`. Changes require a new build.
+See the
 [environment release guide](../environments/finance/README.md) for updates, rollback,
 base pinning, and deployment configuration. A manual GitHub Actions workflow is defined; configure its repository secret after pushing the project. It has not been run.
 
@@ -270,17 +271,20 @@ uv run --locked python scripts/check_engineering.py
 
 The November 5, 2026 run recorded 150 passing offline checks; see the
 [foundation results and limitations](evaluations/foundation-v5-2026-11-05.md).
-The [earlier engineering report](engineering-checks.md) explains selected checks
+The [earlier engineering report](history/engineering-checks.md) explains selected checks
 and fixes. Financial quality requires separate task evaluations.
 
 ## Project structure
 
 ```text
 docs/
+  README.md             # Documentation index and repository map
   technical-guide.md     # Setup, terminal commands, configuration, and files
   operating-guide.md     # Profiles, review, recovery, and benchmark instructions
   agent-spec.md          # Specification and design: Build, Test, Deploy, Monitor
   task-list.md           # ADLC checklist with current project statuses and gates
+  evaluations/          # Published benchmark contract and result reports
+  history/              # Earlier assessments, build notes, and test reports
   mental-model/
     00-overview.md       # Map of the anatomy and ADLC models
     01-anatomy.md        # Agent functions and implementation mechanisms
@@ -290,6 +294,7 @@ environments/finance/
   requirements.txt       # Optional additional remote Python packages
   README.md              # Build, select, update, and roll back environments
 scripts/
+  README.md             # Script catalog grouped by purpose and side effects
   build_sandbox_snapshot.py  # Prepare and capture a reusable cloud environment
 src/accounting_finance_agent/
   __init__.py

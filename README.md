@@ -66,7 +66,7 @@ The latest published evidence is dated **November 5, 2026**:
 | Engineering | 150/150 offline checks passed for selected controls, files, persistence, recovery, and related behavior. | [Foundation report](docs/evaluations/foundation-v5-2026-11-05.md) |
 | Live behavior and boundaries | 7/7 context cases passed; selected sandbox and file-preservation checks passed. | [Scope and limitations](docs/evaluations/foundation-v5-2026-11-05.md#limits-and-evidence) |
 
-Evidence covers one fictional task and configuration; real business use requires separate evaluation and approval. Earlier failures and corrections remain in the [test history](docs/evaluations/test-gate-followup-2026-10-25.md).
+Evidence covers one fictional task and configuration; real business use requires separate evaluation and approval. Earlier failures and corrections remain in the [test history](docs/history/test-gate-followup-2026-10-25.md).
 
 ### My role and AI assistance
 
@@ -94,6 +94,7 @@ Runs use paid model and sandbox services. The default profile differs from the e
 
 | Read next | Contents |
 | --- | --- |
+| [Documentation and repository map](docs/README.md) | Where to find the code, cases, results, guides, and project history. |
 | [Setup and technical guide](docs/technical-guide.md) | Installation, commands, threads, skills, file handling, and code map. |
 | [Operating guide](docs/operating-guide.md) | Profiles, limits, benchmark execution, review, recovery, and trace exports. |
 | [Specification and design](docs/agent-spec.md) | Intended capabilities, architecture, evaluation, deployment, and monitoring plans. |

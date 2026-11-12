@@ -106,7 +106,7 @@ The tests use scripted model responses, local temporary files/SQLite and an HTTP
 | TEST-05: provenance and review | Meets completion criterion for selected scope |
 | TEST-06: recovery | Meets completion criterion for selected scope |
 
-The [benchmark acceptance rubric](excel-benchmark.md#4-acceptance-rubric) requires owner visual/analysis review. The owner approved all three outputs in chat on October 26, 2026; exact-hash approval was recorded at `2026-10-26T00:19:28Z`. Rechecking each complete current workspace manifest reports `approved`. Any later artifact revision invalidates that approval and requires relevant rechecks.
+The [benchmark acceptance rubric](../evaluations/excel-benchmark.md#4-acceptance-rubric) requires owner visual/analysis review. The owner approved all three outputs in chat on October 26, 2026; exact-hash approval was recorded at `2026-10-26T00:19:28Z`. Rechecking each complete current workspace manifest reports `approved`. Any later artifact revision invalidates that approval and requires relevant rechecks.
 
 Three successful synthetic runs are initial consistency evidence. Broader workflows, unfamiliar source structures and real business use need additional cases. Release planning, stop/recovery rehearsal and release authorization remain separate tasks.
 

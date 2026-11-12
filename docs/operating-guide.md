@@ -1,6 +1,6 @@
 # Local operating defaults
 
-These foundations support a local, human-reviewed prototype. The latest published v5 evidence records three synthetic Excel trials passing numerical checks and independent recalculation, owner approval of the exact output versions, and 150 passing offline engineering checks. See the [v5 results](evaluations/excel-v5-results.md) and [foundation report](evaluations/foundation-v5-2026-11-05.md). Release approval is separate. Earlier failures remain in the [test-gate follow-up](evaluations/test-gate-followup-2026-10-25.md). For installation and terminal commands, start with the [technical guide](technical-guide.md).
+These foundations support a local, human-reviewed prototype. The latest published v5 evidence records three synthetic Excel trials passing numerical checks and independent recalculation, owner approval of the exact output versions, and 150 passing offline engineering checks. See the [v5 results](evaluations/excel-v5-results.md) and [foundation report](evaluations/foundation-v5-2026-11-05.md). Release approval is separate. Earlier failures remain in the [test-gate follow-up](history/test-gate-followup-2026-10-25.md). For installation and terminal commands, start with the [technical guide](technical-guide.md).
 
 ## Versioned Excel trial profile
 
@@ -64,7 +64,7 @@ be distinguished from the owner's approval.
 
 ### Current formal-series result and gate
 
-Fixture v4 series `df3feccd-26d4-44e0-8c7c-5ae0adfd1edb` passed numerical, independent recalculation, grounding and assistant visual checks on three fresh trials under the historical `excel-benchmark-v3` configuration: 40 provider requests, 40 tool attempts, 30 minutes and US$1 conservative model API cap per run. This historical series is evidence for v3; the later v5 series is recorded separately below. The [follow-up report](evaluations/test-gate-followup-2026-10-25.md) retains earlier budget/tool stops and grounding failures.
+Fixture v4 series `df3feccd-26d4-44e0-8c7c-5ae0adfd1edb` passed numerical, independent recalculation, grounding and assistant visual checks on three fresh trials under the historical `excel-benchmark-v3` configuration: 40 provider requests, 40 tool attempts, 30 minutes and US$1 conservative model API cap per run. This historical series is evidence for v3; the later v5 series is recorded separately below. The [follow-up report](history/test-gate-followup-2026-10-25.md) retains earlier budget/tool stops and grounding failures.
 
 The historical v3 evidence reports 142 offline tests, 7/7 live context cases and 3/3 integrated offline recovery cases passing. The owner approved the exact three output manifests, completing the selected v3 Test gate. Run outcomes remain `needs_review` in the execution log; separate version-specific review records show `approved`.
 

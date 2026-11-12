@@ -1,9 +1,10 @@
 # Finance sandbox environment
 
-This recipe captures LangSmith's default filesystem as a named release. The first
-release keeps its libraries unchanged; `requirements.txt` is intentionally empty
-apart from comments. No task files, memory, skills, or local credentials are uploaded
-to the builder. This is a filesystem snapshot, not conversation memory.
+This recipe builds a named filesystem snapshot from a pinned LangSmith base.
+The current `excel-v1` recipe installs LibreOffice Calc, Poppler, and fonts for
+spreadsheet recalculation and page previews. Additional Python packages belong in
+`requirements.txt`, which currently contains comments only. No task files, memory,
+skills, or local credentials are uploaded to the builder.
 
 From the repository root:
 
@@ -17,13 +18,15 @@ snapshot, records the Python/package inventory and build inputs under ignored
 local `.env`. It makes no model calls. Snapshot storage and builder compute are
 subject to LangSmith billing. The snapshot remains after builder deletion.
 
-Restart `finance-agent --sandbox` to load the selection. Application sandboxes
+Restart `finance-agent` to load the local-profile selection. Application sandboxes
 still receive the explicit allocation in `sandbox.py`; a snapshot does not replace
-the compute settings. Existing workspace transfers and cleanup still apply.
+the compute settings. Existing workspace transfers and cleanup still apply. The
+fixed benchmark profile uses its configured snapshot; see the
+[profile instructions](../../docs/operating-guide.md#versioned-excel-trial-profile).
 
 ## Updating a release
 
-1. Add additional packages with exact versions to `requirements.txt`.
+1. Add Python packages with exact versions to `requirements.txt`, or update system-package commands in `snapshot.json`.
 2. Change the tag in `snapshot.json`, for example to `v2`.
 3. Build without `--activate` to leave the selected release unchanged.
 4. Select the returned immutable ID in deployment configuration or local `.env`.
@@ -31,8 +34,8 @@ the compute settings. Existing workspace transfers and cleanup still apply.
 When extra requirements are present, the builder installs them in
 `/opt/finance-python`, a venv that can also read the base's system packages. The
 snapshot's saved PATH selects that interpreter for subsequent `python3` commands.
-This installation branch is provided for future use; the first release does not
-exercise it. Skills alone do not install packages.
+The current recipe has no extra Python requirements, so it does not exercise
+this branch. Skills alone do not install packages.
 
 The recipe pins the ID of the published `system/default` snapshot inspected for
 this release. The default can change over time; builds retain the selected base

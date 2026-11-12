@@ -2,7 +2,7 @@
 
 **Initial result:** 58 tests passed; 0 failures; 0 errors; 0 network connection
 attempts. This report records earlier checks and subsequent extensions. The
-[November 5 foundation report](evaluations/foundation-v5-2026-11-05.md) records
+[November 5 foundation report](../evaluations/foundation-v5-2026-11-05.md) records
 the later 150-test pass. These are engineering results, not financial-quality scores.
 
 ## Run again
@@ -95,7 +95,7 @@ scripts/check_engineering.py` to reproduce. The ignored current report is in
 Separate live sandbox build checks captured LibreOffice in an immutable snapshot,
 blocked DNS/direct IP and network-namespace re-entry, and recalculated/rendered a
 small workbook inside that boundary. See [build evidence](build-evidence.json) and
-[task progress](task-list.md#11-build-progress). These checks made no model calls
+[task progress](../task-list.md#11-build-progress). These checks made no model calls
 and do not substitute for the three financial benchmark runs or human review.
 
 ## Fictional income-statement demonstration
@@ -138,7 +138,7 @@ cell maps including deliberately wrong values. A ninth verifies profile v2 allow
 A separate paid management-review demonstration produced Excel/PDF deliverables.
 Independent grading exposed errors in generated formulas despite workbook PASS
 flags; reviewed repairs now match all 316 required metrics. This is assisted case
-evidence, not a formal release pass. See the [assessment](evaluations/management-review.md).
+evidence, not a formal release pass. See the [assessment](../evaluations/management-review.md).
 
 ## First formal Test pass
 
@@ -151,6 +151,6 @@ delete/recreate behavior while preserving genuine host edits.
 Three frozen model trials were also collected: two API reservation stops and one
 tool ceiling, so **0/3 complete passes**. Original evidence was retained, then all
 unchanged outputs were regraded after evaluator repairs. See the
-[Test report](evaluations/test-phase-2026-10-25.md) for independent recalculation,
+[Test report](test-phase-2026-10-25.md) for independent recalculation,
 seeded defects, source/provenance walkthrough, visual findings and remaining gates.
 This engineering result does not promote the release gate.
