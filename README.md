@@ -77,6 +77,10 @@ Evidence covers one fictional task and configuration; real business use requires
 
 I developed this with AI coding assistance. I guided the accounting objectives, workflow, design decisions, evaluation criteria, and output review. The implementation and evaluation reports document that work.
 
+**Understanding agents to use them better:** Building and troubleshooting this project gave me a practical mental model of how agents use tools, work with files, retain context, and execute code. That understanding also helps me use existing products such as ChatGPT, Claude, and Copilot more effectively.
+
+It helps me recognize capabilities I might otherwise overlook, identify accounting use cases, provide useful context and clearer assignments, and decide where independent checks or human judgment are needed.
+
 ### Current boundaries
 
 - The prototype is not approved to post journals, make payments, or change authoritative financial records.
