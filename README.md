@@ -35,9 +35,12 @@ The custom **harness**—the software around the model—makes those decisions e
 | Consideration | Using a ready-made AI product | This project |
 | --- | --- | --- |
 | Control the workflow | Configure the tools, instructions, and settings the product supports. | Version procedures, tools, operating limits, and review rules in the repository. |
+| Integrate with business systems | Use supported connectors and automation features, often with less setup. | Extend the code to tailor task intake, data access, file delivery, and review to the organization's workflow. Business connectors are future work. |
 | Investigate problems | Inspect the activity and history the product exposes. | Record model/tool traces in LangSmith and file-transfer, recovery, and review events locally. |
 | Check accounting results | Combine available product checks with your own review process. | Apply independent numerical checks, spreadsheet recalculation, and human approval tied to the reviewed file version. |
 | Manage change | Work within the product's update and versioning policies. | Pin local dependencies, record settings, and evaluate model or workflow changes against repeatable cases. |
+
+A possible extension would take an Asana assignment, retrieve SharePoint files, run the agent and checks, and return a draft for human review. Asana and SharePoint integrations are not implemented yet.
 
 **The reusable asset is the accounting process:** its procedures, skills, controls, and evaluation cases remain in project files I can maintain as AI technology evolves.
 
@@ -77,7 +80,7 @@ I developed this with AI coding assistance. I guided the accounting objectives, 
 ### Current boundaries
 
 - The prototype is not approved to post journals, make payments, or change authoritative financial records.
-- Asana task intake and a hosted user interface are future extensions.
+- Asana task intake, SharePoint file access, and a hosted user interface are future extensions.
 - Experimental subagent features are outside the evaluated Excel profile.
 
 ---
