@@ -26,20 +26,22 @@ A video walkthrough is planned. Test inputs, code, and result reports are public
 
 ## Project details
 
-### Why build this?
+### Why build this instead of using ChatGPT, Claude, or Microsoft Copilot?
 
-Accounting work needs traceable sources, reliable calculations, clear limits, and review.
+Ready-made AI assistants can already analyze data and create spreadsheets, often with much less setup. I built this prototype to explore **owning the accounting workflow: defining how work is done, checking the results, and managing changes over time.**
 
-A custom **harness**—the software around the model—lets me define that process:
+The custom **harness**—the software around the model—makes those decisions explicit:
 
-| Need | What this project provides |
-| --- | --- |
-| Control how work happens | Tools, workspace access, and call, time, and estimated model-spend limits in the Excel profile. |
-| Investigate results and failures | LangSmith traces for model/tool activity; local records for transfers, recovery, and review. |
-| Check accounting requirements | Reusable procedures, independent numerical checks, and a task-specific review rubric. |
-| Continue work and review revisions | Files persist by conversation; approval is tied to a particular file version. |
+| Consideration | Using a ready-made AI product | This project |
+| --- | --- | --- |
+| Control the workflow | Configure the tools, instructions, and settings the product supports. | Version procedures, tools, operating limits, and review rules in the repository. |
+| Investigate problems | Inspect the activity and history the product exposes. | Record model/tool traces in LangSmith and file-transfer, recovery, and review events locally. |
+| Check accounting results | Combine available product checks with your own review process. | Apply independent numerical checks, spreadsheet recalculation, and human approval tied to the reviewed file version. |
+| Manage change | Work within the product's update and versioning policies. | Pin local dependencies, record settings, and evaluate model or workflow changes against repeatable cases. |
 
-Existing AI products can also help with accounting tasks. This project demonstrates my approach to a repeatable, controlled workflow, including the testing and maintenance a custom setup requires.
+**The reusable asset is the accounting process:** its procedures, skills, controls, and evaluation cases remain in project files I can maintain as AI technology evolves.
+
+Capabilities vary by product. A custom harness requires engineering and maintenance, and this one still depends on OpenAI, Deep Agents/LangGraph, and LangSmith. Hosted models and services can change; the project provides a defined way to assess the impact and adapt.
 
 ### How it works
 
