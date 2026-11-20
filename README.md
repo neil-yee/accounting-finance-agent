@@ -1,16 +1,16 @@
 # Accounting & Finance Agent
 
-I’m Neil Yee, a CPA. I built this prototype with AI coding assistance to explore how I’d delegate a financial investigation, check the working paper, and decide what to bring to management. The agent gets a question, financial records, and a computer workspace where it can write SQL and build Excel files.
+I’m Neil Yee, a CPA. I built this prototype with AI coding assistance to show how I’d lead a margin review. I set the question and the checks. The agent uses SQL and Excel to investigate the transactions. I review the evidence, decide which findings matter, and recommend a course of action.
 
 **Sales grew 15.5%. Why did gross margin fall?** At Harbor Supply, a fictional wholesaler, gross profit rose C$94,183 while gross margin fell from 38.46% to 34.86%. I asked the agent to investigate using a five-year ERP database and reconcile its findings to the ledger.
 
 [Preview the executive summary](docs/examples/harbor-margin/summary.png) · [Download the Excel working paper](https://raw.githubusercontent.com/neil-yee/accounting-finance-agent/main/docs/examples/harbor-margin/harbor_margin_review.xlsx) · [Read the management brief](docs/examples/harbor-margin/harbor_management_brief.md) · [Inspect the SQL](docs/examples/harbor-margin/harbor_margin_queries.sql)
 
-### What I’d tell the controller
+### How I’d lead the margin review
 
-- **Start with Electrical.** Its margin fell 8.00 percentage points. Taking its margin and share of sales together, Electrical accounted for 1.82 points of the company’s 3.60-point decline. Electrical’s cost per unit sold rose 22.6%, while sales per unit rose 9.2%.
-- **Check the evidence.** Sales, credits, and cost of goods sold tied to the ledger in both years. Try the control in a copy of the workbook. Add C$100 to the FY2023 invoice-header total in `GL Reconciliation!C3`. The discrepancy appears on the first sheet in `Summary!D19`.
-- **Follow up before changing prices.** I’d ask Purchasing to trace receipt costs to supplier bills and Sales to check when customer prices were reset. Those answers would help explain the gap and guide a pricing decision.
+- **Focus the investigation on Electrical.** Its own margin fell 8.00 percentage points. Across the company, Electrical accounted for 1.82 points of the 3.60-point decline, about half. Electrical’s cost per unit sold rose 22.6%, while sales per unit rose 9.2%.
+- **Verify the figures behind the decision.** Sales, credits, and cost of goods sold tied to the ledger in both years. Try the control in a copy of the workbook. Add C$100 to the FY2023 invoice-header total in `GL Reconciliation!C3`. The discrepancy appears on the first sheet in `Summary!D19`.
+- **Decide whether Electrical needs a pricing change.** I’d work with Purchasing to verify which supplier costs increased and with Sales to identify customers still on earlier pricing. If the evidence supports a price change, I’d target the affected products and track both realized margin and sales volume in the next monthly review.
 
 The agent chose its queries and used general-purpose tools for the investigation. The initial run required recovery, and a later run refined the workbook for management review. The same setup could investigate overdue receivables, inventory movements, or budget variances with suitable records. Those are potential assignments. The Harbor example demonstrates the margin investigation.
 
