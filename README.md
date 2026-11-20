@@ -1,12 +1,14 @@
 # Accounting & Finance Agent
 
-I’m Neil Yee, a CPA. I built this prototype with AI coding assistance to explore how I’d lead a financial review. I give the agent a business question and access to the records. It writes SQL and prepares an Excel working paper. I decide which figures need to reconcile and what action the evidence supports.
+I’m Neil Yee, a CPA. In my accounting work, I use ERP data, Excel, and Copilot to investigate financial questions. I built this prototype with AI coding assistance so I could show that approach using fictional records.
+
+**The same agent can take on different assignments.** I give it a business question, the relevant files, and a definition of done. It has a computer workspace where it can inspect records, write SQL or Python, and prepare a working paper. It chooses the steps for the assignment. I decide what needs to reconcile and what action the evidence supports.
 
 ## Sales grew 15.5%. Why did gross margin fall?
 
 Harbor Supply, a fictional wholesaler, earned **C$94,183 more gross profit** in FY2023. Yet it kept **C$3.60 less gross profit per C$100 of sales** than in FY2022. I gave the agent five years of ERP records and asked it to explain the decline and tie its figures to the general ledger.
 
-**Electrical supplies accounted for about half the decline.** Its cost per unit sold rose 22.6%, while sales per unit rose 9.2%. The working paper shows how that gap affected the company.
+**Electrical supplies accounted for about half the decline.** Its cost per unit sold rose 22.6%, while sales per unit rose 9.2%. Before recommending a price change, I’d ask Purchasing to verify the cost increases and Sales to identify customers still on earlier pricing.
 
 [Read the management brief](docs/examples/harbor-margin/harbor_management_brief.md) · [Download the Excel working paper](https://raw.githubusercontent.com/neil-yee/accounting-finance-agent/main/docs/examples/harbor-margin/harbor_margin_review.xlsx) · [Inspect the SQL queries](docs/examples/harbor-margin/harbor_margin_queries.sql)
 
@@ -14,7 +16,7 @@ Harbor Supply, a fictional wholesaler, earned **C$94,183 more gross profit** in 
 
 ### How I’d lead the margin review
 
-**Where I’d focus.** Electrical’s own margin fell 8.00 percentage points. Its change in margin and its changing share of company sales together explain 1.82 points of the company-wide decline. That makes it the first category I’d investigate. I’d ask Purchasing to trace cost increases to supplier bills and Sales to identify customers still on earlier pricing. If those checks support a price change, I’d track both realized margin and sales volume in the next monthly review.
+**Where I’d focus.** Electrical’s own margin fell 8.00 percentage points. Its change in margin and its changing share of company sales together explain 1.82 points of the company-wide decline. That makes it the first category I’d investigate. I’d compare supplier bills and customer price changes for the affected products. If that supports a price adjustment, I’d track both realized margin and sales volume in the next monthly review.
 
 **How I’d challenge the numbers.** Sales, credits, and cost of goods sold reconciled to the ledger in both years. Changing one input in a test copy produced the following result after recalculation.
 
@@ -28,7 +30,18 @@ To reproduce the check, open a copy of the workbook, increase `GL Reconciliation
 
 ### What the agent contributed
 
-The agent selected its queries, followed transactions from invoices and credits to product categories, and built the working paper. The initial run required recovery. A later run revised the workbook so the ledger checks update when an input changes. The SQL and Excel tools could also support receivables aging, inventory reconciliation, or budget variance reviews with the relevant records.
+The agent selected its queries, followed transactions from invoices and credits to product categories, and built the working paper. The initial run required recovery. A later run revised the workbook so the ledger checks update when an input changes.
+
+### How the same agent could handle another assignment
+
+The workspace, tools, run limits, and review process carry over. What changes is the question, the source data, and the check that makes the answer trustworthy. Here are two other assignments I could give it:
+
+| Business question | Records I’d provide | What I’d check before using the result |
+| --- | --- | --- |
+| Which overdue customer balances should we follow up first? | Invoices, due dates, credits, and payments applied by the reporting date | The aging buckets sum to receivables in the ledger at that date, and each flagged balance traces to an open invoice. |
+| Which departments drove the spending variance? | Approved budget and posted expenses by department and period | Actuals tie to the ledger, department variances add up to the total, and material drivers trace to transactions. |
+
+For a recurring assignment, I can add a reusable procedure as a skill. Work that needs another system also needs an authorized connection. I’d evaluate each workflow against its own checks before relying on it.
 
 ## Project details
 
