@@ -1,44 +1,46 @@
 # Accounting & Finance Agent
 
-I’m Neil Yee, a CPA. I built this prototype with AI coding assistance to show how I’d lead a margin review. I set the question and the checks. The agent uses SQL and Excel to investigate the transactions. I review the evidence, decide which findings matter, and recommend a course of action.
+I’m Neil Yee, a CPA. I built this prototype with AI coding assistance to explore how I’d lead a financial review. I give the agent a business question and access to the records. It writes SQL and prepares an Excel working paper. I decide which figures need to reconcile and what action the evidence supports.
 
-**Sales grew 15.5%. Why did gross margin fall?** At Harbor Supply, a fictional wholesaler, gross profit rose C$94,183 while gross margin fell from 38.46% to 34.86%. I asked the agent to investigate using a five-year ERP database and reconcile its findings to the ledger.
+## Sales grew 15.5%. Why did gross margin fall?
 
-[Preview the executive summary](docs/examples/harbor-margin/summary.png) · [Download the Excel working paper](https://raw.githubusercontent.com/neil-yee/accounting-finance-agent/main/docs/examples/harbor-margin/harbor_margin_review.xlsx) · [Read the management brief](docs/examples/harbor-margin/harbor_management_brief.md) · [Inspect the SQL](docs/examples/harbor-margin/harbor_margin_queries.sql)
+Harbor Supply, a fictional wholesaler, earned **C$94,183 more gross profit** in FY2023. Yet it kept **C$3.60 less gross profit per C$100 of sales** than in FY2022. I gave the agent five years of ERP records and asked it to explain the decline and tie its figures to the general ledger.
+
+**Electrical supplies accounted for about half the decline.** Its cost per unit sold rose 22.6%, while sales per unit rose 9.2%. The working paper shows how that gap affected the company.
+
+[Read the management brief](docs/examples/harbor-margin/harbor_management_brief.md) · [Download the Excel working paper](https://raw.githubusercontent.com/neil-yee/accounting-finance-agent/main/docs/examples/harbor-margin/harbor_margin_review.xlsx) · [Inspect the SQL queries](docs/examples/harbor-margin/harbor_margin_queries.sql)
+
+[![Harbor Supply Excel summary. Gross margin fell from 38.46% to 34.86%. Electrical contributed 1.82 percentage points of the 3.60-point decline. The ledger difference is zero in both years.](docs/examples/harbor-margin/summary.png)](docs/examples/harbor-margin/summary.png)
 
 ### How I’d lead the margin review
 
-- **Focus the investigation on Electrical.** Its own margin fell 8.00 percentage points. Across the company, Electrical accounted for 1.82 points of the 3.60-point decline, about half. Electrical’s cost per unit sold rose 22.6%, while sales per unit rose 9.2%.
-- **Verify the figures behind the decision.** Sales, credits, and cost of goods sold tied to the ledger in both years. Try the control in a copy of the workbook. Add C$100 to the FY2023 invoice-header total in `GL Reconciliation!C3`. The discrepancy appears on the first sheet in `Summary!D19`.
-- **Decide whether Electrical needs a pricing change.** I’d work with Purchasing to verify which supplier costs increased and with Sales to identify customers still on earlier pricing. If the evidence supports a price change, I’d target the affected products and track both realized margin and sales volume in the next monthly review.
+**Where I’d focus.** Electrical’s own margin fell 8.00 percentage points. Its change in margin and its changing share of company sales together explain 1.82 points of the company-wide decline. That makes it the first category I’d investigate. I’d ask Purchasing to trace cost increases to supplier bills and Sales to identify customers still on earlier pricing. If those checks support a price change, I’d track both realized margin and sales volume in the next monthly review.
 
-The agent chose its queries and used general-purpose tools for the investigation. The initial run required recovery, and a later run refined the workbook for management review. The same setup could investigate overdue receivables, inventory movements, or budget variances with suitable records. Those are potential assignments. The Harbor example demonstrates the margin investigation.
+**How I’d challenge the numbers.** Sales, credits, and cost of goods sold reconciled to the ledger in both years. Changing one input in a test copy produced the following result after recalculation.
 
-[Why build the harness?](#what-does-a-custom-harness-offer-alongside-existing-ai-products) · [Test results](#what-has-been-checked) · [Setup and documentation](#setup-and-documentation)
+| FY2023 control | Working paper | After adding C$100 to the invoice total |
+| --- | ---: | ---: |
+| Invoice-header total | C$6,064,092.60 | C$6,064,192.60 |
+| Ledger sales less invoice-header total | C$0.00 | −C$100.00 |
+| Largest absolute discrepancy on the summary | C$0.00 | **C$100.00** |
 
----
+To reproduce the check, open a copy of the workbook, increase `GL Reconciliation!C3` by 100, and look at `Summary!D19`. The tie-out checks that the underlying financial figures agree. Supplier terms and customer pricing still require follow-up.
+
+### What the agent contributed
+
+The agent selected its queries, followed transactions from invoices and credits to product categories, and built the working paper. The initial run required recovery. A later run revised the workbook so the ledger checks update when an input changes. The SQL and Excel tools could also support receivables aging, inventory reconciliation, or budget variance reviews with the relevant records.
 
 ## Project details
 
 ### What does a custom harness offer alongside existing AI products?
 
-ChatGPT, Claude, and Microsoft Copilot can already analyze data and create spreadsheets, often with much less setup. This prototype explores **control over the accounting workflow: defining how work is done, checking the results, and managing changes over time.** The choice depends on the workflow, the features available in existing products, and the cost of maintaining a custom implementation.
+I use tools like Excel Copilot for financial analysis. Building the software around an AI model (the *harness*) let me explore what I’d want to control when an investigation becomes a repeatable finance process:
 
-The custom **harness**—the software around the model—makes those decisions explicit:
+- **Review and recovery.** I can inspect which queries and tools ran, see which files survived an interruption, and tie a review decision to the exact workbook version.
+- **Repeatability.** The procedures, limits, and test cases live in the repository. I can rerun the same cases after a model or workflow change and compare the results.
+- **Integration.** The code determines how assignments and files enter the workspace and how deliverables come back for review. Connecting that process to Asana or SharePoint is a possible extension.
 
-| Consideration | Using a ready-made AI product | This project |
-| --- | --- | --- |
-| Control the workflow | Configure the tools, instructions, and settings the product supports. | Version procedures, tools, operating limits, and review rules in the repository. |
-| Integrate with business systems | Use supported connectors and automation features, often with less setup. | Extend the code to tailor task intake, data access, file delivery, and review to the organization's workflow. Business connectors are future work. |
-| Investigate problems | Inspect the activity and history the product exposes. | Record model/tool traces in LangSmith and file-transfer, recovery, and review events locally. |
-| Check accounting results | Combine available product checks with your own review process. | Apply independent numerical checks, spreadsheet recalculation, and human approval tied to the reviewed file version. |
-| Manage change | Work within the product's update and versioning policies. | Pin local dependencies, record settings, and evaluate model or workflow changes against repeatable cases. |
-
-A possible extension would take an Asana assignment, retrieve SharePoint files, run the agent and checks, and return a draft for human review. Asana and SharePoint integrations are not implemented yet.
-
-**The reusable asset is the accounting process:** its procedures, skills, controls, and evaluation cases remain in project files I can maintain as AI technology evolves.
-
-Capabilities vary by product. A custom harness requires engineering and maintenance, and this one still depends on OpenAI, Deep Agents/LangGraph, and LangSmith. Hosted models and services can change; the project provides a defined way to assess the impact and adapt.
+Existing products are quicker to adopt when their tools and controls fit the work. A custom harness takes maintenance. Building one helped me judge that trade-off and use the same ideas when supervising work in existing tools.
 
 ### How it works
 
