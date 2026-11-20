@@ -1,34 +1,28 @@
 # Accounting & Finance Agent
 
-## Summary
+I’m Neil Yee, a CPA. I built this prototype with AI coding assistance to explore how I’d delegate a financial investigation, check the working paper, and decide what to bring to management. The agent gets a question, financial records, and a computer workspace where it can write SQL and build Excel files.
 
-Give this AI agent an accounting assignment and financial data, and it can use a computer workspace to prepare an Excel working paper for review. This is a CPA portfolio project exploring practical, supervised AI use.
+**Sales grew 15.5%. Why did gross margin fall?** At Harbor Supply, a fictional wholesaler, gross profit rose C$94,183 while gross margin fell from 38.46% to 34.86%. I asked the agent to investigate using a five-year ERP database and reconcile its findings to the ledger.
 
-**Status:** Working terminal prototype, evaluated on fictional data with human review.
+[Preview the executive summary](docs/examples/harbor-margin/summary.png) · [Download the Excel working paper](https://raw.githubusercontent.com/neil-yee/accounting-finance-agent/main/docs/examples/harbor-margin/harbor_margin_review.xlsx) · [Read the management brief](docs/examples/harbor-margin/harbor_management_brief.md) · [Inspect the SQL](docs/examples/harbor-margin/harbor_margin_queries.sql)
 
-[See the example](#see-the-example) · [Project details](#project-details) · [Setup and documentation](#setup-and-documentation)
+### What I’d tell the controller
 
-### See the example
+- **Start with Electrical.** Its margin fell 8.00 percentage points. Taking its margin and share of sales together, Electrical accounted for 1.82 points of the company’s 3.60-point decline. Electrical’s cost per unit sold rose 22.6%, while sales per unit rose 9.2%.
+- **Check the evidence.** Sales, credits, and cost of goods sold tied to the ledger in both years. Try the control in a copy of the workbook. Add C$100 to the FY2023 invoice-header total in `GL Reconciliation!C3`. The discrepancy appears on the first sheet in `Summary!D19`.
+- **Follow up before changing prices.** I’d ask Purchasing to trace receipt costs to supplier bills and Sales to check when customer prices were reset. Those answers would help explain the gap and guide a pricing decision.
 
-**The assignment:** Prepare a two-month financial review for a fictional business.
+The agent chose its queries and used general-purpose tools for the investigation. The initial run required recovery, and a later run refined the workbook for management review. The same setup could investigate overdue receivables, inventory movements, or budget variances with suitable records. Those are potential assignments. The Harbor example demonstrates the margin investigation.
 
-- **Inputs:** Financial data and business notes explaining selected changes.
-- **Output:** Excel income statements, monthly comparisons, margins, a breakdown of the profit change, and commentary tied to those notes.
-- **Review:** Independent calculation checks, presentation and analysis review, and approval of the reviewed file version.
-
-**Result:** All three trials in the v5 series passed numerical checks and independent spreadsheet recalculation. I reviewed and approved those output versions for this synthetic test.
-
-[Read the results](docs/evaluations/excel-v5-results.md) · [View the assignment and inputs](evaluations/excel-v4/agent-inputs/) · [See the acceptance criteria](docs/evaluations/excel-benchmark.md)
-
-A video walkthrough is planned. Test inputs, code, and result reports are public; trial workbooks and raw traces are kept out of Git.
+[Why build the harness?](#what-does-a-custom-harness-offer-alongside-existing-ai-products) · [Test results](#what-has-been-checked) · [Setup and documentation](#setup-and-documentation)
 
 ---
 
 ## Project details
 
-### Why build this instead of using ChatGPT, Claude, or Microsoft Copilot?
+### What does a custom harness offer alongside existing AI products?
 
-Ready-made AI assistants can already analyze data and create spreadsheets, often with much less setup. I built this prototype to explore **owning the accounting workflow: defining how work is done, checking the results, and managing changes over time.**
+ChatGPT, Claude, and Microsoft Copilot can already analyze data and create spreadsheets, often with much less setup. This prototype explores **control over the accounting workflow: defining how work is done, checking the results, and managing changes over time.** The choice depends on the workflow, the features available in existing products, and the cost of maintaining a custom implementation.
 
 The custom **harness**—the software around the model—makes those decisions explicit:
 
@@ -59,11 +53,11 @@ flowchart LR
 
 The workspace is a temporary remote **sandbox** where the agent runs commands and edits files. Eligible files are saved locally for follow-up work. The agent can pause for essential clarifications through the terminal.
 
-For the evaluated workflow, approved scripts build and recalculate the workbook; the agent prepares commentary. Checks and human review assess correctness. Traces explain what happened.
+In the separate, fixed Excel benchmark, approved scripts build and recalculate a two-month income statement from supplied data and business notes. The agent prepares commentary, independent checks verify the numbers, and a person reviews each output.
 
 ### What has been checked?
 
-The latest published evidence is dated **November 5, 2026**:
+The **November 5, 2026** benchmark reports cover the fixed Excel workflow and selected engineering controls. The Harbor investigation above is a separate portfolio case.
 
 | Area | Recorded result | Evidence |
 | --- | --- | --- |
@@ -71,15 +65,20 @@ The latest published evidence is dated **November 5, 2026**:
 | Engineering | 150/150 offline checks passed for selected controls, files, persistence, recovery, and related behavior. | [Foundation report](docs/evaluations/foundation-v5-2026-11-05.md) |
 | Live behavior and boundaries | 7/7 context cases passed; selected sandbox and file-preservation checks passed. | [Scope and limitations](docs/evaluations/foundation-v5-2026-11-05.md#limits-and-evidence) |
 
-Evidence covers one fictional task and configuration; real business use requires separate evaluation and approval. Earlier failures and corrections remain in the [test history](docs/history/test-gate-followup-2026-10-25.md).
+The three workbook approvals apply to the benchmark task and configuration. Real business use requires its own evaluation and approval. Earlier failures and corrections remain in the [test history](docs/history/test-gate-followup-2026-10-25.md).
 
 ### My role and AI assistance
 
 I developed this with AI coding assistance. I guided the accounting objectives, workflow, design decisions, evaluation criteria, and output review. The implementation and evaluation reports document that work.
 
-**Understanding agents to use them better:** Building and troubleshooting this project gave me a practical mental model of how agents use tools, work with files, retain context, and execute code. That understanding also helps me use existing products such as ChatGPT, Claude, and Copilot more effectively.
+**Understanding agents to use them better:** Working with Deep Agents and LangGraph gave me practical experience with the components of modern agent systems, including:
 
-It helps me recognize capabilities I might otherwise overlook, identify accounting use cases, provide useful context and clearer assignments, and decide where independent checks or human judgment are needed.
+- **Sandboxes:** a computer workspace where an agent can run code and work with files.
+- **Context compaction:** condensing earlier conversation so an agent can continue longer tasks, while checking that important information is retained.
+- **Subagents:** delegating work with separate conversation context, including the trade-offs in cost and coordination. These experiments are separate from the evaluated Excel workflow.
+- **Tracing and evaluation:** investigating what happened and checking whether the results meet defined requirements.
+
+That understanding helps me recognize capabilities I might otherwise overlook, identify accounting use cases, provide clearer assignments, and decide where independent checks or human judgment are needed. It informs how I use existing AI products as well as when I would consider customization.
 
 ### Current boundaries
 
