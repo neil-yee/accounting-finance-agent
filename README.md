@@ -2,7 +2,7 @@
 
 I’m Neil Yee, a CPA. In my accounting work, I use ERP data, Excel, and Copilot to investigate financial questions. I built this prototype with AI coding assistance so I could show that approach using fictional records.
 
-**The same agent can take on different assignments.** I give it a business question, the relevant files, and a definition of done. It has a computer workspace where it can inspect records, write SQL or Python, and prepare a working paper. It chooses the steps for the assignment. I decide what needs to reconcile and what action the evidence supports.
+**Give the agent broad tools and a specific assignment.** I supply the business question, the records it may use, and the checks the answer must pass. The agent can write SQL, run Python, and build an Excel working paper. It chooses which transactions to inspect and what to calculate next. That lets me use the same agent for different investigations while keeping responsibility for the accounting judgment.
 
 ## Sales grew 15.5%. Why did gross margin fall?
 
@@ -58,17 +58,20 @@ Existing products are quicker to adopt when their tools and controls fit the wor
 ### How it works
 
 ```mermaid
-flowchart LR
-    A[Person provides task and files] --> B[Agent works in a computer workspace]
-    B --> C[Files and activity records are saved]
-    C --> D[Checks and human review]
-    D -->|Revise| B
-    D -->|Approve| E[Reviewed deliverable]
+flowchart TD
+    A[Finance lead sets the question, records, and checks] --> B[Agent inspects the records and chooses its next step]
+    B --> C[Run a query or calculation in the workspace]
+    C --> D[Agent examines the result]
+    D -->|Need more evidence| B
+    D -->|Ready for review| E[Deliver working paper and supporting evidence]
+    E --> F[Finance lead checks the figures and conclusions]
+    F -->|Request revision| B
+    F -->|Accept| G[Decide what action to take]
 ```
 
 The workspace is a temporary remote **sandbox** where the agent runs commands and edits files. Eligible files are saved locally for follow-up work. The agent can pause for essential clarifications through the terminal.
 
-In the separate, fixed Excel benchmark, approved scripts build and recalculate a two-month income statement from supplied data and business notes. The agent prepares commentary, independent checks verify the numbers, and a person reviews each output.
+The tools are general-purpose. The checks depend on the assignment. In the Harbor review, the agent could choose how to investigate Electrical, while the ledger reconciliation had to tie to the cent. Recurring work can use a tested procedure. In the separate Excel benchmark, approved scripts build and recalculate the two-month income statement, the agent drafts commentary, and a person reviews the output.
 
 ### What has been checked?
 
